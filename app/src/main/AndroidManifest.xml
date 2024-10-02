@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.CALL_PHONE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="true" />
+    <uses-feature
+        android:name="android.hardware.telephony"
+        android:required="false" />
+
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <application
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/app_icon"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/BaseTheme"
+        android:usesCleartextTraffic="true"
+        tools:targetApi="31">
+        <activity
+            android:name=".DealsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ActivitiesActivity"
+            android:exported="false" />
+        <activity
+            android:name=".CompleteSaleActivity"
+            android:exported="false" />
+        <activity
+            android:name=".AwaitingApprovalActivity"
+            android:exported="false" />
+        <activity
+            android:name=".TermsAndConditionsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".MapRoutePlanActivity"
+            android:exported="false" />
+        <activity
+            android:name=".IndividualRouteplanActivity"
+            android:exported="false" />
+        <activity
+            android:name=".RouteplansActivity"
+            android:exported="false" />
+
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyALLsNWwOC09xsRAqrK0S7dINi6BpNc7iw" />
+
+        <activity
+            android:name=".MarkerOnMapsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".GenerateOrderNote"
+            android:exported="false" />
+        <activity
+            android:name=".ViewActivitiesActivity"
+            android:exported="false" />
+        <activity
+            android:name=".CheckoutActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ErrorLoadingActivity"
+            android:exported="false" />
+        <activity
+            android:name=".CheckinToExistingOutlet"
+            android:exported="false" />
+        <activity
+            android:name=".VisitFeedbackActivity"
+            android:exported="false" />
+        <activity
+            android:name=".VisitCompetitiveAnalysisActivity"
+            android:exported="false" />
+        <activity
+            android:name=".VisitPOSAuditsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ClockinActivity"
+            android:exported="false" />
+        <activity
+            android:name=".UNUSEDGeofencingTest"
+            android:exported="false" />
+        <activity
+            android:name=".IndividualFeedbackActivity"
+            android:exported="false" />
+        <activity
+            android:name=".IndividualCompetitiveAnalysisActivity"
+            android:exported="false" />
+        <activity
+            android:name=".IndividualPOSAuditActivity"
+            android:exported="false" />
+        <activity
+            android:name=".IndividualVisitActivity"
+            android:exported="false" />
+        <activity
+            android:name=".IndividualOutletActivity"
+            android:exported="false" />
+        <activity
+            android:name=".VisitSalesActivity"
+            android:exported="false" />
+        <activity
+            android:name=".IndividualProductActivity"
+            android:exported="false" />
+        <activity
+            android:name=".TakePhotoActivity"
+            android:exported="false" />
+        <activity
+            android:name=".IndividualSaleActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ProductsCheckListActivity"
+            android:exported="false" />
+        <activity
+            android:name=".VisitsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ProductsListActivity"
+            android:exported="false" />
+        <activity
+            android:name=".UNUSEDLocationTestActivity"
+            android:exported="false" /> <!-- <activity -->
+        <!-- android:name=".TakeOutletPhoto" -->
+        <!-- android:exported="false" /> -->
+        <activity
+            android:name=".PrivacyPolicyActivity"
+            android:exported="false" />
+        <activity
+            android:name=".FAQActivity"
+            android:exported="false" />
+        <activity
+            android:name=".SettingsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".POSAuditsListActivity"
+            android:exported="false" />
+        <activity
+            android:name=".CompetitiveAnalysisListActivity"
+            android:exported="false" />
+        <activity
+            android:name=".FeedbackListActivity"
+            android:exported="false" />
+        <activity
+            android:name=".AddFeedbackActivity"
+            android:exported="false" />
+        <activity
+            android:name=".AddCompetitiveAnalysisActivity"
+            android:exported="false" />
+        <activity
+            android:name=".AddSalePOSAuditActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ProfileActivity"
+            android:exported="false" />
+        <activity
+            android:name=".LoginActivity"
+            android:exported="false" />
+        <activity
+            android:name=".UNUSEDSelectProductActivity"
+            android:exported="false" />
+        <activity
+            android:name=".CustomersActivity"
+            android:exported="false" />
+        <activity
+            android:name=".UNUSEDMakeSaleActivity"
+            android:exported="false" />
+        <activity
+            android:name=".SalesActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ClockoutActivity"
+            android:exported="false" />
+        <activity
+            android:name=".SelectActionActivity"
+            android:exported="false" />
+        <activity
+            android:name=".NewCustomerActivity"
+            android:exported="false" />
+        <activity
+            android:name=".SelectExistingCustomerActivity"
+            android:exported="false" />
+        <activity
+            android:name=".CheckinActivity"
+            android:exported="false" />
+        <activity
+            android:name=".NoInternetActivity"
+            android:exported="false" /> <!-- <activity -->
+        <!-- android:name=".MakeSaleActivity" -->
+        <!-- android:exported="false" /> -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>

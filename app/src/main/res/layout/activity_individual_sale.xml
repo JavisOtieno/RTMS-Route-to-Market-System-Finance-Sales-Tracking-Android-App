@@ -1,0 +1,878 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:id="@+id/activity_deal"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+
+    tools:context="com.scg.sf.IndividualSaleActivity"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <include layout="@layout/toolbar" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/toolbar"
+        android:background="#fce9ec">
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingBottom="@dimen/activity_vertical_margin"
+            android:paddingLeft="@dimen/activity_horizontal_margin"
+            android:paddingRight="@dimen/activity_horizontal_margin"
+            android:paddingTop="@dimen/activity_vertical_margin"
+
+            >
+
+            <!--<TextView
+                android:layout_width="match_parent"
+                android:textSize="20sp"
+                android:textColor="#000000"
+                android:layout_height="wrap_content"
+                android:id="@+id/productNamePrice"/>
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/productImageView"
+                android:layout_below="@id/productNamePrice"/>-->
+
+            <!--<TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="20sp"
+                android:textColor="#000000"
+                android:id="@+id/DetailsLabel"
+                android:text="Sale Details"
+                android:layout_below="@id/productImageView"
+                />-->
+            <!--<Switch
+                android:layout_width="wrap_content"
+                android:layout_below="@id/DetailsLabel"
+                android:layout_height="wrap_content"
+                android:id="@+id/ShopDeliverySwitch"
+                android:textOff="Delivery"
+                android:textOn="Shop"
+                />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="I want it delivered"
+                android:layout_below="@id/ShopDeliverySwitch"
+                android:id="@+id/shopDelivery"
+                android:textSize="17sp"/>
+            -->
+            <LinearLayout
+                android:paddingTop="10dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:id="@+id/addressShopLayout">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:orientation="vertical"
+                    android:id="@+id/addressLayout"
+                    android:layout_height="wrap_content">
+                    <!--
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="20sp"
+                        android:textColor="#000000"
+                        android:id="@+id/AddressLabel"
+                        android:text="New Address"
+                        android:layout_below="@id/productImageView"
+                        />-->
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/NameLayout"
+                        >
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/outletName"
+                            android:layout_marginTop="8dp"
+                            android:ems="10"
+                            android:layout_alignParentLeft="true"
+                            android:layout_alignParentStart="true"
+                            android:text="Outlet Name"
+                            android:layout_weight="2"
+                            android:layout_marginRight="5dp"
+                            android:padding="8dp"
+                            />
+                        <EditText
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginLeft="5dp"
+                            android:inputType="textMultiLine"
+                            android:id="@+id/outletNameText"
+                            android:nextFocusDown="@+id/phoneText"
+                            android:layout_weight="1"
+                            android:textColor="#000000"
+                            android:layout_marginTop="8dp"
+                            android:layout_below="@+id/imageView"
+                            android:background="@drawable/input_background"
+                            android:ems="10"
+                            android:layout_alignParentLeft="true"
+                            android:layout_alignParentStart="true"
+                            android:hint="Outlet Name"
+                            android:padding="8dp"/>
+
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/piecesLayout"
+                        android:layout_below="@+id/imageView">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/piecesTextView"
+                            android:layout_marginTop="8dp"
+                            android:ems="10"
+                            android:layout_alignParentLeft="true"
+                            android:layout_alignParentStart="true"
+                            android:text="Quantity"
+                            android:layout_weight="2"
+                            android:layout_marginRight="5dp"
+                            android:padding="8dp"
+                            />
+                        <EditText
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginLeft="5dp"
+                            android:inputType="text"
+                            android:textColor="#000000"
+                            android:id="@+id/piecesText"
+                            android:nextFocusDown="@+id/emailText"
+                            android:layout_weight="1"
+                            android:layout_marginTop="8dp"
+                            android:background="@drawable/input_background"
+                            android:ems="10"
+                            android:layout_alignParentLeft="true"
+                            android:layout_alignParentStart="true"
+                            android:hint="Quantity"
+                            android:padding="8dp"/>
+
+
+                    </LinearLayout>
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/valueLayout"
+                        android:layout_below="@+id/imageView">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/valueTextView"
+                            android:layout_marginTop="8dp"
+                            android:ems="10"
+                            android:layout_alignParentLeft="true"
+                            android:layout_alignParentStart="true"
+                            android:text="Value"
+                            android:layout_weight="2"
+                            android:layout_marginRight="5dp"
+                            android:padding="8dp"
+                            />
+                        <EditText
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginLeft="5dp"
+                            android:inputType="text"
+                            android:textColor="#000000"
+                            android:id="@+id/valueText"
+                            android:nextFocusDown="@+id/emailText"
+                            android:layout_weight="1"
+                            android:layout_marginTop="8dp"
+                            android:background="@drawable/input_background"
+                            android:ems="10"
+                            android:layout_alignParentLeft="true"
+                            android:layout_alignParentStart="true"
+                            android:hint="Value"
+                            android:padding="8dp"/>
+
+
+                    </LinearLayout>
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/dateLayout"
+                        android:layout_below="@+id/imageView">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/dateTextView"
+                            android:layout_marginTop="8dp"
+                            android:ems="10"
+                            android:layout_alignParentLeft="true"
+                            android:layout_alignParentStart="true"
+                            android:text="Date and Time"
+                            android:layout_weight="2"
+                            android:layout_marginRight="5dp"
+                            android:padding="8dp"
+                            />
+
+                        <EditText
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginLeft="5dp"
+                            android:inputType="text"
+                            android:textColor="#000000"
+                            android:id="@+id/dateTimeText"
+                            android:nextFocusDown="@+id/emailText"
+                            android:layout_weight="1"
+                            android:layout_marginTop="8dp"
+                            android:background="@drawable/input_background"
+                            android:ems="10"
+                            android:layout_alignParentLeft="true"
+                            android:layout_alignParentStart="true"
+                            android:hint="Date Time"
+                            android:padding="8dp"/>
+
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/statusLayout"
+                        android:layout_below="@+id/imageView">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/statusTextView"
+                            android:layout_marginTop="8dp"
+                            android:ems="10"
+                            android:layout_alignParentLeft="true"
+                            android:layout_alignParentStart="true"
+                            android:text="Status"
+                            android:layout_weight="2"
+                            android:layout_marginRight="5dp"
+                            android:padding="8dp"
+                            />
+
+                        <EditText
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginLeft="5dp"
+                            android:inputType="text"
+                            android:textColor="#000000"
+                            android:id="@+id/statusText"
+                            android:nextFocusDown="@+id/emailText"
+                            android:layout_weight="1"
+                            android:layout_marginTop="8dp"
+                            android:background="@drawable/input_background"
+                            android:ems="10"
+                            android:layout_alignParentLeft="true"
+                            android:layout_alignParentStart="true"
+                            android:hint="Status"
+                            android:padding="8dp"/>
+
+
+                    </LinearLayout>
+
+
+                        <Button
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text= "Complete Sale"
+                            android:visibility="gone"
+                            android:layout_weight="1"
+                            android:id="@+id/completeSaleButton"
+                            android:textColor="#ffffff"
+                            android:background="@drawable/btn_rounded_primary"
+                            android:layout_marginTop="5dp"
+                            android:layout_below="@id/longLayout"/>
+
+
+
+
+
+<!--                    <LinearLayout-->
+<!--                        android:layout_width="match_parent"-->
+<!--                        android:layout_height="wrap_content"-->
+<!--                        android:id="@+id/valueLayout"-->
+<!--                        android:layout_below="@+id/imageView">-->
+
+<!--                        <TextView-->
+<!--                            android:layout_width="match_parent"-->
+<!--                            android:layout_height="wrap_content"-->
+<!--                            android:id="@+id/valueTextView"-->
+<!--                            android:layout_marginTop="8dp"-->
+<!--                            android:ems="10"-->
+<!--                            android:layout_alignParentLeft="true"-->
+<!--                            android:layout_alignParentStart="true"-->
+<!--                            android:text="Date and Time"-->
+<!--                            android:layout_weight="2"-->
+<!--                            android:layout_marginRight="5dp"-->
+<!--                            android:padding="8dp"-->
+<!--                            />-->
+
+<!--                        <EditText-->
+<!--                            android:layout_width="match_parent"-->
+<!--                            android:layout_height="wrap_content"-->
+<!--                            android:layout_marginLeft="5dp"-->
+<!--                            android:inputType="text"-->
+<!--                            android:textColor="#000000"-->
+<!--                            android:id="@+id/dateTimeText"-->
+<!--                            android:nextFocusDown="@+id/emailText"-->
+<!--                            android:layout_weight="1"-->
+<!--                            android:layout_marginTop="8dp"-->
+<!--                            android:background="@drawable/input_background"-->
+<!--                            android:ems="10"-->
+<!--                            android:layout_alignParentLeft="true"-->
+<!--                            android:layout_alignParentStart="true"-->
+<!--                            android:hint="Date Time"-->
+<!--                            android:padding="8dp"/>-->
+
+
+<!--                    </LinearLayout>-->
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/deliveryDetailsLayout"
+                        android:layout_marginBottom="10dp"
+                        android:layout_below="@+id/imageView">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/productsTextView"
+                            android:layout_marginTop="8dp"
+                            android:ems="10"
+                            android:layout_alignParentLeft="true"
+                            android:layout_alignParentStart="true"
+                            android:text="Products"
+                            android:layout_weight="2"
+                            android:layout_marginRight="5dp"
+                            android:layout_marginLeft="8dp"
+                            />
+<!--                        <EditText-->
+<!--                            android:layout_width="match_parent"-->
+<!--                            android:layout_height="wrap_content"-->
+<!--                            android:layout_marginLeft="5dp"-->
+<!--                            android:inputType="textMultiLine"-->
+<!--                            android:id="@+id/productsText"-->
+<!--                            android:textColor="#000000"-->
+<!--                            android:nextFocusDown="@+id/submitDealButton"-->
+<!--                            android:layout_weight="1"-->
+<!--                            android:layout_marginTop="8dp"-->
+<!--                            android:background="@drawable/input_background"-->
+<!--                            android:ems="10"-->
+<!--                            android:visibility="gone"-->
+<!--                            android:layout_alignParentLeft="true"-->
+<!--                            android:layout_alignParentStart="true"-->
+<!--                            android:hint="Products"-->
+<!--                            android:padding="8dp"/>-->
+
+
+                    </LinearLayout>
+
+<!--                    <androidx.cardview.widget.CardView-->
+<!--                        xmlns:android="http://schemas.android.com/apk/res/android"-->
+<!--                        xmlns:app="http://schemas.android.com/apk/res-auto"-->
+<!--                        android:layout_width="match_parent"-->
+<!--                        android:layout_height="wrap_content"-->
+<!--                        android:layout_marginRight="5dp"-->
+<!--                        android:layout_marginLeft="5dp"-->
+<!--                        android:elevation="6dp"-->
+<!--                        app:cardCornerRadius="12dp"-->
+<!--                        app:cardElevation="8dp"-->
+<!--                        app:cardBackgroundColor="@android:color/white">-->
+
+<!--                        <LinearLayout-->
+<!--                            android:layout_width="match_parent"-->
+<!--                            android:layout_height="wrap_content"-->
+<!--                            android:padding="16dp"-->
+<!--                            android:orientation="vertical">-->
+
+<!--                            <TextView-->
+<!--                                android:id="@+id/productName"-->
+<!--                                android:layout_width="wrap_content"-->
+<!--                                android:layout_height="wrap_content"-->
+<!--                                android:text="Oraimo FreePods Lite"-->
+<!--                                android:textSize="20sp"-->
+<!--                                android:textStyle="bold"-->
+<!--                                android:textColor="@color/your_app_red_color"-->
+<!--                                android:paddingBottom="8dp" />-->
+
+<!--                            <View-->
+<!--                                android:layout_width="match_parent"-->
+<!--                                android:layout_height="1dp"-->
+<!--                                android:background="@color/your_app_red_color"-->
+<!--                                android:layout_marginBottom="8dp"/>-->
+
+<!--                            <LinearLayout-->
+<!--                                android:layout_width="match_parent"-->
+<!--                                android:layout_height="wrap_content"-->
+<!--                                android:orientation="horizontal">-->
+
+<!--                                <TextView-->
+<!--                                    android:id="@+id/piecesLabel"-->
+<!--                                    android:layout_width="wrap_content"-->
+<!--                                    android:layout_height="wrap_content"-->
+<!--                                    android:text="Pieces: "-->
+<!--                                    android:textSize="16sp"-->
+<!--                                    android:textColor="#6c7a89"-->
+<!--                                    android:paddingBottom="4dp" />-->
+
+<!--                                <TextView-->
+<!--                                    android:id="@+id/pieces"-->
+<!--                                    android:layout_width="wrap_content"-->
+<!--                                    android:layout_height="wrap_content"-->
+<!--                                    android:text="14"-->
+<!--                                    android:textSize="16sp"-->
+<!--                                    android:textColor="#6c7a89"-->
+<!--                                    android:paddingBottom="4dp" />-->
+
+<!--                            </LinearLayout>-->
+
+<!--                            <LinearLayout-->
+<!--                                android:layout_width="match_parent"-->
+<!--                                android:layout_height="wrap_content"-->
+<!--                                android:orientation="horizontal">-->
+
+<!--                                <TextView-->
+<!--                                    android:id="@+id/priceLabel"-->
+<!--                                    android:layout_width="wrap_content"-->
+<!--                                    android:layout_height="wrap_content"-->
+<!--                                    android:text="Price: "-->
+<!--                                    android:textSize="16sp"-->
+<!--                                    android:textColor="#6c7a89"-->
+<!--                                    android:paddingBottom="4dp" />-->
+
+<!--                                <TextView-->
+<!--                                    android:id="@+id/price"-->
+<!--                                    android:layout_width="wrap_content"-->
+<!--                                    android:layout_height="wrap_content"-->
+<!--                                    android:text="KSh. 23,500"-->
+<!--                                    android:textSize="16sp"-->
+<!--                                    android:textColor="#6c7a89"-->
+<!--                                    android:paddingBottom="4dp" />-->
+
+<!--                            </LinearLayout>-->
+
+<!--                            <LinearLayout-->
+<!--                                android:layout_width="match_parent"-->
+<!--                                android:layout_height="wrap_content"-->
+<!--                                android:orientation="horizontal">-->
+
+<!--                                <TextView-->
+<!--                                    android:id="@+id/valueLabel"-->
+<!--                                    android:layout_width="wrap_content"-->
+<!--                                    android:layout_height="wrap_content"-->
+<!--                                    android:text="Value: "-->
+<!--                                    android:textSize="16sp"-->
+<!--                                    android:textColor="@android:color/black"/>-->
+
+<!--                                <TextView-->
+<!--                                    android:id="@+id/value"-->
+<!--                                    android:layout_width="wrap_content"-->
+<!--                                    android:layout_height="wrap_content"-->
+<!--                                    android:text="KSh. 235,000"-->
+<!--                                    android:textSize="16sp"-->
+<!--                                    android:textColor="@android:color/black"/>-->
+
+<!--                            </LinearLayout>-->
+<!--                        </LinearLayout>-->
+<!--                    </androidx.cardview.widget.CardView>-->
+
+
+                    <androidx.recyclerview.widget.RecyclerView
+                                            android:id="@+id/recyclerView"
+                                            android:layout_width="match_parent"
+                                            android:layout_height="match_parent"
+                                            android:scrollbars="vertical"
+                                            android:scrollingCache="true" />
+
+<!--                                        <LinearLayout-->
+<!--                                            android:layout_width="match_parent"-->
+<!--                                            android:layout_height="wrap_content"-->
+<!--                                            android:orientation="vertical"-->
+<!--                                            >-->
+
+<!--                    &lt;!&ndash;                    <TextView&ndash;&gt;-->
+<!--&lt;!&ndash;                        android:layout_width="match_parent"&ndash;&gt;-->
+<!--&lt;!&ndash;                        android:layout_height="wrap_content"&ndash;&gt;-->
+<!--&lt;!&ndash;                        android:id="@+id/productsTextView"&ndash;&gt;-->
+<!--&lt;!&ndash;                        android:layout_marginTop="8dp"&ndash;&gt;-->
+<!--&lt;!&ndash;                        android:ems="10"&ndash;&gt;-->
+<!--&lt;!&ndash;                        android:layout_alignParentLeft="true"&ndash;&gt;-->
+<!--&lt;!&ndash;                        android:layout_alignParentStart="true"&ndash;&gt;-->
+<!--&lt;!&ndash;                        android:text="Product Name"&ndash;&gt;-->
+<!--&lt;!&ndash;                        android:layout_weight="2"&ndash;&gt;-->
+<!--&lt;!&ndash;                        android:layout_marginRight="5dp"&ndash;&gt;-->
+<!--&lt;!&ndash;                        android:padding="8dp"&ndash;&gt;-->
+<!--&lt;!&ndash;                        />&ndash;&gt;-->
+
+<!--&lt;!&ndash;                    <com.google.android.material.textfield.TextInputLayout&ndash;&gt;-->
+<!--&lt;!&ndash;                        android:id="@+id/textInputLayout"&ndash;&gt;-->
+<!--&lt;!&ndash;                        android:layout_width="match_parent"&ndash;&gt;-->
+<!--&lt;!&ndash;                        android:layout_height="wrap_content">&ndash;&gt;-->
+
+<!--                    <EditText-->
+<!--                        android:layout_width="match_parent"-->
+<!--                        android:layout_height="wrap_content"-->
+<!--                        android:layout_marginLeft="5dp"-->
+<!--                        android:inputType="text"-->
+<!--                        android:textColor="#000000"-->
+<!--                        android:id="@+id/dateTimeText"-->
+<!--                        android:nextFocusDown="@+id/emailText"-->
+<!--                        android:layout_weight="1.3"-->
+<!--                        android:layout_marginTop="3dp"-->
+<!--                        android:background="@drawable/input_background"-->
+<!--                        android:ems="10"-->
+<!--                        android:layout_alignParentLeft="true"-->
+<!--                        android:layout_alignParentStart="true"-->
+<!--                        android:hint="Product Name"-->
+<!--                        app:helperText="Product Name"-->
+<!--                        android:text="Samsung Galaxy Note 9"-->
+<!--                        android:padding="8dp"/>-->
+
+<!--&lt;!&ndash;                    </com.google.android.material.textfield.TextInputLayout>&ndash;&gt;-->
+
+
+
+<!--                    <LinearLayout-->
+<!--                        android:layout_width="match_parent"-->
+<!--                        android:layout_height="wrap_content"-->
+<!--                        android:id="@+id/valueLayout"-->
+<!--                        android:layout_below="@+id/imageView">-->
+
+
+
+<!--                        <TextView-->
+<!--                            android:layout_width="match_parent"-->
+<!--                            android:layout_height="wrap_content"-->
+<!--                            android:id="@+id/piecesTextView"-->
+<!--                            android:layout_marginTop="3dp"-->
+<!--                            android:ems="10"-->
+<!--                            android:layout_alignParentLeft="true"-->
+<!--                            android:layout_alignParentStart="true"-->
+<!--                            android:text="Pieces"-->
+<!--                            android:layout_weight="1.3"-->
+<!--                            android:layout_marginRight="5dp"-->
+<!--                            android:padding="8dp"-->
+<!--                            />-->
+
+<!--                        <TextView-->
+<!--                            android:layout_width="match_parent"-->
+<!--                            android:layout_height="wrap_content"-->
+<!--                            android:id="@+id/productsTextView"-->
+<!--                            android:layout_marginTop="3dp"-->
+<!--                            android:ems="10"-->
+<!--                            android:layout_alignParentLeft="true"-->
+<!--                            android:layout_alignParentStart="true"-->
+<!--                            android:text="Price in KSh."-->
+<!--                            android:layout_marginLeft="5dp"-->
+<!--                            android:layout_weight="1"-->
+<!--                            android:layout_marginRight="13dp"-->
+<!--                            />-->
+<!--                        <TextView-->
+<!--                            android:layout_width="match_parent"-->
+<!--                            android:layout_height="wrap_content"-->
+<!--                            android:id="@+id/productsTextView"-->
+<!--                            android:layout_marginTop="3dp"-->
+<!--                            android:ems="10"-->
+<!--                            android:layout_alignParentLeft="true"-->
+<!--                            android:layout_alignParentStart="true"-->
+<!--                            android:text="Value in KSh."-->
+<!--                            android:layout_marginLeft="5dp"-->
+<!--                            android:layout_weight="1"-->
+<!--                            android:layout_marginRight="13dp"-->
+<!--                            />-->
+
+
+
+
+<!--                    </LinearLayout>-->
+
+<!--                    <LinearLayout-->
+<!--                        android:layout_width="match_parent"-->
+<!--                        android:layout_height="wrap_content"-->
+<!--                        android:id="@+id/valueLayout"-->
+<!--                        android:layout_below="@+id/imageView">-->
+
+
+
+<!--                        <EditText-->
+<!--                            android:layout_width="match_parent"-->
+<!--                            android:layout_height="wrap_content"-->
+<!--                            android:layout_marginLeft="5dp"-->
+<!--                            android:inputType="text"-->
+<!--                            android:textColor="#000000"-->
+<!--                            android:id="@+id/dateTimeText"-->
+<!--                            android:nextFocusDown="@+id/emailText"-->
+<!--                            android:layout_weight="1.3"-->
+<!--                            android:layout_marginTop="3dp"-->
+<!--                            android:background="@drawable/input_background"-->
+<!--                            android:ems="10"-->
+<!--                            android:layout_alignParentLeft="true"-->
+<!--                            android:layout_alignParentStart="true"-->
+<!--                            android:hint="Date Time"-->
+<!--                            app:helperText="Pieces"-->
+<!--                            android:text="9"-->
+<!--                            android:padding="8dp"/>-->
+
+<!--                        <EditText-->
+<!--                            android:layout_width="match_parent"-->
+<!--                            android:layout_height="wrap_content"-->
+<!--                            android:layout_marginLeft="5dp"-->
+<!--                            android:inputType="text"-->
+<!--                            android:textColor="#000000"-->
+<!--                            android:id="@+id/dateTimeText"-->
+<!--                            android:nextFocusDown="@+id/emailText"-->
+<!--                            android:layout_weight="1"-->
+<!--                            android:layout_marginTop="3dp"-->
+<!--                            android:background="@drawable/input_background"-->
+<!--                            android:ems="10"-->
+<!--                            android:layout_alignParentLeft="true"-->
+<!--                            android:layout_alignParentStart="true"-->
+<!--                            android:hint="Date Time"-->
+<!--                            app:helperText="Product Price"-->
+<!--                            android:text="24,999"-->
+<!--                            android:padding="8dp"/>-->
+
+<!--                        <EditText-->
+<!--                            android:layout_width="match_parent"-->
+<!--                            android:layout_height="wrap_content"-->
+<!--                            android:layout_marginLeft="5dp"-->
+<!--                            android:inputType="textMultiLine"-->
+<!--                            android:textColor="#000000"-->
+<!--                            android:text="230,999"-->
+<!--                            android:id="@+id/dateTimeText"-->
+<!--                            android:nextFocusDown="@+id/emailText"-->
+<!--                            android:layout_weight="1"-->
+<!--                            android:layout_marginTop="3dp"-->
+<!--                            android:background="@drawable/input_background"-->
+<!--                            android:ems="10"-->
+<!--                            android:layout_alignParentLeft="true"-->
+<!--                            android:layout_alignParentStart="true"-->
+<!--                            android:hint="Date Time"-->
+<!--                            app:helperText="Amount"-->
+<!--                            android:padding="8dp"/>-->
+
+
+
+<!--                    </LinearLayout>-->
+
+<!--                </LinearLayout>-->
+
+<!--                    <LinearLayout-->
+<!--                        android:layout_width="match_parent"-->
+<!--                        android:layout_height="wrap_content"-->
+<!--                        android:orientation="vertical"-->
+<!--                        android:layout_marginTop="20dp">-->
+
+<!--&lt;!&ndash;                    <TextView&ndash;&gt;-->
+<!--&lt;!&ndash;                        android:layout_width="match_parent"&ndash;&gt;-->
+<!--&lt;!&ndash;                        android:layout_height="wrap_content"&ndash;&gt;-->
+<!--&lt;!&ndash;                        android:id="@+id/productsTextView"&ndash;&gt;-->
+<!--&lt;!&ndash;                        android:layout_marginTop="8dp"&ndash;&gt;-->
+<!--&lt;!&ndash;                        android:ems="10"&ndash;&gt;-->
+<!--&lt;!&ndash;                        android:layout_alignParentLeft="true"&ndash;&gt;-->
+<!--&lt;!&ndash;                        android:layout_alignParentStart="true"&ndash;&gt;-->
+<!--&lt;!&ndash;                        android:text="Product Name"&ndash;&gt;-->
+<!--&lt;!&ndash;                        android:layout_weight="2"&ndash;&gt;-->
+<!--&lt;!&ndash;                        android:layout_marginRight="5dp"&ndash;&gt;-->
+<!--&lt;!&ndash;                        android:padding="8dp"&ndash;&gt;-->
+<!--&lt;!&ndash;                        />&ndash;&gt;-->
+
+<!--                    &lt;!&ndash;                    <com.google.android.material.textfield.TextInputLayout&ndash;&gt;-->
+<!--                    &lt;!&ndash;                        android:id="@+id/textInputLayout"&ndash;&gt;-->
+<!--                    &lt;!&ndash;                        android:layout_width="match_parent"&ndash;&gt;-->
+<!--                    &lt;!&ndash;                        android:layout_height="wrap_content">&ndash;&gt;-->
+
+<!--                    <EditText-->
+<!--                        android:layout_width="match_parent"-->
+<!--                        android:layout_height="wrap_content"-->
+<!--                        android:layout_marginLeft="5dp"-->
+<!--                        android:inputType="text"-->
+<!--                        android:textColor="#000000"-->
+<!--                        android:id="@+id/dateTimeText"-->
+<!--                        android:nextFocusDown="@+id/emailText"-->
+<!--                        android:layout_weight="1.3"-->
+<!--                        android:layout_marginTop="3dp"-->
+<!--                        android:background="@drawable/input_background"-->
+<!--                        android:ems="10"-->
+<!--                        android:layout_alignParentLeft="true"-->
+<!--                        android:layout_alignParentStart="true"-->
+<!--                        android:hint="Product Name"-->
+<!--                        app:helperText="Product Name"-->
+<!--                        android:text="Samsung Galaxy Note 9"-->
+<!--                        android:padding="8dp"/>-->
+
+<!--                    &lt;!&ndash;                    </com.google.android.material.textfield.TextInputLayout>&ndash;&gt;-->
+
+
+
+<!--                    <LinearLayout-->
+<!--                        android:layout_width="match_parent"-->
+<!--                        android:layout_height="wrap_content"-->
+<!--                        android:id="@+id/valueLayout"-->
+<!--                        android:layout_below="@+id/imageView">-->
+
+
+
+<!--                        <TextView-->
+<!--                            android:layout_width="match_parent"-->
+<!--                            android:layout_height="wrap_content"-->
+<!--                            android:id="@+id/piecesTextView"-->
+<!--                            android:layout_marginTop="3dp"-->
+<!--                            android:ems="10"-->
+<!--                            android:layout_alignParentLeft="true"-->
+<!--                            android:layout_alignParentStart="true"-->
+<!--                            android:text="Pieces"-->
+<!--                            android:layout_weight="1.3"-->
+<!--                            android:layout_marginRight="5dp"-->
+<!--                            android:padding="8dp"-->
+<!--                            />-->
+
+<!--                        <TextView-->
+<!--                            android:layout_width="match_parent"-->
+<!--                            android:layout_height="wrap_content"-->
+<!--                            android:id="@+id/productsTextView"-->
+<!--                            android:layout_marginTop="3dp"-->
+<!--                            android:ems="10"-->
+<!--                            android:layout_alignParentLeft="true"-->
+<!--                            android:layout_alignParentStart="true"-->
+<!--                            android:text="Price in KSh."-->
+<!--                            android:layout_marginLeft="5dp"-->
+<!--                            android:layout_weight="1"-->
+<!--                            android:layout_marginRight="13dp"-->
+<!--                            />-->
+<!--                        <TextView-->
+<!--                            android:layout_width="match_parent"-->
+<!--                            android:layout_height="wrap_content"-->
+<!--                            android:id="@+id/productsTextView"-->
+<!--                            android:layout_marginTop="3dp"-->
+<!--                            android:ems="10"-->
+<!--                            android:layout_alignParentLeft="true"-->
+<!--                            android:layout_alignParentStart="true"-->
+<!--                            android:text="Value in KSh."-->
+<!--                            android:layout_marginLeft="5dp"-->
+<!--                            android:layout_weight="1"-->
+<!--                            android:layout_marginRight="13dp"-->
+<!--                            />-->
+
+
+
+
+<!--                    </LinearLayout>-->
+
+<!--                    <LinearLayout-->
+<!--                        android:layout_width="match_parent"-->
+<!--                        android:layout_height="wrap_content"-->
+<!--                        android:id="@+id/valueLayout"-->
+<!--                        android:layout_below="@+id/imageView">-->
+
+
+
+<!--                        <EditText-->
+<!--                            android:layout_width="match_parent"-->
+<!--                            android:layout_height="wrap_content"-->
+<!--                            android:layout_marginLeft="5dp"-->
+<!--                            android:inputType="text"-->
+<!--                            android:textColor="#000000"-->
+<!--                            android:id="@+id/dateTimeText"-->
+<!--                            android:nextFocusDown="@+id/emailText"-->
+<!--                            android:layout_weight="1.3"-->
+<!--                            android:layout_marginTop="3dp"-->
+<!--                            android:background="@drawable/input_background"-->
+<!--                            android:ems="10"-->
+<!--                            android:layout_alignParentLeft="true"-->
+<!--                            android:layout_alignParentStart="true"-->
+<!--                            android:hint="Date Time"-->
+<!--                            app:helperText="Pieces"-->
+<!--                            android:text="9"-->
+<!--                            android:padding="8dp"/>-->
+
+<!--                        <EditText-->
+<!--                            android:layout_width="match_parent"-->
+<!--                            android:layout_height="wrap_content"-->
+<!--                            android:layout_marginLeft="5dp"-->
+<!--                            android:inputType="text"-->
+<!--                            android:textColor="#000000"-->
+<!--                            android:id="@+id/dateTimeText"-->
+<!--                            android:nextFocusDown="@+id/emailText"-->
+<!--                            android:layout_weight="1"-->
+<!--                            android:layout_marginTop="3dp"-->
+<!--                            android:background="@drawable/input_background"-->
+<!--                            android:ems="10"-->
+<!--                            android:layout_alignParentLeft="true"-->
+<!--                            android:layout_alignParentStart="true"-->
+<!--                            android:hint="Date Time"-->
+<!--                            app:helperText="Product Price"-->
+<!--                            android:text="24,999"-->
+<!--                            android:padding="8dp"/>-->
+
+<!--                        <EditText-->
+<!--                            android:layout_width="match_parent"-->
+<!--                            android:layout_height="wrap_content"-->
+<!--                            android:layout_marginLeft="5dp"-->
+<!--                            android:inputType="textMultiLine"-->
+<!--                            android:textColor="#000000"-->
+<!--                            android:text="230,999"-->
+<!--                            android:id="@+id/dateTimeText"-->
+<!--                            android:nextFocusDown="@+id/emailText"-->
+<!--                            android:layout_weight="1"-->
+<!--                            android:layout_marginTop="3dp"-->
+<!--                            android:background="@drawable/input_background"-->
+<!--                            android:ems="10"-->
+<!--                            android:layout_alignParentLeft="true"-->
+<!--                            android:layout_alignParentStart="true"-->
+<!--                            android:hint="Date Time"-->
+<!--                            app:helperText="Amount"-->
+<!--                            android:padding="8dp"/>-->
+
+
+
+<!--                    </LinearLayout>-->
+
+<!--                    </LinearLayout>-->
+
+
+                    <!--<Button
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text= "OR CHOOSE FROM PREVIOUS ADDRESSES"
+                        android:id="@+id/savedAddressesButton"
+                        android:textColor="#ffffff"
+                        android:background="@color/colorPrimary"
+                        android:layout_marginTop="5dp"
+                        android:layout_below="@id/deliveryDetailsText"/>-->
+
+
+                </LinearLayout>
+
+
+            </LinearLayout>
+
+
+
+
+
+
+
+
+
+
+        </RelativeLayout>
+    </ScrollView>
+
+</RelativeLayout>

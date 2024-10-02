@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:id="@+id/lyt_parent"
+    android:layout_marginBottom="@dimen/spacing_middle"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!--                    <TextView-->
+    <!--                        android:layout_width="match_parent"-->
+    <!--                        android:layout_height="wrap_content"-->
+    <!--                        android:id="@+id/productsTextView"-->
+    <!--                        android:layout_marginTop="8dp"-->
+    <!--                        android:ems="10"-->
+    <!--                        android:layout_alignParentLeft="true"-->
+    <!--                        android:layout_alignParentStart="true"-->
+    <!--                        android:text="Product Name"-->
+    <!--                        android:layout_weight="2"-->
+    <!--                        android:layout_marginRight="5dp"-->
+    <!--                        android:padding="8dp"-->
+    <!--                        />-->
+
+    <!--                    <com.google.android.material.textfield.TextInputLayout-->
+    <!--                        android:id="@+id/textInputLayout"-->
+    <!--                        android:layout_width="match_parent"-->
+    <!--                        android:layout_height="wrap_content">-->
+
+
+
+    <!--                    </com.google.android.material.textfield.TextInputLayout>-->
+
+
+
+<!--    <LinearLayout-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:id="@+id/labelLayout"-->
+<!--        android:layout_below="@+id/imageView">-->
+
+
+
+<!--        <TextView-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:id="@+id/piecesTextView"-->
+<!--            android:layout_marginTop="3dp"-->
+<!--            android:ems="10"-->
+<!--            android:layout_alignParentLeft="true"-->
+<!--            android:layout_alignParentStart="true"-->
+<!--            android:text="Pieces"-->
+<!--            android:layout_weight="4"-->
+<!--            android:layout_marginRight="5dp"-->
+<!--            android:padding="8dp"-->
+<!--            />-->
+
+<!--        <TextView-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:id="@+id/productNameTextView"-->
+<!--            android:layout_marginTop="3dp"-->
+<!--            android:ems="10"-->
+<!--            android:layout_alignParentLeft="true"-->
+<!--            android:layout_alignParentStart="true"-->
+<!--            android:text="Product Name"-->
+<!--            android:layout_marginLeft="5dp"-->
+<!--            android:layout_weight="1"-->
+<!--            android:layout_marginRight="13dp"-->
+<!--            />-->
+
+
+
+<!--    </LinearLayout>-->
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/valueLayout"
+        android:layout_below="@+id/imageView">
+
+
+
+
+
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="5dp"
+            android:inputType="textMultiLine"
+            android:textColor="#000000"
+            android:text="230,999"
+            android:id="@+id/productNameText"
+            android:nextFocusDown="@+id/emailText"
+            android:layout_weight="1"
+            android:layout_marginTop="3dp"
+            android:background="@drawable/input_background"
+            android:ems="10"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:hint="Product Name"
+            app:helperText="Product Name"
+            android:padding="8dp"/>
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="5dp"
+            android:inputType="text"
+            android:textColor="#000000"
+            android:id="@+id/piecesText"
+            android:nextFocusDown="@+id/emailText"
+            android:layout_weight="4"
+            android:layout_marginTop="3dp"
+            android:background="@drawable/input_background"
+            android:ems="10"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:hint="Date Time"
+            app:helperText="Pieces"
+            android:text="9"
+            android:padding="8dp"/>
+
+
+
+    </LinearLayout>
+
+
+    <!--    <View-->
+    <!--        android:layout_width="match_parent"-->
+    <!--        android:layout_height="1dp"-->
+    <!--        android:background="@color/grey_10" />-->
+
+</LinearLayout>
+

@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    android:id="@+id/activity_deal"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+
+    tools:context="com.scg.sf.IndividualFeedbackActivity">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <include layout="@layout/toolbar" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/toolbar"
+        android:background="#fce9ec">
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingBottom="@dimen/activity_vertical_margin"
+            android:paddingLeft="@dimen/activity_horizontal_margin"
+            android:paddingRight="@dimen/activity_horizontal_margin"
+            android:paddingTop="@dimen/activity_vertical_margin"
+
+            >
+
+            <!--<TextView
+                android:layout_width="match_parent"
+                android:textSize="20sp"
+                android:textColor="#000000"
+                android:layout_height="wrap_content"
+                android:id="@+id/productNamePrice"/>
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/productImageView"
+                android:layout_below="@id/productNamePrice"/>-->
+
+            <!--<TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="20sp"
+                android:textColor="#000000"
+                android:id="@+id/DetailsLabel"
+                android:text="Sale Details"
+                android:layout_below="@id/productImageView"
+                />-->
+            <!--<Switch
+                android:layout_width="wrap_content"
+                android:layout_below="@id/DetailsLabel"
+                android:layout_height="wrap_content"
+                android:id="@+id/ShopDeliverySwitch"
+                android:textOff="Delivery"
+                android:textOn="Shop"
+                />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="I want it delivered"
+                android:layout_below="@id/ShopDeliverySwitch"
+                android:id="@+id/shopDelivery"
+                android:textSize="17sp"/>
+            -->
+            <LinearLayout
+                android:paddingTop="10dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:id="@+id/addressShopLayout">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:orientation="vertical"
+                    android:id="@+id/addressLayout"
+                    android:layout_height="wrap_content">
+                    <!--
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="20sp"
+                        android:textColor="#000000"
+                        android:id="@+id/AddressLabel"
+                        android:text="New Address"
+                        android:layout_below="@id/productImageView"
+                        />-->
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/NameLayout"
+                        >
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/outletName"
+                            android:layout_marginTop="8dp"
+                            android:ems="10"
+                            android:layout_alignParentLeft="true"
+                            android:layout_alignParentStart="true"
+                            android:text="Outlet Name"
+                            android:layout_weight="2"
+                            android:layout_marginRight="5dp"
+                            android:padding="8dp"
+                            />
+                        <EditText
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginLeft="5dp"
+                            android:inputType="textMultiLine"
+                            android:id="@+id/outletNameText"
+                            android:nextFocusDown="@+id/phoneText"
+                            android:layout_weight="1"
+                            android:textColor="#000000"
+                            android:layout_marginTop="8dp"
+                            android:layout_below="@+id/imageView"
+                            android:background="@drawable/input_background"
+                            android:ems="10"
+                            android:layout_alignParentLeft="true"
+                            android:layout_alignParentStart="true"
+                            android:hint="Outlet Name"
+                            android:padding="8dp"/>
+
+
+                    </LinearLayout>
+
+
+
+
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/valueLayout"
+                        android:layout_below="@+id/imageView">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/valueTextView"
+                            android:layout_marginTop="8dp"
+                            android:ems="10"
+                            android:layout_alignParentLeft="true"
+                            android:layout_alignParentStart="true"
+                            android:text="Date and Time"
+                            android:layout_weight="2"
+                            android:layout_marginRight="5dp"
+                            android:padding="8dp"
+                            />
+                        <EditText
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginLeft="5dp"
+                            android:inputType="text"
+                            android:textColor="#000000"
+                            android:id="@+id/dateTimeText"
+                            android:nextFocusDown="@+id/emailText"
+                            android:layout_weight="1"
+                            android:layout_marginTop="8dp"
+                            android:background="@drawable/input_background"
+                            android:ems="10"
+                            android:layout_alignParentLeft="true"
+                            android:layout_alignParentStart="true"
+                            android:hint="Date Time"
+                            android:padding="8dp"/>
+
+
+                    </LinearLayout>
+
+                    <!--<Button
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text= "OR CHOOSE FROM PREVIOUS ADDRESSES"
+                        android:id="@+id/savedAddressesButton"
+                        android:textColor="#ffffff"
+                        android:background="@color/colorPrimary"
+                        android:layout_marginTop="5dp"
+                        android:layout_below="@id/deliveryDetailsText"/>-->
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/feedbackLayout"
+                        android:layout_below="@+id/imageView">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/feedbackTextView"
+                            android:layout_marginTop="8dp"
+                            android:ems="10"
+                            android:layout_alignParentLeft="true"
+                            android:layout_alignParentStart="true"
+                            android:text="Feedback"
+                            android:layout_weight="2"
+                            android:layout_marginRight="5dp"
+                            android:padding="8dp"
+                            />
+
+
+
+                    </LinearLayout>
+
+                    <EditText
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="5dp"
+                        android:inputType="textMultiLine"
+                        android:id="@+id/feedbackText"
+                        android:textColor="#000000"
+                        android:nextFocusDown="@+id/submitDealButton"
+                        android:layout_weight="1"
+                        android:gravity="top"
+                        android:minLines="10"
+                        android:layout_marginTop="8dp"
+                        android:background="@drawable/input_background"
+                        android:ems="10"
+                        android:layout_alignParentLeft="true"
+                        android:layout_alignParentStart="true"
+                        android:hint="Products"
+                        android:padding="8dp"/>
+
+                </LinearLayout>
+
+
+            </LinearLayout>
+
+
+
+
+
+
+
+
+
+
+        </RelativeLayout>
+    </ScrollView>
+
+</RelativeLayout>

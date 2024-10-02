@@ -1,0 +1,61 @@
+<LinearLayout android:layout_width="match_parent"
+    android:layout_height="@dimen/spacing_xxlarge"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:id="@+id/lyt_parent"
+    android:paddingLeft="@dimen/spacing_large"
+    android:paddingRight="@dimen/spacing_large"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <!--        android:rotation="135"-->
+    <ImageView
+        android:layout_width="@dimen/spacing_mlarge"
+        android:layout_height="@dimen/spacing_mlarge"
+
+        app:tint="@color/blue_300"
+        app:srcCompat="@drawable/ic_add_box" />
+
+    <View
+        android:layout_width="@dimen/spacing_middle"
+        android:layout_height="0dp" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Telkomsel"
+            android:id="@+id/productName"
+            android:textAppearance="@style/Base.TextAppearance.AppCompat.Body2"
+            android:textColor="@color/grey_80"
+            app:fontFamily="sans-serif-medium" />
+
+<!--        <TextView-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:text=""-->
+<!--            android:id="@+id/currentSales"-->
+<!--            android:textAppearance="@style/Base.TextAppearance.AppCompat.Caption"-->
+<!--            android:textColor="@color/grey_40" />-->
+
+    </LinearLayout>
+
+    <View
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+<!--    "@style/Base.TextAppearance.AppCompat.Subhead"-->
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="- Rp 50.000"
+        android:id="@+id/productTarget"
+        android:textAppearance="@style/Base.TextAppearance.AppCompat.Body2"
+        android:textColor="@color/grey_80"
+        app:fontFamily="sans-serif-medium" />
+
+</LinearLayout>

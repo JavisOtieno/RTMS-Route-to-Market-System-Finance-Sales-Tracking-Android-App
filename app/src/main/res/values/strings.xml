@@ -1,0 +1,130 @@
+<resources>
+    <string name="app_name">SF</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="middle_lorem_ipsum">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam efficitur ipsum in placerat molestie.  Fusce quis mauris a enim sollicitudin</string>
+
+    <string name="section_format">Section : %1$d</string>
+    <string name="lorem_ipsum">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam efficitur ipsum in placerat molestie.  Fusce quis mauris a enim sollicitudin
+        \n\nLorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam efficitur ipsum in placerat molestie.  Fusce quis mauris a enim sollicitudin
+    </string>
+    <string name="privacy_policy">
+        <b>1. Introduction</b>\n
+        We are responsible for maintaining and protecting the Personal Information under our control. We have designated an individual or individuals who is/are responsible for compliance with our privacy policy.
+\n\n
+
+        <b>2. Identifying Purposes</b>\n
+We collect, use and disclose Personal Information to provide you with the product or service you have requested and to offer you additional products and services we believe you might be interested in. The purposes for which we collect Personal Information will be identified before or at the time we collect the information. In certain circumstances, the purposes for which information is collected may be clear, and consent may be implied, such as where your name, address and payment information is provided as part of the order process.
+\n\n
+
+
+<b>3. Consent</b>\n
+Knowledge and consent are required for the collection, use or disclosure of Personal Information except where required or permitted by law. Providing us with your Personal Information is always your choice. However, your decision not to provide certain information may limit our ability to provide you with our products or services. We will not require you to consent to the collection, use, or disclosure of information as a condition to the supply of a product or service, except as required to be able to supply the product or service.
+\n\n
+
+
+<b>4. Limiting Collection</b>\n
+The Personal Information collected will be limited to those details necessary for the purposes identified by us. With your consent, we may collect Personal Information from you in person, over the telephone or by corresponding with you via mail, facsimile, or the Internet.
+\n\n
+
+
+<b>5. Limiting Use, Disclosure and Retention</b>\n
+Personal Information may only be used or disclosed for the purpose for which it was collected unless you have otherwise consented, or when it is required or permitted by law. Personal Information will only be retained for the period of time required to fulfill the purpose for which we collected it or as may be required by law. [If applicable, include a description of any parties with whom you may share Personal Information.]
+\n\n
+
+        <b>6. Accuracy</b>\n
+Personal Information will be maintained in as accurate, complete and up-to-date form as is necessary to fulfill the purposes for which it is to be used.
+\n\n
+
+
+        <b>7. Safeguarding Customer Information</b>\n
+Personal Information will be protected by security safeguards that are appropriate to the sensitivity level of the information. We take all reasonable precautions to protect your Personal Information from any loss or unauthorized use, access or disclosure.
+\n\n
+
+
+<b>8. Openness</b>\n
+We will make information available to you about our policies and practices with respect to the management of your Personal Information.
+\n\n
+
+
+<b>9. Customer Access</b>\n
+Upon request, you will be informed of the existence, use and disclosure of your Personal Information, and will be given access to it. You may verify the accuracy and completeness of your Personal Information, and may request that it be amended, if appropriate. However, in certain circumstances permitted by law, we will not disclose certain information to you. For example, we may not disclose information relating to you if other individuals are referenced or if there are legal, security or commercial proprietary restrictions.</string>
+
+    <string name="terms_and_conditions">
+
+        <b>Effective Date: August 7, 2024</b>\n
+Welcome to the Route to Market System (RTMS) app (the App). By using our App, you agree to these Terms and Conditions. Please read them carefully.
+\n\n
+        <b>1. Acceptance of Terms</b>\n
+By accessing or using the RTMS app, you agree to comply with and be bound by these Terms and Conditions. If you do not agree with these terms, please do not use the App.
+\n\n
+        <b>2. Description of Service</b>\n
+The RTMS app is designed to track sales agents as they visit various retail outlets. The App provides functionalities including, but not limited to, tracking visits, reporting sales, and managing outlet data.
+\n\n
+        <b>3. User Registration</b>\n
+To use the App, you may need to create an account. You are responsible for maintaining the confidentiality of your account credentials and for all activities that occur under your account. You agree to notify us immediately of any unauthorized use of your account.
+\n\n
+        <b>4. Use of the App</b>\n
+You agree to use the App in compliance with all applicable laws and regulations. You may not use the App for any unlawful purpose or in any manner that could damage, disable, or impair the App.
+\n\n
+        <b>5. Data Collection and Privacy</b>\n
+We collect and use your data as described in our Privacy Policy. By using the App, you consent to the collection and use of your data as outlined in our Privacy Policy.
+\n\n
+        <b>6. Intellectual Property</b>\n
+All content and materials on the App, including but not limited to text, graphics, logos, and software, are the property of RTMS or its licensors and are protected by intellectual property laws. You may not use, reproduce, or distribute any content from the App without our prior written consent.
+\n\n
+        <b>7. Limitation of Liability</b>\n
+The App is provided as is and is available without warranties of any kind, either express or implied. We do not guarantee that the App will be error-free or uninterrupted. In no event shall Stan Consulting Group be liable for any indirect, incidental, special, or consequential damages arising out of or in connection with your use of the App.
+\n\n
+        <b>8. Termination</b>\n
+We may terminate or suspend your access to the App at any time, with or without cause, and with or without notice. Upon termination, your right to use the App will immediately cease.
+\n\n
+        <b>9. Changes to Terms</b>\n
+We may update these Terms and Conditions from time to time. We will notify you of any changes by posting the new Terms and Conditions on the App. Your continued use of the App after such changes constitutes your acceptance of the new terms.
+\n\n
+        <b>10. Governing Law</b>\n
+These Terms and Conditions are governed by and construed in accordance with the laws of Kenya. Any disputes arising out of or related to these terms shall be resolved in the courts of Kenya.
+\n\n
+
+</string>
+    <string name="faqs">
+
+<b>1. Does the app monitor my location whenever I’m on the field?</b>\n
+Yes, the app tracks you when you’re clocking in, checking in, checking out, and clocking out to record where these actions are done. Aside from that, the app does not seek any other location recorded.
+\n\n
+<b>2. Does the app need an internet connection to work?</b>\n
+Yes, the app requires an internet connection to work. This can be Wi-Fi or a mobile data connection.
+\n\n
+        <b>3. How is my data protected?</b>\n
+We are committed to protecting your data. Our Privacy Policy outlines how we collect, use, and safeguard your information. We use industry-standard security measures to protect your data from unauthorized access.
+\n\n
+        <b>4. How can I track my sales performance?</b>\n
+The RTMS app includes features for tracking sales performance. You can view reports and analytics related to your sales activities through the app’s dashboard.
+\n\n
+        <b>5. Can I access the app from multiple devices?</b>\n
+Yes, you can access the RTMS app from multiple devices. Ensure that you log in with the same account credentials on each device.
+\n\n
+        <b>6. What happens if I uninstall the app?</b>\n
+If you uninstall the app, you will lose access to it until you reinstall it and log in again. Your data will be preserved as long as you have not deleted your account.
+\n\n
+        <b>7. What are the system requirements for the RTMS app?</b>\n
+The RTMS app is compatible with most modern smartphones. Please ensure that your device meets the minimum operating system requirements specified in the app store description.
+\n\n
+        <b>8. How can I provide feedback or suggestions?</b>\n
+We welcome your feedback and suggestions. You can send your comments to info@scgafrica.com or use the feedback option available in the app.
+\n\n
+    </string>
+
+    <string name="medium_lorem_ipsum">Quisque imperdiet nunc at massa dictum volutpat. Etiam id orci ipsum. Integer id ex dignissim</string>
+
+    <string name="long_lorem_ipsum">
+        Duis tellus metus, elementum a lectus id, aliquet interdum mauris. Nam bibendum efficitur sollicitudin. Proin eleifend libero velit, nec fringilla dolor finibus quis. nMorbi eu libero pellentesque, rutrum metus quis, blandit est. Fusce bibendum accumsan nisi vulputate feugiat. In fermentum laoreet euismod. Praesent sem nisl, facilisis eget odio at, rhoncus scelerisque ipsum. Nulla orci dui, dignissim a risus ut, lobortis porttitor velit.
+        \n\nNulla id lectus metus. Maecenas a lorem in odio auctor facilisis non vitae nunc. Sed malesuada volutpat massa. Praesent sit amet lacinia augue, mollis tempor dolor.
+    </string>
+    <!-- Strings used for fragments for navigation -->
+    <string name="first_fragment_label">First Fragment</string>
+    <string name="second_fragment_label">Second Fragment</string>
+    <string name="next">Next</string>
+    <string name="previous">Previous</string>
+</resources>

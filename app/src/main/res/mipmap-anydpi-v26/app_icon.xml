@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@color/whitexmlicon"/> <!-- Use a color or drawable -->
+        <!-- <color name="blue_grey_50">#ECEFF1</color> -->
+    <foreground android:drawable="@drawable/app_icon"/> <!-- PNG or vector image -->
+</adaptive-icon>

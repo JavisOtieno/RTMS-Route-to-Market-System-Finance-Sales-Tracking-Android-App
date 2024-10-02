@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".TakePhotoActivity"
+        >
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/app_bar_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fitsSystemWindows="true"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        >
+
+        <include layout="@layout/toolbar" />
+
+    </com.google.android.material.appbar.AppBarLayout>
+        <!--tools:context=".CameraActivity"-->
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginLeft="4dp"
+            android:layout_marginRight="4dp"
+            android:background="@drawable/btn_rounded_primary"
+            android:text="Capture Outlet Photo"
+            android:layout_below="@id/app_bar_layout"
+            android:id="@+id/cpic"
+            android:textColor="#ffffff"
+            />
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginLeft="4dp"
+        android:layout_marginRight="4dp"
+        android:background="@drawable/btn_rounded_blue"
+        android:text="Skip"
+        android:layout_below="@id/cpic"
+        android:id="@+id/skipPhotoButton"
+        android:textColor="#ffffff"
+        />
+        <!--<Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="UP"
+            android:layout_below="@id/cpic"
+            android:id="@+id/up"
+            android:textColor="#ffffff"
+            android:background="@color/colorPrimaryDark"
+            android:layout_marginTop="20dp"
+            />-->
+
+        <ImageView android:id="@+id/Imageprev"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/cpic"
+            android:layout_marginTop="0dp"
+            android:paddingTop="20dp"
+            android:adjustViewBounds="true"
+            android:scaleType="fitXY"
+            android:background="#ffffff"/>
+
+
+    </RelativeLayout>
