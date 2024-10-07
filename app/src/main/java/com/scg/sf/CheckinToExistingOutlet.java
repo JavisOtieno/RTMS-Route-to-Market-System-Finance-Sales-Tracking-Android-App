@@ -298,7 +298,8 @@ public class CheckinToExistingOutlet extends AppCompatActivity {
                     //new JsonTask().execute(Constants.BASE_URL + "api/logcheckin","POST",lat1+"",lon1+"",lat2+"",lon2+"");
 
                     // toastIconError("Distance: "+distanceEstimate);
-                    if (distanceEstimate < 0.04) {
+//                    if (distanceEstimate < 0.04) {
+
                         new JsonTask().execute(Constants.BASE_URL + "api/checkin", "POST",
                                 mUserId, unixTime + "", lat2 + "", lon2 + "", outletId,
                                 routePlanItemId, clockinId);
@@ -306,11 +307,12 @@ public class CheckinToExistingOutlet extends AppCompatActivity {
                         mEditor.putString("outletLat", lat1).commit();
                         mEditor.putString("outletLong", lon1).commit();
                         //toastIconError("Checking In");
-                    } else {
-                        Toasts.toastIconError(CheckinToExistingOutlet.this,
-                                "Please move closer to the outlet");
-                        isTaskRunning = false;
-                    }
+
+//                    } else {
+//                        Toasts.toastIconError(CheckinToExistingOutlet.this,
+//                                "Please move closer to the outlet");
+//                        isTaskRunning = false;
+//                    }
 
                 } else {
                     Toasts.toastIconError(CheckinToExistingOutlet.this,

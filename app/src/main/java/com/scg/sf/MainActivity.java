@@ -108,6 +108,7 @@ public class MainActivity extends AppCompatActivity {
     private LinearLayout lyt_no_connection;
 
     private LinearLayout seeMoreProductRow;
+    private LinearLayout seeMoreTargetsRow;
 
     private TextView outletsNumber;
     private TextView posAuditsNumber;
@@ -281,6 +282,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         seeMoreProductRow = (LinearLayout) findViewById(R.id.seeMoreSection);
+        seeMoreTargetsRow = (LinearLayout) findViewById(R.id.seeMoreTargetsSection);
 
         outletsNumber = (TextView) findViewById(R.id.outletsNumber);
         salesNumber = (TextView) findViewById(R.id.salesNumber);
@@ -330,6 +332,15 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+
+            seeMoreTargetsRow.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent(MainActivity.this, ProductsListActivity.class);
+                    //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
+                }
+            });
 
 
 
@@ -942,11 +953,18 @@ public class MainActivity extends AppCompatActivity {
                                 obj.targetType = product.getString("targettype");
 
                                 if(obj.targetType.equals("amount")){
-                                    if(product.get("total_sales") instanceof String) {
+                                    System.out.println("Total Sales: "+product.get("total_sales"));
+                                    if(product.get("total_sales") instanceof Integer) {
+                                        System.out.println( "Total Sales: "+product.get("total_sales") );
+                                        Integer pendingTarget = Integer.valueOf(product.getString("target"))
+                                                - Integer.valueOf(product.getString("total_sales"));
+                                        if(pendingTarget<0){
+                                            pendingTarget = 0;
+                                        }
                                         obj.target = "KSh. " + NumberFormat.getNumberInstance(Locale.US).format(
-                                                Integer.valueOf(product.getString("target"))
-                                                        - Integer.valueOf(product.getString("total_sales")));
+                                                pendingTarget);
                                     }else{
+                                        System.out.println( "Total Sales: "+"does not exist" );
                                         obj.target = "KSh. " + NumberFormat.getNumberInstance(Locale.US).format(
                                                 Integer.valueOf(product.getString("target")));
                                     }
@@ -959,10 +977,17 @@ public class MainActivity extends AppCompatActivity {
 //                                    }
 
                                 }else{
-                                    if(product.getString("total_quantity") instanceof String) {
+
+                                    if(product.get("total_quantity") instanceof Integer) {
+                                        System.out.println( "Total Sales: "+product.get("total_sales") );
+                                        Integer pendingTarget = Integer.valueOf(product.getString("target")) -
+                                                Integer.valueOf(product.getString("total_quantity"));
+                                        if(pendingTarget<0){
+                                            pendingTarget = 0;
+                                        }
                                         obj.target = NumberFormat.getNumberInstance(Locale.US).format(
-                                                Integer.valueOf(product.getString("target")) -
-                                                        Integer.valueOf(product.getString("total_quantity")));
+                                                pendingTarget);
+
                                     }else{
                                         obj.target = NumberFormat.getNumberInstance(Locale.US).format(
                                             Integer.valueOf(product.getString("target")));
@@ -990,10 +1015,12 @@ public class MainActivity extends AppCompatActivity {
                                 recyclerViewTargets.setVisibility(View.GONE);
                                 noTargetsRow.setVisibility(View.VISIBLE);
                                 System.out.println("Items: is empty");
+                                seeMoreTargetsRow.setVisibility(View.GONE);
                             }
                             else {
                                 recyclerViewTargets.setVisibility(View.VISIBLE);
                                 noTargetsRow.setVisibility(View.GONE);
+                                seeMoreTargetsRow.setVisibility(View.VISIBLE);
                                 System.out.println("Items: is not empty");
                             }
 

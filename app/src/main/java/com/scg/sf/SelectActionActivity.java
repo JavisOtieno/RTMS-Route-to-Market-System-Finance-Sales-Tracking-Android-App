@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -37,6 +38,7 @@ import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.scg.sf.adapters.AdapterListActivities;
 import com.scg.sf.util.Toasts;
 
@@ -86,6 +88,7 @@ public class SelectActionActivity extends AppCompatActivity {
     private AdapterListActivities mAdapter;
     private Button viewSalesButton;
     private Button viewActivitiesButton;
+    private Button viewOnGoogleMapsButton;
 
     private LocationRequest locationRequest;
     private LocationCallback locationCallback;
@@ -93,7 +96,7 @@ public class SelectActionActivity extends AppCompatActivity {
     private String lat1;
     private String lon1;
     private String lastUpdatedActivity;
-
+    private Button setAsCurrentLocation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -116,6 +119,8 @@ public class SelectActionActivity extends AppCompatActivity {
         addFeedbackButton = (Button) findViewById(R.id.feedbackButton);
         viewSalesButton = (Button) findViewById(R.id.viewSalesButton);
         viewActivitiesButton = (Button) findViewById(R.id.viewActivitiesButton);
+        setAsCurrentLocation = (Button) findViewById(R.id.setAsCurrentLocationButton);
+        viewOnGoogleMapsButton = (Button) findViewById(R.id.viewOnGoogleMapsButton);
 
         Intent i = getIntent();
         visitId=i.getStringExtra("visitId");
@@ -183,7 +188,7 @@ public class SelectActionActivity extends AppCompatActivity {
         makeSaleButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(SelectActionActivity.this, UNUSEDSelectProductActivity.class);
+                Intent intent = new Intent(SelectActionActivity.this, ProductsCheckListActivity.class);
                 //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
                 intent.putExtra("visitId", visitId);
                 intent.putExtra("outletId", outletId);
@@ -212,6 +217,47 @@ public class SelectActionActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(SelectActionActivity.this, AddCompetitiveAnalysisActivity.class);
+                //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                intent.putExtra("visitId", visitId);
+                intent.putExtra("outletName", outletName);
+                intent.putExtra("outletId", outletId);
+                startActivity(intent);
+            }
+        });
+
+        viewOnGoogleMapsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                String strUri = "http://maps.google.com/maps?q=loc:" + lat1 + "," + lon1 + " (" + outletName + ")";
+                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(strUri));
+
+// Check if there's an app that can handle the intent
+                if (intent.resolveActivity(getPackageManager()) != null) {
+                    try {
+                        startActivity(intent);
+                    } catch (ActivityNotFoundException e) {
+                        // Handle the case where no app can handle the intent
+                        Toasts.toastIconError(SelectActionActivity.this,"No application available to open maps");
+                        FirebaseCrashlytics.getInstance().recordException(e);
+
+                    }
+                } else {
+                    // Handle the case where no app can handle the intent
+                    Toasts.toastIconError(SelectActionActivity.this,"No application available to open maps");
+                    FirebaseCrashlytics.getInstance().recordException(new Exception("IndividualOutletActivity: Attempt to open google maps failed: " +
+                            "ThisLine: intent.resolveActivity(getPackageManager()) != null"));
+
+                }
+
+            }
+        });
+
+
+        setAsCurrentLocation.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(SelectActionActivity.this, SetLocationActivity.class);
                 //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
                 intent.putExtra("visitId", visitId);
                 intent.putExtra("outletName", outletName);

@@ -485,6 +485,28 @@
                             <View
                                 android:layout_width="0dp"
                                 android:layout_height="@dimen/spacing_middle" />
+                            <View
+                                android:layout_width="match_parent"
+                                android:layout_height="1dp"
+                                android:background="@color/grey_10" />
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="?attr/actionBarSize"
+                                android:background="?attr/selectableItemBackground"
+                                android:clickable="true"
+                                android:id="@+id/seeMoreTargetsSection"
+                                android:gravity="center"
+                                android:orientation="horizontal">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="View Targets"
+                                    android:textAppearance="@style/Base.TextAppearance.AppCompat.Subhead"
+                                    android:textColor="@color/colorPrimary" />
+
+                            </LinearLayout>
 
                         </LinearLayout>
 
@@ -1545,7 +1567,7 @@
         <!--Drawer Corner Set drawerLayoutCornerSize-->
         <com.google.android.material.navigation.NavigationView
             android:id="@+id/nav_view"
-            android:layout_width="225dp"
+            android:layout_width="240dp"
             android:layout_height="match_parent"
             android:layout_gravity="start"
             android:fitsSystemWindows="false"

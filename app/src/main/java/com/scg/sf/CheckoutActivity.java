@@ -257,7 +257,7 @@ public class CheckoutActivity extends AppCompatActivity {
                     //new JsonTask().execute(Constants.BASE_URL + "api/logcheckin","POST",lat1+"",lon1+"",lat2+"",lon2+"");
 
                     // toastIconError("Distance: "+distanceEstimate);
-                    if (distanceEstimate < 0.04) {
+//                    if (distanceEstimate < 0.04) {
                         // toastIconError(unixTime+" - "+lat2+" - "+lon2);
                         new JsonTask().execute(Constants.BASE_URL + "api/checkout/" +
                                 visitId, "PUT", unixTime + "", lat2 + "", lon2 + "");
@@ -265,11 +265,11 @@ public class CheckoutActivity extends AppCompatActivity {
                         // new JsonTask().execute(Constants.BASE_URL + "api/checkout", "POST", mUserId, unixTime + "", lat2 + "", lon2 + "", outletId);
 
                         //toastIconError("Checking In");
-                    } else {
-                        Toasts.toastIconError(CheckoutActivity.this,
-                                "Please move closer to the outlet");
-                        isTaskRunning = false;
-                    }
+//                    } else {
+//                        Toasts.toastIconError(CheckoutActivity.this,
+//                                "Please move closer to the outlet");
+//                        isTaskRunning = false;
+//                    }
 
                 } else {
                     Toasts.toastIconError(CheckoutActivity.this,

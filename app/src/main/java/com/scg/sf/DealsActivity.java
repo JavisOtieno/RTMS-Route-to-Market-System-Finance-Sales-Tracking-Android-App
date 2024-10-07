@@ -57,9 +57,13 @@ public class DealsActivity extends AppCompatActivity {
 
     private void setupViewPager(ViewPager viewPager) {
         SectionsPagerAdapter adapter = new SectionsPagerAdapter(getSupportFragmentManager());
-        adapter.addFragment(PlaceholderFragment.newInstance(1), "PENDING");
-        adapter.addFragment(PlaceholderFragment.newInstance(2), "COMPLETE");
-        adapter.addFragment(PlaceholderFragment.newInstance(3), "ALL");
+//        adapter.addFragment(PlaceholderFragment.newInstance(1), "PENDING");
+//        adapter.addFragment(PlaceholderFragment.newInstance(2), "PENDING");
+        adapter.addFragment(DealsFragment.newInstance("api/pendingsales"), "PENDING");
+        adapter.addFragment(DealsFragment.newInstance("api/completesales"), "COMPLETE");
+
+//        adapter.addFragment(PlaceholderFragment.newInstance(3), "ALL");
+        adapter.addFragment(DealsFragment.newInstance("api/sales"), "ALL");
         viewPager.setAdapter(adapter);
     }
 

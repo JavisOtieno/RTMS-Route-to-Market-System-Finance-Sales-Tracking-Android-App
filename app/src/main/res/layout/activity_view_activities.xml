@@ -16,24 +16,13 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
-    <androidx.appcompat.widget.AppCompatButton
-        style="@style/Widget.AppCompat.Button.Borderless"
-        android:layout_width="match_parent"
-        android:id="@+id/viewPOSAuditsButton"
-        android:layout_height="50dp"
-        android:layout_marginTop="10dp"
-        android:layout_marginLeft="4dp"
-        android:layout_marginRight="4dp"
-        android:background="@drawable/btn_rounded_primary"
-        android:text="VIEW POS AUDITS"
-        android:textAllCaps="false"
-        android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
-        android:textColor="@android:color/white" />
+
     <androidx.appcompat.widget.AppCompatButton
         style="@style/Widget.AppCompat.Button.Borderless"
         android:layout_width="match_parent"
         android:id="@+id/viewCompetitiveAnalysisButton"
         android:layout_height="50dp"
+        android:layout_marginTop="10dp"
         android:layout_marginLeft="4dp"
         android:layout_marginRight="4dp"
         android:background="@drawable/btn_rounded_primary"

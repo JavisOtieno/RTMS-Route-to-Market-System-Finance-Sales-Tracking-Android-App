@@ -256,15 +256,15 @@
                         android:layout_below="@id/durationLayout"/>
 
 
-<!--                    <Button-->
-<!--                        android:layout_width="match_parent"-->
-<!--                        android:layout_height="wrap_content"-->
-<!--                        android:text= "View POS Audits"-->
-<!--                        android:id="@+id/viewPOSAuditsButton"-->
-<!--                        android:textColor="#ffffff"-->
-<!--                        android:background="@drawable/btn_rounded_primary"-->
-<!--                        android:layout_marginTop="5dp"-->
-<!--                        android:layout_below="@id/durationLayout"/>-->
+                    <Button
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text= "View POS Audits"
+                        android:id="@+id/viewPOSAuditsButton"
+                        android:textColor="#ffffff"
+                        android:background="@drawable/btn_rounded_primary"
+                        android:layout_marginTop="5dp"
+                        android:layout_below="@id/durationLayout"/>
 
                     <Button
                         android:layout_width="match_parent"

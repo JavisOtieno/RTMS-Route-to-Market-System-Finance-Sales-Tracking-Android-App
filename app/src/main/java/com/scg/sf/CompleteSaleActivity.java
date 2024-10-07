@@ -9,10 +9,12 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.scg.sf.util.Toasts;
@@ -45,11 +47,16 @@ public class CompleteSaleActivity extends AppCompatActivity {
 //        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_complete_sale);
 
+        initToolbar();
+
         mPrefs = getSharedPreferences("label", 0);
         mAuthToken = mPrefs.getString("authToken", "");
 
         Intent intent = getIntent();
-        saleId=intent.getStringExtra("saleId");
+//        saleId=intent.getStringExtra("saleId");
+        saleId = intent.getStringExtra("saleId");
+
+        completeSaleButton = (Button) findViewById(R.id.completeSaleButton);
 
 //        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
 //            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -67,6 +74,26 @@ public class CompleteSaleActivity extends AppCompatActivity {
             }
         });
     }
+
+    private void initToolbar() {
+
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setTitle("Complete Deal");
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        //Tools.setSystemBarColor(this);
+    }
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                onBackPressed();
+                return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
     private class JsonTask extends AsyncTask<String, String, String> {
 
         protected void onPreExecute() {

@@ -11,7 +11,7 @@ import android.widget.Button;
 
 public class ViewActivitiesActivity extends AppCompatActivity {
 
-    private Button viewPOSAuditsButton;
+//    private Button viewPOSAuditsButton;
     private Button viewCompetitiveAnalysisButton;
     private Button viewFeedbackButton;
     private String visitId;
@@ -30,7 +30,7 @@ public class ViewActivitiesActivity extends AppCompatActivity {
         outletId = intent.getStringExtra("outletId");
 
         viewFeedbackButton = (Button) findViewById(R.id.viewFeedbackButton);
-        viewPOSAuditsButton = (Button) findViewById(R.id.viewPOSAuditsButton);
+//        viewPOSAuditsButton = (Button) findViewById(R.id.viewPOSAuditsButton);
         viewCompetitiveAnalysisButton = (Button) findViewById(R.id.viewCompetitiveAnalysisButton);
 
         viewFeedbackButton.setOnClickListener(new View.OnClickListener() {
@@ -55,16 +55,16 @@ public class ViewActivitiesActivity extends AppCompatActivity {
             }
 
         });
-        viewPOSAuditsButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(ViewActivitiesActivity.this,VisitPOSAuditsActivity.class);
-                intent.putExtra("visitId",visitId);
-                intent.putExtra("outletName",outletName);
-                intent.putExtra("outletId",outletId);
-                startActivity(intent);
-            }
-        });
+//        viewPOSAuditsButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                Intent intent = new Intent(ViewActivitiesActivity.this,VisitPOSAuditsActivity.class);
+//                intent.putExtra("visitId",visitId);
+//                intent.putExtra("outletName",outletName);
+//                intent.putExtra("outletId",outletId);
+//                startActivity(intent);
+//            }
+//        });
 
 
     }

@@ -5,9 +5,11 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 
@@ -33,6 +35,8 @@ public class IndividualSaleActivity extends AppCompatActivity {
     private AdapterListSaleItems mAdapter;
     private LinearLayout mPiecesLayout;
     private LinearLayout mValueLayout;
+    private LinearLayout completeSaleButtonLayout;
+    private Button completeSaleButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,6 +55,8 @@ public class IndividualSaleActivity extends AppCompatActivity {
 
         mPiecesLayout = (LinearLayout) findViewById(R.id.piecesLayout);
         mValueLayout = (LinearLayout) findViewById(R.id.valueLayout);
+        completeSaleButtonLayout = (LinearLayout) findViewById(R.id.completeButtonLayout);
+        completeSaleButton = (Button)findViewById(R.id.completeSaleButton);
 
         mDateTimeText.setText(mSale.time);
 
@@ -65,6 +71,18 @@ public class IndividualSaleActivity extends AppCompatActivity {
         mValueText.setEnabled(false);
        // mProductsText.setEnabled(false);
         mOutletNameText.setEnabled(false);
+
+        if(mSale.status.equals("Pending")){
+            completeSaleButtonLayout.setVisibility(View.VISIBLE);
+            completeSaleButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Intent intent = new Intent(IndividualSaleActivity.this, CompleteSaleActivity.class);
+                    intent.putExtra("saleId", mSale.id);
+                    startActivity(intent);
+                }
+            });
+        }
 
         recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(IndividualSaleActivity.this));

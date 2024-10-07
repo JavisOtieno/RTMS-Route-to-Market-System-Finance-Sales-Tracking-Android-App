@@ -78,7 +78,7 @@ public class AdapterListSales extends RecyclerView.Adapter<RecyclerView.ViewHold
 
             Sale p = items.get(position);
             view.name.setText(p.outletName);
-            view.date.setText(p.name);
+            view.date.setText(p.status);
             view.price.setText(p.time);
             view.outletNameTextView.setText(p.price);
 

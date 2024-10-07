@@ -79,6 +79,21 @@ public class AdapterDashboardSalesTarget extends RecyclerView.Adapter<RecyclerVi
 //                view.productCurrentValue.setText(p.currentSalesQuantity);
 //            }
 
+//            Integer pendingTargets=0;
+//            if(p.targetType.equals("amount")){
+//                pendingTargets = Integer.valueOf(p.target)-Integer.valueOf(p.currentSalesTotal);
+//                if(pendingTargets<0){
+//                    pendingTargets = 0;
+//                }
+//
+//            }else{
+//                pendingTargets = Integer.valueOf(p.target)-Integer.valueOf(p.currentSalesQuantity);Z
+//                if(pendingTargets<0){
+//                    pendingTargets = 0;
+//                }
+//            }
+//            view.productTarget.setText(pendingTargets+"");
+
             System.out.println("Nametarget"+p.name+" "+p.target);
 
             //Tools.displayImageRound(ctx, view.image, p.image);

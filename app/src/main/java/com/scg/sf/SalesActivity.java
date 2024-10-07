@@ -298,6 +298,7 @@ public class SalesActivity extends AppCompatActivity {
                             String formatted = dateTime.format(DateTimeFormatter.ofPattern("dd-MMM-yyyy \nHH:mm "));
                             obj.time = formatted;
 
+
                             String status = sales.getJSONObject(i).getString("status");
                             obj.status=status.substring(0, 1).toUpperCase() + status.substring(1);
 
@@ -323,6 +324,7 @@ public class SalesActivity extends AppCompatActivity {
                             obj.sellerName = sellerName;
                             obj.outletName = outletName;
                             obj.allproductsname = allProductsName;
+                            obj.id = sales.getJSONObject(i).getString("id");
                             //Integer price = Integer.valueOf(sales.getJSONObject(i).getString("price"));
                             Integer value = Integer.valueOf(sales.getJSONObject(i).getString("value"));
                             obj.price = "KSh. " + NumberFormat.getNumberInstance(Locale.US).format(value);

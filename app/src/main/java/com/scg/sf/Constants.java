@@ -21,7 +21,7 @@ public class Constants {
 
 //    public static final String BASE_URL = "http://rtmstest.javytech.com/";
 //    public static final String STORAGE_URL = "http://rtmstest.javytech.com/storage/";
-
+//
 //    public static final String BASE_URL = "https://rtms.scgafrica.com/";
 //    public static final String STORAGE_URL = "https://rtms.scgafrica.com/storage/";
 

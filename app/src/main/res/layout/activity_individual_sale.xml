@@ -286,17 +286,17 @@
                     </LinearLayout>
 
 
-                        <Button
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text= "Complete Sale"
-                            android:visibility="gone"
-                            android:layout_weight="1"
-                            android:id="@+id/completeSaleButton"
-                            android:textColor="#ffffff"
-                            android:background="@drawable/btn_rounded_primary"
-                            android:layout_marginTop="5dp"
-                            android:layout_below="@id/longLayout"/>
+<!--                        <Button-->
+<!--                            android:layout_width="match_parent"-->
+<!--                            android:layout_height="wrap_content"-->
+<!--                            android:text= "Complete Sale"-->
+<!--                            android:visibility="gone"-->
+<!--                            android:layout_weight="1"-->
+<!--                            android:id="@+id/completeSaleButton"-->
+<!--                            android:textColor="#ffffff"-->
+<!--                            android:background="@drawable/btn_rounded_primary"-->
+<!--                            android:layout_marginTop="5dp"-->
+<!--                            android:layout_below="@id/longLayout"/>-->
 
 
 
@@ -499,6 +499,41 @@
                                             android:layout_height="match_parent"
                                             android:scrollbars="vertical"
                                             android:scrollingCache="true" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/completeButtonLayout"
+                        android:visibility="gone"
+                        android:layout_below="@+id/imageView">
+
+                        <!--                        <TextView-->
+                        <!--                            android:layout_width="match_parent"-->
+                        <!--                            android:layout_height="wrap_content"-->
+                        <!--                            android:id="@+id/contactButtonTextView"-->
+                        <!--                            android:layout_marginTop="8dp"-->
+                        <!--                            android:ems="10"-->
+                        <!--                            android:layout_alignParentLeft="true"-->
+                        <!--                            android:layout_alignParentStart="true"-->
+                        <!--                            android:text="Contact"-->
+                        <!--                            android:layout_weight="2"-->
+                        <!--                            android:layout_marginRight="5dp"-->
+                        <!--                            android:padding="8dp"-->
+                        <!--                            />-->
+                        <Button
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text= "Complete Deal"
+                            android:layout_weight="1"
+                            android:id="@+id/completeSaleButton"
+                            android:textColor="#ffffff"
+                            android:background="@drawable/btn_rounded_primary"
+                            android:layout_marginTop="5dp"
+                            />
+
+
+
+                    </LinearLayout>
 
 <!--                                        <LinearLayout-->
 <!--                                            android:layout_width="match_parent"-->

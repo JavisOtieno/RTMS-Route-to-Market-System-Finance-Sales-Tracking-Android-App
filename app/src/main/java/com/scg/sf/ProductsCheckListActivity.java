@@ -235,6 +235,7 @@ public class ProductsCheckListActivity extends AppCompatActivity {
                             obj.stock = products.getJSONObject(i).getInt("stock");
                             obj.productType = products.getJSONObject(i).getString("producttype");
                             obj.targetType = products.getJSONObject(i).getString("targettype");
+                            System.out.println("targettype: "+obj.targetType);
                             obj.target = products.getJSONObject(i).getString("target");
                             //obj.imageDrw = drw_arr.getDrawable(obj.image);
                             items.add(obj);

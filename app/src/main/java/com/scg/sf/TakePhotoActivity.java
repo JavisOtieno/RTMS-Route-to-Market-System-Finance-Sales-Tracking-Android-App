@@ -325,6 +325,7 @@ public class TakePhotoActivity extends AppCompatActivity {
                 //connection.setRequestProperty("Content-Type", "image/jpeg");
                 connection.setRequestProperty("Accept","application/json");
                 connection.setRequestProperty("Authorization", "Bearer " + mAuthToken);
+                connection.setRequestProperty("Content-Type", "application/json");
 
 //                String urlSt = "http://phoenixcoding.tk/SavePicture.php";
 //                URL url = new URL(urlSt);
@@ -361,9 +362,14 @@ public class TakePhotoActivity extends AppCompatActivity {
                         new OutputStreamWriter(os, "UTF-8"));
                 //writer.write(query);
 
-                writer.write("folder="+folder+"&outletPOSAuditId="
-                        + outletPOSAuditId+"&ImageName="+imageName+"" +
-                        "&base64=" + URLEncoder.encode(base64, "UTF-8"));
+                JSONObject jsonParam = new JSONObject();
+                jsonParam.put("folder", folder);
+                jsonParam.put("outletPOSAuditId", outletPOSAuditId);
+                jsonParam.put("ImageName", imageName);
+                jsonParam.put("base64", URLEncoder.encode(base64, "UTF-8"));
+
+
+                writer.write(jsonParam.toString());
 
                 System.out.println("base64:"+base64);
                 System.out.println("base64encoded:"+URLEncoder.encode(base64));
@@ -453,6 +459,8 @@ public class TakePhotoActivity extends AppCompatActivity {
                     pd.dismiss();
                 }
 
+            } catch (JSONException e) {
+                throw new RuntimeException(e);
             } finally {
                 if (connection != null) {
                     connection.disconnect();

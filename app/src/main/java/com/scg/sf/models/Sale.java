@@ -18,6 +18,7 @@ public class Sale implements Serializable {
     public String pieces;
     public ArrayList<SaleItem> saleItems;
     public String status;
+    public String id;
 
     public boolean section = false;
 
