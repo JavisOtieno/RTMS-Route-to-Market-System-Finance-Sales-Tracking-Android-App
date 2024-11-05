@@ -41,6 +41,7 @@ import com.google.android.gms.location.LocationServices;
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.scg.sf.adapters.AdapterListOutlets;
 import com.scg.sf.models.Outlet;
+import com.scg.sf.util.EncryptedPrefsUtil;
 import com.scg.sf.util.Toasts;
 
 import org.json.JSONArray;
@@ -75,7 +76,7 @@ public class SelectExistingCustomerActivity extends AppCompatActivity {
     private AdapterListOutlets mAdapter;
     private View parent_view;
 
-    private SharedPreferences mPrefs;
+//    private SharedPreferences mPrefs;
     private String mUserId;
     private String mAuthToken;
     private int REQUEST_LOCATION = 99;
@@ -114,9 +115,11 @@ public class SelectExistingCustomerActivity extends AppCompatActivity {
         setContentView(R.layout.activity_select_existing_outlet);
         initToolbar();
 
-        mPrefs = getSharedPreferences("label", 0);
-        mUserId = mPrefs.getString("userId", "0");
-        mAuthToken = mPrefs.getString("authToken", "");
+//        mPrefs = getSharedPreferences("label", 0);
+//        mUserId = mPrefs.getString("userId", "0");
+//        mAuthToken = mPrefs.getString("authToken", "");
+        mUserId = EncryptedPrefsUtil.getString("userId","0");
+        mAuthToken = EncryptedPrefsUtil.getString("authToken", "");
         mNoOutletsTextView = (TextView) findViewById(R.id.noOutletsText);
 
 
@@ -204,7 +207,118 @@ public class SelectExistingCustomerActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setHasFixedSize(true);
 
-        new JsonTask().execute(Constants.BASE_URL + "api/outlets", "GET");
+//        new JsonTask().execute(Constants.BASE_URL + "api/outlets", "GET");
+
+
+
+        new TokenManager(SelectExistingCustomerActivity.this,  (success, result) -> {
+            if (success) {
+                // Handle the JSON result, update UI, etc.
+                System.out.println("API Result: " + result);
+
+                handleResult(result);
+
+            } else {
+                // Handle errors (e.g., token refresh failed)
+                Toasts.toastIconError(SelectExistingCustomerActivity.this, result);
+                Intent intent = new Intent(SelectExistingCustomerActivity.this, LoginActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+            }
+        }).executeRequest(Constants.BASE_URL +"api/outlets", "GET");
+
+
+    }
+
+    private void handleResult(String result) {
+        if(pd != null && pd.isShowing() && !isFinishing()){
+            pd.dismiss();
+        }
+
+        try {
+
+            System.out.println("Result: " + result);
+            if (result != null && result.contains("outlets")) {
+                JSONObject jsonObject = new JSONObject(result);
+                //txtJson.setText(jsonObject.toString());
+                items = new ArrayList<>();
+
+                if (jsonObject.has("outlets") &&
+                        jsonObject.get("outlets") instanceof JSONArray) {
+
+                    outlets = jsonObject.getJSONArray("outlets");
+                    System.out.println("Outlets length: " + outlets.length());
+
+                    for (int i = 0; i < outlets.length(); i++) {
+                        Outlet obj = new Outlet();
+                        //obj.image = drw_arr.getResourceId(i, -1);
+                        obj.name = outlets.getJSONObject(i).getString("name");
+                        obj.contact_person_name = outlets.getJSONObject(i).getString("contact_person_name");
+                        obj.phone = outlets.getJSONObject(i).getString("phone");
+                        obj.id = outlets.getJSONObject(i).getString("id");
+                        obj.lat = outlets.getJSONObject(i).getString("lat");
+                        obj.lon = outlets.getJSONObject(i).getString("long");
+                        obj.image = outlets.getJSONObject(i).getString("image");
+                        //obj.imageDrw = drw_arr.getDrawable(obj.image);
+                        String createdAt = outlets.getJSONObject(i).getString("created_at");
+                        ZonedDateTime dateTime = Instant.parse(createdAt).atZone(ZoneId.of("Africa/Nairobi"));
+                        String formatted = dateTime.format(DateTimeFormatter.ofPattern("dd-MMM-yyyy \nHH:mm"));
+                        obj.date = formatted;
+                        items.add(obj);
+                    }
+
+                    if (items.isEmpty()) {
+                        recyclerView.setVisibility(View.GONE);
+                        emptyView.setVisibility(View.VISIBLE);
+                    } else {
+                        recyclerView.setVisibility(View.VISIBLE);
+                        emptyView.setVisibility(View.GONE);
+                    }
+
+                    //set data and list adapter
+                    mAdapter = new AdapterListOutlets(items);
+                    recyclerView.setAdapter(mAdapter);
+
+                    // on item list clicked
+                    mAdapter.setOnItemClickListener(new AdapterListOutlets.OnItemClickListener() {
+                        @Override
+                        public void onItemClick(View view, Outlet obj, int position) {
+
+                            Outlet outlet = items.get(position);
+                            showIndividualActivityWithoutDoubleClick(outlet);
+
+
+                        }
+                    });
+
+                }
+
+
+                else{
+                    //this is logging the checkin
+                    //toastIconError("logged");
+                    FirebaseCrashlytics.getInstance().recordException(new Exception("SelectExistingOutlet Error: "+result));
+                    Intent intent = new Intent(SelectExistingCustomerActivity.this, ErrorLoadingActivity.class);
+                    //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                    intent.putExtra("callingActivity", "SelectExistingOutlet");
+
+                    //startActivity(intent, ActivityOptions.makeSceneTransitionAnimation(ProductsListActivity.this).toBundle());
+                    startActivity(intent);
+                    finish();
+                }
+
+            }else{
+                FirebaseCrashlytics.getInstance().recordException(new Exception("SelectExistingOutlet Error: "+result));
+                Intent intent = new Intent(SelectExistingCustomerActivity.this, ErrorLoadingActivity.class);
+                //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                intent.putExtra("callingActivity", "SelectExistingOutlet");
+                startActivity(intent);
+                finish();
+            }
+
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
+        }
 
     }
 

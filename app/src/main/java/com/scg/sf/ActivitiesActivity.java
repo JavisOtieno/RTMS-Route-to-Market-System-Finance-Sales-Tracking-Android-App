@@ -38,6 +38,7 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.scg.sf.adapters.AdapterListActivities;
+import com.scg.sf.util.EncryptedPrefsUtil;
 import com.scg.sf.util.Toasts;
 
 import org.json.JSONArray;
@@ -101,8 +102,8 @@ public class ActivitiesActivity extends AppCompatActivity {
         setContentView(R.layout.activity_activities_activiy);
         initToolbar();
 
-        mPrefs = getSharedPreferences("label", 0);
-        mAuthToken = mPrefs.getString("authToken", "");
+//        mPrefs = getSharedPreferences("label", 0);
+        mAuthToken = EncryptedPrefsUtil.getString("authToken", "");
 
         lat1= mPrefs.getString("outletLat", "0");
         lon1 = mPrefs.getString("outletLong", "0");

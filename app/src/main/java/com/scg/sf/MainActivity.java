@@ -1,7 +1,6 @@
 package com.scg.sf;
 
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
-import static androidx.constraintlayout.helper.widget.MotionEffect.TAG;
 
 import static java.lang.Integer.parseInt;
 
@@ -23,8 +22,6 @@ import android.location.Location;
 //import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
-import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 
 import androidx.appcompat.widget.Toolbar;
@@ -67,22 +64,14 @@ import com.scg.sf.adapters.AdapterListRecentSales;
 import com.scg.sf.models.Product;
 import com.scg.sf.models.Sale;
 import com.scg.sf.models.SaleItem;
+import com.scg.sf.util.EncryptedPrefsUtil;
 import com.scg.sf.util.Toasts;
+import com.scottyab.rootbeer.RootBeer;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.text.NumberFormat;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -92,6 +81,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+
 
 
 public class MainActivity extends AppCompatActivity {
@@ -138,6 +128,8 @@ public class MainActivity extends AppCompatActivity {
     private Location mLastLocation;
     private Location location;
     private String mAuthToken;
+    private String mEmail;
+    private String mPassword;
 
     private BarChart barChart;
 
@@ -157,6 +149,7 @@ public class MainActivity extends AppCompatActivity {
     private RelativeLayout errorLoadingRelativeLayout;
     private Button targetsButton;
     private LinearLayout targetsLayout;
+    private String mTokenExpiry;
 
 
     @Override
@@ -170,6 +163,9 @@ public class MainActivity extends AppCompatActivity {
 
         // Initialize Firebase
         FirebaseApp.initializeApp(this);
+
+
+
 
 //        FirebaseCrashlytics.getInstance().log("Testing Crashlytics");
 
@@ -191,17 +187,11 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(final View v) {
              //   lyt_no_connection.setVisibility(View.GONE);
                 fetchData();
-//                new Handler().postDelayed(new Runnable() {
-//                    @Override
-//                    public void run() {
-//
-//                        fetchData();
-//
-//
-//                    }
-//                }, 1000);
+
             }
         });
+
+
 
 
         swipeRefreshLayout.setColorSchemeResources(
@@ -219,13 +209,43 @@ public class MainActivity extends AppCompatActivity {
 
         //showBarChart();
 
+
+        RootBeer rootBeer = new RootBeer(MainActivity.this);
+        if (rootBeer.isRooted()) {
+            Log.d("RootDetection", "Device is rooted");
+            Toasts.toastIconError(MainActivity.this,"This app cannot run on a rooted device.");
+            finish(); // Close the app
+        } else {
+            Log.d("RootDetection", "Device is not rooted");
+        }
+
         //check whether user has signed in
         mPrefs = getSharedPreferences("label", 0);
-        mUserId = mPrefs.getString("userId", "0");
+//        mUserId = mPrefs.getString("userId", "0");
+//        mAuthToken = mPrefs.getString("authToken", "0");
+        // Initialize EncryptedSharedPreferences in the util class
+        EncryptedPrefsUtil.init(this);
+        mUserId = EncryptedPrefsUtil.getString("userId", "0");
+        mEmail = EncryptedPrefsUtil.getString("email", "0");
+        mPassword = EncryptedPrefsUtil.getString("password", "0");
+        mTokenExpiry = EncryptedPrefsUtil.getString("tokenExpiry", "0");
 
-//        Toasts.toastIconError(MainActivity.this,mUserId);
+        // Retrieve the encrypted value
+        // Retrieve the encrypted value
+        long currentTimeMillis = System.currentTimeMillis();
+        System.out.println("refreshState: State -"+(Long.valueOf(currentTimeMillis)<Long.valueOf(mTokenExpiry)));
+        System.out.println("refreshState: token expiry"+mTokenExpiry);
+        System.out.println("refreshState: currentmilli"+currentTimeMillis);
 
-        mAuthToken = mPrefs.getString("authToken", "");
+
+
+
+        mAuthToken = EncryptedPrefsUtil.getString("authToken", "");
+        System.out.println("refreshState: OldToken "+mAuthToken);
+
+        // Output the retrieved value (should be encrypted in storage)
+        System.out.println("Retrieved token: " + mAuthToken);
+        System.out.println("Retrieved userId: " + mUserId);
 
 //        Toasts.toastIconError(MainActivity.this,mAuthToken);
 
@@ -292,7 +312,10 @@ public class MainActivity extends AppCompatActivity {
 //        currentSales = (TextView) findViewById(R.id.currentSales);
 //        targetSales = (TextView) findViewById(R.id.targetSales);
 
+
         fetchData();
+
+
 
         clockInButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -363,6 +386,15 @@ public class MainActivity extends AppCompatActivity {
 
 
     }
+
+
+
+
+
+
+
+
+
 
     public void forceCrash() {
         throw new RuntimeException("Test Crash"); // Force a crash
@@ -458,7 +490,7 @@ public class MainActivity extends AppCompatActivity {
                     //finish();
                     //startActivity(getIntent());
                 }else if(item.getTitle().equals("Deals")){
-                    Intent intent = new Intent(MainActivity.this, SalesActivity.class);
+                    Intent intent = new Intent(MainActivity.this,DealsActivity.class);
                     startActivity(intent);
                 }else if(item.getTitle().equals("Customers")){
                     Intent intent = new Intent(MainActivity.this, CustomersActivity.class);
@@ -493,12 +525,16 @@ public class MainActivity extends AppCompatActivity {
 //                    startActivity(intent);
                 }
                 else if(item.getTitle().equals("Log out")){
-                    SharedPreferences.Editor mEditor = mPrefs.edit();
-                    mEditor.putString("userId", "0").commit();
-
+//                    SharedPreferences.Editor mEditor = mPrefs.edit();
+//                    mEditor.putString("userId", "0").commit();
+                    EncryptedPrefsUtil.saveString("userId", "0");
+                    EncryptedPrefsUtil.saveString("authToken", "");
+                    EncryptedPrefsUtil.saveString("email", "");
+                    EncryptedPrefsUtil.saveString("password","");
                     Intent intent = new Intent(MainActivity.this,LoginActivity.class);
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(intent);
+
                 }else if(item.getTitle().equals("Profile")){
                     Intent intent = new Intent(MainActivity.this,ProfileActivity.class);
                     startActivity(intent);
@@ -554,219 +590,793 @@ public class MainActivity extends AppCompatActivity {
         barDataSet.setValueTextSize(12f);
     }
 
-    private class JsonTask extends AsyncTask<String, String, String> {
+//    private class JsonTask extends AsyncTask<String, String, String> {
+//
+//        protected void onPreExecute() {
+//            super.onPreExecute();
+//
+//            pd = new ProgressDialog(MainActivity.this);
+//
+//            pd.setMessage("Please wait");
+//            pd.setCancelable(false);
+//            pd.show();
+//
+//        }
+//
+//        protected String doInBackground(String... params) {
+//
+//
+//            HttpURLConnection connection = null;
+//            BufferedReader reader = null;
+//
+//            try {
+//
+//                URL url = new URL(params[0]);
+//                String requestMethod = params[1];
+//
+//                connection = (HttpURLConnection) url.openConnection();
+//                connection.setRequestMethod(requestMethod);
+//                connection.setRequestProperty("Accept","application/json");
+//                connection.setRequestProperty("Authorization", "Bearer " + mAuthToken);
+//                //connection.setRequestProperty("");
+//                if(requestMethod.equals("POST")){
+//                    Uri.Builder builder = new Uri.Builder()
+//                            .appendQueryParameter("userId", params[2])
+//                            .appendQueryParameter("time", params[3])
+//                            .appendQueryParameter("lat", params[4])
+//                            .appendQueryParameter("long",params[5]);
+//
+//                    String query = builder.build().getEncodedQuery();
+//
+//                    OutputStream os = connection.getOutputStream();
+//                    BufferedWriter writer = new BufferedWriter(
+//                            new OutputStreamWriter(os, "UTF-8"));
+//                    writer.write(query);
+//                    writer.]flush();
+//                    writer.close();
+//                    os.close();
+//
+//                    System.out.println("Params "+params[2]+" "+params[3]+" "+params[4]+" "+params[5]);
+//                }
+//                connection.connect();
+//
+//                InputStream stream;
+//
+//                if (connection.getResponseCode() == 200) {
+//                    stream = connection.getInputStream();
+//
+//                } else {
+//                    /* error from server */
+//                    //_is = httpConn.getErrorStream();
+//                    stream = connection.getErrorStream();
+//
+//                }
+//
+//                reader = new BufferedReader(new InputStreamReader(stream));
+//
+//                StringBuffer buffer = new StringBuffer();
+//                String line = "";
+//
+//                while ((line = reader.readLine()) != null) {
+//
+//                    buffer.append(line + "\n");
+//                    Log.d("Response: ", "> " + line);   //here u ll get whole response...... :-)
+//
+//                }
+//
+//                return buffer.toString();
+//
+//
+//            } catch (MalformedURLException e) {
+//                e.printStackTrace();
+//                Log.e(TAG,"Malf Message");
+//            } catch (IOException e) {
+//                Log.e("Message here: ",e.getMessage());
+//                e.printStackTrace();
+//            } finally {
+//                if (connection != null) {
+//                    connection.disconnect();
+//                }
+//                try {
+//                    if (reader != null) {
+//                        reader.close();
+//                    }
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//                // Dismiss the dialog on the UI thread
+//                runOnUiThread(() -> {
+//                    if (pd != null && pd.isShowing() && !isFinishing()) {
+//                        pd.dismiss();
+//                    }
+//                });
+//
+//            }
+//            return null;
+//        }
+//
+//
+//        @Override
+//        protected void onPostExecute(String result) {
+//            super.onPostExecute(result);
+//
+////            if (pd.isShowing()) {
+////                pd.dismiss();
+////            }
+////            if(pd != null && pd.isShowing() ){
+////                pd.dismiss();
+////            }
+//
+//            try {
+//
+//                System.out.println("Result: "+result);
+//                if (result != null && result.contains("sales")) {
+//                    JSONObject jsonObject = new JSONObject(result);
+//                    //txtJson.setText(jsonObject.toString());
+//
+//
+//                        if (jsonObject.has("sales") &&
+//                                jsonObject.get("sales") instanceof JSONArray) {
+//
+//                        swipeRefreshLayout.setVisibility(View.VISIBLE);
+//                        errorLoadingRelativeLayout.setVisibility(View.GONE);
+//
+//                        sales = jsonObject.getJSONArray("sales");
+//                        products = jsonObject.getJSONArray("products");
+//                        //JSONArray saleItems = jsonObject.getJSONArray("saleItems");
+//                        String salesTotal = jsonObject.getString("salesCount");
+//                        String posAuditsTotal = jsonObject.getString("posauditsCount");
+//                        String outletsTotal = jsonObject.getString("outletsCount");
+//                        String feedbackTotal = jsonObject.getString("feedbackCount");
+//                        String visitsTotal = jsonObject.getString("visitsCount");
+//                        String competitiveAnalysisTotal = jsonObject.getString("competitorsCount");
+//
+//                        String dailySalesTotal = jsonObject.getString("dailySalesTotal");
+//                        String currentSalesTarget = jsonObject.getString("currentTargets");
+//
+//                        String clockinTime = jsonObject.getString("clockinTime");
+//                        String clockoutTime = jsonObject.getString("clockoutTime");
+//                        String checkoutTime = jsonObject.getString("checkoutTime");
+//                        String checkinTime = jsonObject.getString("checkinTime");
+//                        String currentTime = jsonObject.getString("currentTime");
+////                        Toasts.toastIconError(MainActivity.this,checkinTime);
+//                        String visitId = jsonObject.getString("visitId");
+//                        String clockinId = jsonObject.getString("clockinId");
+//                        String outletId = jsonObject.getString("outletId");
+//                        String outletName = jsonObject.getString("outletName");
+//                        String outletLat = jsonObject.getString("outletLat");
+//                        String outletLong = jsonObject.getString("outletLong");
+//                        String userId = jsonObject.getString("userId");
+//
+//                        String organizationProducts = jsonObject.getString("productsType");
+//
+//                        long currentTimeMillis = Long.valueOf(currentTime + "000");
+//                        currentDate = null;
+//                        currentDate = Instant.ofEpochMilli(currentTimeMillis).
+//                                atZone(ZoneId.systemDefault()).toLocalDate();
+//
+//
+//
+//                        //should be within clockin verified activities
+//                        //such as complete checkin and continue day
+//                        if(!clockinId.equals("undefined")){
+//                            SharedPreferences.Editor mEditor = mPrefs.edit();
+////                            Toasts.toastIconError(MainActivity.this,clockinId);
+//                            mEditor.putString("clockinId", clockinId).commit();
+//                        }
+//
+//                        if(!clockinTime.equals("undefined")) {
+//
+//                        // millis value
+//                        long clockinMillis = Long.valueOf(clockinTime + "000");
+//                        // get the date in system default timezone
+//                        clockinDate = null;
+//
+//                        clockinDate = Instant.ofEpochMilli(clockinMillis).atZone(ZoneId.systemDefault()).toLocalDate();
+//
+////                        Toasts.toastIconError(MainActivity.this,"clockinDate: "+clockinDate);
+////                        Toasts.toastIconError(MainActivity.this," currentDate: "+currentDate);
+//
+//                            // check if it's equals to today
+//                            //System.out.println(dt.equals(LocalDate.now(ZoneId.systemDefault())));
+//                            //System.out.println("LocalDate"+LocalDate.now(ZoneId.systemDefault()));
+//                            //System.out.println("UnixDate"+dt);
+//                            if ( clockinDate.equals(currentDate) ) {
+//
+//
+//                                //if not implement code below
+//                                dayTextView.setText("");
+//                                clockInButton.setText("Continue Day");
+//                                clockInButton.setVisibility(View.VISIBLE);
+//                                clockInButton.setOnClickListener(new View.OnClickListener() {
+//                                    @Override
+//                                    public void onClick(View v) {
+//                                        Intent intent = new Intent(MainActivity.this, CheckinActivity.class);
+//                                        //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+//                                        startActivity(intent);
+//                                    }
+//                                });
+//                                clockOutButton.setVisibility(View.VISIBLE);
+//
+//
+//                            }
+//
+//
+//                    }
+//
+//                            LocalDate clockoutDate = null;
+//                            if(!clockoutTime.equals("undefined")) {
+////                            Toasts.toastIconError(MainActivity.this,
+////                                    "clockoutTime");
+//                                long clockoutMillis = Long.valueOf(clockoutTime + "000");
+//                                clockoutDate = Instant.ofEpochMilli(clockoutMillis).atZone(ZoneId.systemDefault()).toLocalDate();
+//
+//                                if (clockoutDate.equals(currentDate)) {
+////                                Toasts.toastIconError(MainActivity.this,
+////                                        clockoutDate+" "+currentDate);
+//                                    dayTextView.setText("Day Complete. Wait till next day");
+//                                    clockOutButton.setVisibility(View.GONE);
+//                                    clockInButton.setVisibility(View.GONE);
+//                                }
+//
+//                            }
+//
+//                            if(!checkoutTime.equals("undefined") &&
+//                                    !clockinTime.equals("undefined")) {
+////                                Toasts.toastIconError(MainActivity.this,
+////                                        "checkOutTime");
+//
+//                                LocalDate checkinDate = null;
+//                                long checkinMillis = Long.valueOf(checkinTime + "000");
+//                                checkinDate = Instant.ofEpochMilli(checkinMillis).atZone(ZoneId.systemDefault()).toLocalDate();
+//
+//
+//                                clockinDate = null;
+//                                long clockinMillis = Long.valueOf(clockinTime + "000");
+//                                clockinDate = Instant.ofEpochMilli(clockinMillis).atZone(ZoneId.systemDefault()).toLocalDate();
+//
+//                                if (checkoutTime.equals("")
+//                                        && clockinDate.equals(currentDate)
+//                                        && checkinDate.equals(currentDate)
+//                                ) {
+//
+//                                    dayTextView.setText("Checkin Incomplete");
+//                                    clockOutButton.setVisibility(View.GONE);
+//                                    clockInButton.setText("Complete Checkin");
+//                                    clockInButton.setOnClickListener(new View.OnClickListener() {
+//                                        @Override
+//                                        public void onClick(View v) {
+//                                            Intent intent = new Intent(MainActivity.this, SelectActionActivity.class);
+//                                            intent.putExtra("callingActivity", "MainActivity");
+//                                            intent.putExtra("visitId", visitId);
+//                                            intent.putExtra("outletId", outletId);
+//                                            intent.putExtra("outletName", outletName);
+//                                            SharedPreferences.Editor mEditor = mPrefs.edit();
+//                                            mEditor.putString("outletLat", outletLat).commit();
+//                                            mEditor.putString("outletLong", outletLong).commit();
+//                                            startActivity(intent);
+//                                        }
+//                                    });
+//                                    //clockInButton.setVisibility(View.GONE);
+//                                }
+//                            }
+////                        else{
+////                            Toasts.toastIconError(MainActivity.this,
+////                                    "Everything is undefined");
+////                            //display START DAY
+////                        }
+//
+//
+//
+//
+//
+//                        //displaying recent sales
+//                        items = new ArrayList<>();
+//                        Integer arrayLimit = 0;
+//
+//                        if(sales.length()<4){
+//                            arrayLimit=sales.length();
+//                        }else{
+//                            arrayLimit=4;
+//                        }
+//
+//                        System.out.println("ArrayLimit: "+arrayLimit);
+//
+//
+//                        for (int i = 0; i < arrayLimit; i++) {
+//                            Sale obj = new Sale();
+//                            //obj.image = drw_arr.getResourceId(i, -1);
+//
+//                            JSONArray saleItems = sales.getJSONObject(i).getJSONArray("saleitems");
+//
+//                            String allProductsSalesitemString="";
+//
+//                            String firstsaleItemProductName="";
+//
+//                            if(!saleItems.getJSONObject(0).isNull("product")){
+//                                firstsaleItemProductName = saleItems.getJSONObject(0).getJSONObject("product")
+//                                        .getString("name");
+//                            }else{
+//                                firstsaleItemProductName = "Product Not Found";
+//                            }
+//
+//                            String firstsaleItemPieces=
+//                                    saleItems.getJSONObject(0).getString("pieces");
+//                            String singleProductsSalesitemString=firstsaleItemProductName+" - "+firstsaleItemPieces;
+//
+//                            saleItemsList = new ArrayList<>();
+//
+//                            for (int j = 0; j < saleItems.length(); j++) {
+//                                String saleItemProductName="";
+//
+//                                if(!saleItems.getJSONObject(0).isNull("product")){
+//                                    saleItemProductName = saleItems.getJSONObject(0).getJSONObject("product")
+//                                            .getString("name");
+//                                }else{
+//                                    saleItemProductName = "Product Not Found";
+//                                }
+//
+//                                String saleItemPieces=saleItems.getJSONObject(j).getString("pieces");
+//                                allProductsSalesitemString=allProductsSalesitemString+saleItemProductName+" - "+saleItemPieces+" ";
+//
+//                                System.out.println("SaleItem: "+allProductsSalesitemString);
+//
+//                                SaleItem saleItem=new SaleItem();
+//                                if(!saleItems.getJSONObject(j).isNull("product")){
+//                                    saleItem.productName = saleItems.getJSONObject(j).getJSONObject("product")
+//                                            .getString("name");
+//                                }else{
+//                                    saleItem.productName = "Product Not Found";
+//                                }
+//                                saleItem.pieces=saleItems.getJSONObject(j).getString("pieces");
+//                                saleItem.price=saleItems.getJSONObject(j).getString("price");
+//                                saleItem.value=saleItems.getJSONObject(j).getString("value");
+//                                saleItemsList.add(saleItem);
+//
+//                            }
+//                            if(saleItems.length()>1){
+//                                singleProductsSalesitemString += "...";
+//                            }
+//
+//
+//                            System.out.println("SaleItems: "+saleItems.length());
+//                            obj.name=singleProductsSalesitemString;
+//                            obj.allproductsname=allProductsSalesitemString;
+//                            obj.saleItems = saleItemsList;
+//                            //saleItemsList.clear();
+//
+//
+//                            //obj.name = sales.getJSONObject(i).getJSONObject("product").getString("name");
+//                            String createdAt = sales.getJSONObject(i).getString("created_at");
+//                            ZonedDateTime dateTime = Instant.parse(createdAt).atZone(ZoneId.of("Africa/Nairobi"));
+//                            //removed time HH:mm  from formatting to decongest the recent sales layout
+//                            String formatted = dateTime.format(DateTimeFormatter.ofPattern("dd-MMM-yyyy"));
+//                            obj.time = formatted;
+//
+//                            Integer pieces = Integer.valueOf(sales.getJSONObject(i).getString("pieces"));
+//                            String sellerName = sales.getJSONObject(i).getJSONObject("user").getString("name");
+//                            String outletNameFromSales = sales.getJSONObject(i).getJSONObject("outlet").getString("name");
+//                            String allProductsName = allProductsSalesitemString;
+//                            obj.pieces=pieces+"";
+//                            obj.sellerName=sellerName;
+//                            obj.outletName=outletNameFromSales;
+//                            obj.allproductsname=allProductsName;
+//                            obj.status = sales.getJSONObject(i).getString("status");
+//                            //Integer price = Integer.valueOf(sales.getJSONObject(i).getString("price"));
+//                            Integer value = Integer.valueOf(sales.getJSONObject(i).getString("value"));
+//                            obj.price = "KSh. "+NumberFormat.getNumberInstance(Locale.US).format(value) ;
+//                            //obj.imageDrw = drw_arr.getDrawable(obj.image);
+//                            items.add(obj);
+//                        }
+//
+//                            //displaying recent sales
+//                            itemsTargets = new ArrayList<>();
+//                            Integer arrayLimitTargets = 0;
+//
+//                            if(products.length()<4){
+//                                arrayLimitTargets=products.length();
+//                            }else{
+//                                arrayLimitTargets=4;
+//                            }
+//
+//                        for (int i = 0; i < arrayLimitTargets; i++) {
+//                                Product obj = new Product();
+//                                //obj.image = drw_arr.getResourceId(i, -1);
+//
+//                                JSONObject product = products.getJSONObject(i);
+//
+//                                obj.name=product.getString("name");
+//                                obj.targetType = product.getString("targettype");
+//
+//                                if(obj.targetType.equals("amount")){
+//                                    System.out.println("Total Sales: "+product.get("total_sales"));
+//                                    if(product.get("total_sales") instanceof Integer) {
+//                                        System.out.println( "Total Sales: "+product.get("total_sales") );
+//                                        Integer pendingTarget = Integer.valueOf(product.getString("target"))
+//                                                - Integer.valueOf(product.getString("total_sales"));
+//                                        if(pendingTarget<0){
+//                                            pendingTarget = 0;
+//                                        }
+//                                        obj.target = "KSh. " + NumberFormat.getNumberInstance(Locale.US).format(
+//                                                pendingTarget);
+//                                    }else{
+//                                        System.out.println( "Total Sales: "+"does not exist" );
+//                                        obj.target = "KSh. " + NumberFormat.getNumberInstance(Locale.US).format(
+//                                                Integer.valueOf(product.getString("target")));
+//                                    }
+//
+////                                        if(product.get("total_sales") instanceof String){
+////                                    obj.currentSalesTotal =  "Current : KSh. "+NumberFormat.getNumberInstance(Locale.US).format(
+////                                            Integer.valueOf(product.getString("total_sales")));
+////                                    }else{
+////                                        obj.currentSalesTotal = "Current : KSh. 0";
+////                                    }
+//
+//                                }else{
+//
+//                                    if(product.get("total_quantity") instanceof Integer) {
+//                                        System.out.println( "Total Sales: "+product.get("total_sales") );
+//                                        Integer pendingTarget = Integer.valueOf(product.getString("target")) -
+//                                                Integer.valueOf(product.getString("total_quantity"));
+//                                        if(pendingTarget<0){
+//                                            pendingTarget = 0;
+//                                        }
+//                                        obj.target = NumberFormat.getNumberInstance(Locale.US).format(
+//                                                pendingTarget);
+//
+//                                    }else{
+//                                        obj.target = NumberFormat.getNumberInstance(Locale.US).format(
+//                                            Integer.valueOf(product.getString("target")));
+//
+//                                    }
+//
+////                                    obj.target = NumberFormat.getNumberInstance(Locale.US).format(
+////                                            Integer.valueOf(product.getString("target")));
+////                                    if(product.getString("total_quantity") instanceof String){
+////                                        obj.currentSalesQuantity = "Current : "+NumberFormat.getNumberInstance(Locale.US).format(
+////                                                Integer.valueOf(product.getString("total_quantity")));
+////                                    }else{
+////                                        obj.currentSalesQuantity = "Current : 0";
+////                                    }
+//
+//                                }
+//
+//                                //obj.imageDrw = drw_arr.getDrawable(obj.image);
+//                                itemsTargets.add(obj);
+//                            System.out.println("Nametarget"+obj.name+" "+obj.target);
+//
+//                            }
+//
+//                            if (itemsTargets.isEmpty()) {
+//                                recyclerViewTargets.setVisibility(View.GONE);
+//                                noTargetsRow.setVisibility(View.VISIBLE);
+//                                System.out.println("Items: is empty");
+//                                seeMoreTargetsRow.setVisibility(View.GONE);
+//                            }
+//                            else {
+//                                recyclerViewTargets.setVisibility(View.VISIBLE);
+//                                noTargetsRow.setVisibility(View.GONE);
+//                                seeMoreTargetsRow.setVisibility(View.VISIBLE);
+//                                System.out.println("Items: is not empty");
+//                            }
+//
+//                            //set data and list adapter
+//                            mAdapterDashboardTarget = new AdapterDashboardSalesTarget(itemsTargets);
+//                            recyclerViewTargets.setAdapter(mAdapterDashboardTarget);
+//
+//                            if (items.isEmpty()) {
+//                                recyclerViewRecentSales.setVisibility(View.GONE);
+//                                noSalesRow.setVisibility(View.VISIBLE);
+//                                seeMoreProductRow.setVisibility(View.GONE);
+//                                System.out.println("Items sales: is empty");
+//                            }
+//                            else {
+//                                recyclerViewRecentSales.setVisibility(View.VISIBLE);
+//                                noSalesRow.setVisibility(View.GONE);
+//                                seeMoreProductRow.setVisibility(View.VISIBLE);
+//                                System.out.println("Items sales: is not empty");
+//                            }
+//
+//
+//
+//
+//
+//
+//
+//                        //set data and list adapter
+//                        mAdapter = new AdapterListRecentSales(items);
+//                        recyclerViewRecentSales.setAdapter(mAdapter);
+//
+//
+//
+//
+//
+//                        // on item list clicked
+//                        mAdapter.setOnItemClickListener(new AdapterListRecentSales.OnItemClickListener() {
+//                            @Override
+//                            public void onItemClick(View view, Sale obj, int position) {
+//                                //Snackbar.make(parent_view, "Item " + obj.name + " clicked", Snackbar.LENGTH_SHORT).show();
+//                                Intent intent = new Intent(MainActivity.this, IndividualSaleActivity.class);
+//                                //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+//                                //intent.putExtra("visitId", visitId);
+//                                //intent.putExtra2("outletId", outletId);
+//                                intent.putExtra("sale", items.get(position));
+//                                startActivity(intent);
+//                            }
+//                        });
+//
+//
+//
+//                    outletsNumber.setText(outletsTotal);
+//                    salesNumber.setText(salesTotal);
+//                    feedbackNumber.setText(feedbackTotal);
+//                    visitsNumber.setText(visitsTotal);
+//
+////                    currentSales.setText("KSh " + NumberFormat.getNumberInstance(Locale.US).format(parseInt(dailySalesTotal)));
+////                    targetSales.setText("KSh " + NumberFormat.getNumberInstance(Locale.US).format(parseInt(currentSalesTarget)));
+////                    if(parseInt(dailySalesTotal)>=parseInt(currentSalesTarget)){
+////                        currentSales.setTextColor(ContextCompat.getColor(MainActivity.this, R.color.green_400));
+////                    }
+//
+//                    //firstProductName.setText(sales.getJSONObject(0).getJSONObject("product").getString("name"));
+//                    //secondProductName.setText(sales.getJSONObject(1).getJSONObject("product").getString("name"));
+//                    //thirdProductName.setText(sales.getJSONObject(2).getJSONObject("product").getString("name"));
+//                    //fourthProductName.setText(sales.getJSONObject(3).getJSONObject("product").getString("name"));
+//
+//                    //secondProductName.setText(sales.getJSONObject(1).getString("name"));
+//                    //thirdProductName.setText(sales.getJSONObject(2).getString("name"));
+//                    //fourthProductName.setText(sales.getJSONObject(3).getString("name"));
+//
+//               /* for (int i = 0; i < sales.length(); i++) {
+//                    JSONObject c = sales.getJSONObject(i);
+//
+//                    // Storing each json item in variable
+//                    String id = c.getString("id");
+//                    String user_id = c.getString("user_id");
+//                    String name = c.getString("name");
+//                    String sku = c.getString("sku");
+//                    String pieces = c.getString("pieces");
+//
+//                    txtJson.setText("id: "+id);
+//
+//
+//                    // creating new HashMap
+//                    //HashMap<String, String> map = new HashMap<String, String>();
+//
+//                    // adding each child node to HashMap key => value
+//                    //map.put(TAG_PID, id);
+//                    //map.put(TAG_NAME, name);
+//
+//                    //productName = name;
+//                    //productImageUrl=c.getString("image");
+//
+//                    //productsList.add(new ProductOnline(name, price,specs,image,profit,id));
+//
+//                }
+//
+//                */
+//                }
+//
+//                    else{
+//                    //Intent intent = new Intent(MainActivity.this, CheckinActivity.class);
+//                    //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+//                    //startActivity(intent);
+//                    swipeRefreshLayout.setVisibility(View.GONE);
+//                    FirebaseCrashlytics.getInstance().recordException(new Exception("Dashboard Error: "+result));
+//                    errorLoadingRelativeLayout.setVisibility(View.VISIBLE);
+////                    Toasts.toastIconError(MainActivity.this,
+////                            "Does not Contain Sales");
+//
+//                }
+//
+//            }
+//                else if(result.contains("Unauthenticated")){
+//                    Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+//                    //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+//                    startActivity(intent);
+//                }
+//                else{
+//
+//                    swipeRefreshLayout.setVisibility(View.GONE);
+//                    FirebaseCrashlytics.getInstance().recordException(new Exception("Dashboard Error: "+result));
+//                    errorLoadingRelativeLayout.setVisibility(View.VISIBLE);
+////                    Toasts.toastIconError(MainActivity.this,"Is Null");
+//
+//                }
+//
+//            } catch (JSONException e) {
+//                throw new RuntimeException(e);
+//            }
+//
+//        }
+//
+//        public String convertMysqlTimestampToDate(String dateAsString) {
+//
+//            ZonedDateTime dateTime = Instant.parse(dateAsString).atZone(ZoneId.of("Africa/Nairobi"));
+//            String formatted = dateTime.format(DateTimeFormatter.ofPattern("dd-MMM-yyyy HH:mm"));
+//
+//            return formatted;
+//        }
+//
+//    }
 
-        protected void onPreExecute() {
-            super.onPreExecute();
+    private boolean isNetworkConnected() {
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
 
-            pd = new ProgressDialog(MainActivity.this);
+        return cm.getActiveNetworkInfo() != null && cm.getActiveNetworkInfo().isConnected();
+    }
 
-            pd.setMessage("Please wait");
-            pd.setCancelable(false);
-            pd.show();
-
-        }
-
-        protected String doInBackground(String... params) {
-
-
-            HttpURLConnection connection = null;
-            BufferedReader reader = null;
-
-            try {
-
-                URL url = new URL(params[0]);
-                String requestMethod = params[1];
-
-                connection = (HttpURLConnection) url.openConnection();
-                connection.setRequestMethod(requestMethod);
-                connection.setRequestProperty("Accept","application/json");
-                connection.setRequestProperty("Authorization", "Bearer " + mAuthToken);
-                //connection.setRequestProperty("");
-                if(requestMethod.equals("POST")){
-                    Uri.Builder builder = new Uri.Builder()
-                            .appendQueryParameter("userId", params[2])
-                            .appendQueryParameter("time", params[3])
-                            .appendQueryParameter("lat", params[4])
-                            .appendQueryParameter("long",params[5]);
-
-                    String query = builder.build().getEncodedQuery();
-
-                    OutputStream os = connection.getOutputStream();
-                    BufferedWriter writer = new BufferedWriter(
-                            new OutputStreamWriter(os, "UTF-8"));
-                    writer.write(query);
-                    writer.flush();
-                    writer.close();
-                    os.close();
-
-                    System.out.println("Params "+params[2]+" "+params[3]+" "+params[4]+" "+params[5]);
-                }
-                connection.connect();
-
-                InputStream stream;
-
-                if (connection.getResponseCode() == 200) {
-                    stream = connection.getInputStream();
-
-                } else {
-                    /* error from server */
-                    //_is = httpConn.getErrorStream();
-                    stream = connection.getErrorStream();
-
-                }
-
-                reader = new BufferedReader(new InputStreamReader(stream));
-
-                StringBuffer buffer = new StringBuffer();
-                String line = "";
-
-                while ((line = reader.readLine()) != null) {
-
-                    buffer.append(line + "\n");
-                    Log.d("Response: ", "> " + line);   //here u ll get whole response...... :-)
-
-                }
-
-                return buffer.toString();
+    //make sure mainactivity is restarted on back button pressed
+    @Override
+    public void onRestart()
+    {
+        super.onRestart();
+        fetchData();
+//        Intent intent = new Intent(MainActivity.this, MainActivity.class);
+//        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+//        //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+//        startActivity(intent);
 
 
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-                Log.e(TAG,"Malf Message");
-            } catch (IOException e) {
-                Log.e("Message here: ",e.getMessage());
-                e.printStackTrace();
-            } finally {
-                if (connection != null) {
-                    connection.disconnect();
-                }
-                try {
-                    if (reader != null) {
-                        reader.close();
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                // Dismiss the dialog on the UI thread
-                runOnUiThread(() -> {
-                    if (pd != null && pd.isShowing() && !isFinishing()) {
-                        pd.dismiss();
-                    }
-                });
+
+    }
+    public void fetchData(){
+        mAuthToken = EncryptedPrefsUtil.getString("authToken",
+                "");
+        mTokenExpiry = EncryptedPrefsUtil.getString("tokenExpiry",
+                "");
+
+        if (isNetworkConnected() != true) {
+            Intent intent = new Intent(MainActivity.this, NoInternetActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+        } else {
+            System.out.println("refreshState: OldToken "+mAuthToken);
+            long currentTimeMillis = System.currentTimeMillis();
+            System.out.println("refreshState: fetchdata -"+currentTimeMillis+"");
+            System.out.println("refreshState: fetchdata -"+mTokenExpiry);
+            System.out.println("refreshState: fetchdata -"+
+                    (Long.valueOf(mTokenExpiry)-Long.valueOf(currentTimeMillis)));
+
+
+            if(Long.valueOf(currentTimeMillis)>Long.valueOf(mTokenExpiry)){
+                System.out.println("refreshState: Inside if");
+
+                RefreshToken.getInstance().executeLoginTask(
+                        Constants.BASE_URL + "api/login",
+                        "POST", mEmail,
+                        mPassword, MainActivity.this,
+                        new RefreshTokenCallback() {
+                            @Override
+                            public void onRefreshComplete() {
+
+                                // Now that the refresh is complete, fetch data
+
+                                System.out.println("refreshState: NewToken "+mAuthToken);
+                                callJson();
+//                                new JsonTask().execute(Constants.BASE_URL + "api/dashboard", "GET");
+                            }
+                        }
+                );
+
+
+
+            }else{
+                callJson();
+
+//                new JsonTask().execute(Constants.BASE_URL + "api/dashboard", "GET");
 
             }
-            return null;
+
+
+
         }
 
+    }
 
-        @Override
-        protected void onPostExecute(String result) {
-            super.onPostExecute(result);
-
-//            if (pd.isShowing()) {
-//                pd.dismiss();
-//            }
-//            if(pd != null && pd.isShowing() ){
-//                pd.dismiss();
-//            }
-
-            try {
-
+    private void callJson(){
+        new JsonTaskInline(new JsonTaskInline.JsonTaskListener() {
+            @Override
+            public void onTaskComplete(String result){
+//                Toasts.toastIconSuccess(MainActivity.this,
+//                        "Something");
                 System.out.println("Result: "+result);
-                if (result != null && result.contains("sales")) {
-                    JSONObject jsonObject = new JSONObject(result);
-                    //txtJson.setText(jsonObject.toString());
+                try {
+
+                    System.out.println("ResultNew: "+result);
+                    if (result != null && result.contains("sales")) {
+                        JSONObject jsonObject = new JSONObject(result);
+                        //txtJson.setText(jsonObject.toString());
 
 
                         if (jsonObject.has("sales") &&
                                 jsonObject.get("sales") instanceof JSONArray) {
 
-                        swipeRefreshLayout.setVisibility(View.VISIBLE);
-                        errorLoadingRelativeLayout.setVisibility(View.GONE);
+                            swipeRefreshLayout.setVisibility(View.VISIBLE);
+                            errorLoadingRelativeLayout.setVisibility(View.GONE);
 
-                        sales = jsonObject.getJSONArray("sales");
-                        products = jsonObject.getJSONArray("products");
-                        //JSONArray saleItems = jsonObject.getJSONArray("saleItems");
-                        String salesTotal = jsonObject.getString("salesCount");
-                        String posAuditsTotal = jsonObject.getString("posauditsCount");
-                        String outletsTotal = jsonObject.getString("outletsCount");
-                        String feedbackTotal = jsonObject.getString("feedbackCount");
-                        String visitsTotal = jsonObject.getString("visitsCount");
-                        String competitiveAnalysisTotal = jsonObject.getString("competitorsCount");
+                            sales = jsonObject.getJSONArray("sales");
+                            products = jsonObject.getJSONArray("products");
+                            //JSONArray saleItems = jsonObject.getJSONArray("saleItems");
+                            String salesTotal = jsonObject.getString("salesCount");
+                            String posAuditsTotal = jsonObject.getString("posauditsCount");
+                            String outletsTotal = jsonObject.getString("outletsCount");
+                            String feedbackTotal = jsonObject.getString("feedbackCount");
+                            String visitsTotal = jsonObject.getString("visitsCount");
+                            String competitiveAnalysisTotal = jsonObject.getString("competitorsCount");
 
-                        String dailySalesTotal = jsonObject.getString("dailySalesTotal");
-                        String currentSalesTarget = jsonObject.getString("currentTargets");
+                            String dailySalesTotal = jsonObject.getString("dailySalesTotal");
+                            String currentSalesTarget = jsonObject.getString("currentTargets");
 
-                        String clockinTime = jsonObject.getString("clockinTime");
-                        String clockoutTime = jsonObject.getString("clockoutTime");
-                        String checkoutTime = jsonObject.getString("checkoutTime");
-                        String checkinTime = jsonObject.getString("checkinTime");
-                        String currentTime = jsonObject.getString("currentTime");
+                            String clockinTime = jsonObject.getString("clockinTime");
+                            String clockoutTime = jsonObject.getString("clockoutTime");
+                            String checkoutTime = jsonObject.getString("checkoutTime");
+                            String checkinTime = jsonObject.getString("checkinTime");
+                            String currentTime = jsonObject.getString("currentTime");
 //                        Toasts.toastIconError(MainActivity.this,checkinTime);
-                        String visitId = jsonObject.getString("visitId");
-                        String clockinId = jsonObject.getString("clockinId");
-                        String outletId = jsonObject.getString("outletId");
-                        String outletName = jsonObject.getString("outletName");
-                        String outletLat = jsonObject.getString("outletLat");
-                        String outletLong = jsonObject.getString("outletLong");
-                        String userId = jsonObject.getString("userId");
+                            String visitId = jsonObject.getString("visitId");
+                            String clockinId = jsonObject.getString("clockinId");
+                            String outletId = jsonObject.getString("outletId");
+                            String outletName = jsonObject.getString("outletName");
+                            String outletLat = jsonObject.getString("outletLat");
+                            String outletLong = jsonObject.getString("outletLong");
+                            String userId = jsonObject.getString("userId");
 
-                        String organizationProducts = jsonObject.getString("productsType");
+                            String organizationProducts = jsonObject.getString("productsType");
 
-                        long currentTimeMillis = Long.valueOf(currentTime + "000");
-                        currentDate = null;
-                        currentDate = Instant.ofEpochMilli(currentTimeMillis).
-                                atZone(ZoneId.systemDefault()).toLocalDate();
+                            long currentTimeMillis = Long.valueOf(currentTime + "000");
+                            currentDate = null;
+                            currentDate = Instant.ofEpochMilli(currentTimeMillis).
+                                    atZone(ZoneId.systemDefault()).toLocalDate();
 
 
 
-                        //should be within clockin verified activities
-                        //such as complete checkin and continue day
-                        if(!clockinId.equals("undefined")){
-                            SharedPreferences.Editor mEditor = mPrefs.edit();
+                            //should be within clockin verified activities
+                            //such as complete checkin and continue day
+                            if(!clockinId.equals("undefined")){
+                                SharedPreferences.Editor mEditor = mPrefs.edit();
 //                            Toasts.toastIconError(MainActivity.this,clockinId);
-                            mEditor.putString("clockinId", clockinId).commit();
-                        }
+                                mEditor.putString("clockinId", clockinId).commit();
+                            }
 
-                        if(!clockinTime.equals("undefined")) {
+                            if(!clockinTime.equals("undefined")) {
 
-                        // millis value
-                        long clockinMillis = Long.valueOf(clockinTime + "000");
-                        // get the date in system default timezone
-                        clockinDate = null;
+                                // millis value
+                                long clockinMillis = Long.valueOf(clockinTime + "000");
+                                // get the date in system default timezone
+                                clockinDate = null;
 
-                        clockinDate = Instant.ofEpochMilli(clockinMillis).atZone(ZoneId.systemDefault()).toLocalDate();
+                                clockinDate = Instant.ofEpochMilli(clockinMillis).atZone(ZoneId.systemDefault()).toLocalDate();
 
 //                        Toasts.toastIconError(MainActivity.this,"clockinDate: "+clockinDate);
 //                        Toasts.toastIconError(MainActivity.this," currentDate: "+currentDate);
 
-                            // check if it's equals to today
-                            //System.out.println(dt.equals(LocalDate.now(ZoneId.systemDefault())));
-                            //System.out.println("LocalDate"+LocalDate.now(ZoneId.systemDefault()));
-                            //System.out.println("UnixDate"+dt);
-                            if ( clockinDate.equals(currentDate) ) {
+                                // check if it's equals to today
+                                //System.out.println(dt.equals(LocalDate.now(ZoneId.systemDefault())));
+                                //System.out.println("LocalDate"+LocalDate.now(ZoneId.systemDefault()));
+                                //System.out.println("UnixDate"+dt);
+                                if ( clockinDate.equals(currentDate) ) {
 
 
-                                //if not implement code below
-                                dayTextView.setText("");
-                                clockInButton.setText("Continue Day");
-                                clockInButton.setVisibility(View.VISIBLE);
-                                clockInButton.setOnClickListener(new View.OnClickListener() {
-                                    @Override
-                                    public void onClick(View v) {
-                                        Intent intent = new Intent(MainActivity.this, CheckinActivity.class);
-                                        //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
-                                        startActivity(intent);
-                                    }
-                                });
-                                clockOutButton.setVisibility(View.VISIBLE);
+                                    //if not implement code below
+                                    dayTextView.setText("");
+                                    clockInButton.setText("Continue Day");
+                                    clockInButton.setVisibility(View.VISIBLE);
+                                    clockInButton.setOnClickListener(new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View v) {
+                                            Intent intent = new Intent(MainActivity.this, CheckinActivity.class);
+                                            //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                                            startActivity(intent);
+                                        }
+                                    });
+                                    clockOutButton.setVisibility(View.VISIBLE);
+
+
+                                }
 
 
                             }
-
-
-                    }
 
                             LocalDate clockoutDate = null;
                             if(!clockoutTime.equals("undefined")) {
@@ -834,104 +1444,104 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-                        //displaying recent sales
-                        items = new ArrayList<>();
-                        Integer arrayLimit = 0;
+                            //displaying recent sales
+                            items = new ArrayList<>();
+                            Integer arrayLimit = 0;
 
-                        if(sales.length()<4){
-                            arrayLimit=sales.length();
-                        }else{
-                            arrayLimit=4;
-                        }
-
-                        System.out.println("ArrayLimit: "+arrayLimit);
-
-
-                        for (int i = 0; i < arrayLimit; i++) {
-                            Sale obj = new Sale();
-                            //obj.image = drw_arr.getResourceId(i, -1);
-
-                            JSONArray saleItems = sales.getJSONObject(i).getJSONArray("saleitems");
-
-                            String allProductsSalesitemString="";
-
-                            String firstsaleItemProductName="";
-
-                            if(!saleItems.getJSONObject(0).isNull("product")){
-                                firstsaleItemProductName = saleItems.getJSONObject(0).getJSONObject("product")
-                                        .getString("name");
+                            if(sales.length()<4){
+                                arrayLimit=sales.length();
                             }else{
-                                firstsaleItemProductName = "Product Not Found";
+                                arrayLimit=4;
                             }
 
-                            String firstsaleItemPieces=
-                                    saleItems.getJSONObject(0).getString("pieces");
-                            String singleProductsSalesitemString=firstsaleItemProductName+" - "+firstsaleItemPieces;
+                            System.out.println("ArrayLimit: "+arrayLimit);
 
-                            saleItemsList = new ArrayList<>();
 
-                            for (int j = 0; j < saleItems.length(); j++) {
-                                String saleItemProductName="";
+                            for (int i = 0; i < arrayLimit; i++) {
+                                Sale obj = new Sale();
+                                //obj.image = drw_arr.getResourceId(i, -1);
+
+                                JSONArray saleItems = sales.getJSONObject(i).getJSONArray("saleitems");
+
+                                String allProductsSalesitemString="";
+
+                                String firstsaleItemProductName="";
 
                                 if(!saleItems.getJSONObject(0).isNull("product")){
-                                    saleItemProductName = saleItems.getJSONObject(0).getJSONObject("product")
+                                    firstsaleItemProductName = saleItems.getJSONObject(0).getJSONObject("product")
                                             .getString("name");
                                 }else{
-                                    saleItemProductName = "Product Not Found";
+                                    firstsaleItemProductName = "Product Not Found";
                                 }
 
-                                String saleItemPieces=saleItems.getJSONObject(j).getString("pieces");
-                                allProductsSalesitemString=allProductsSalesitemString+saleItemProductName+" - "+saleItemPieces+" ";
+                                String firstsaleItemPieces=
+                                        saleItems.getJSONObject(0).getString("pieces");
+                                String singleProductsSalesitemString=firstsaleItemProductName+" - "+firstsaleItemPieces;
 
-                                System.out.println("SaleItem: "+allProductsSalesitemString);
+                                saleItemsList = new ArrayList<>();
 
-                                SaleItem saleItem=new SaleItem();
-                                if(!saleItems.getJSONObject(j).isNull("product")){
-                                    saleItem.productName = saleItems.getJSONObject(j).getJSONObject("product")
-                                            .getString("name");
-                                }else{
-                                    saleItem.productName = "Product Not Found";
+                                for (int j = 0; j < saleItems.length(); j++) {
+                                    String saleItemProductName="";
+
+                                    if(!saleItems.getJSONObject(0).isNull("product")){
+                                        saleItemProductName = saleItems.getJSONObject(0).getJSONObject("product")
+                                                .getString("name");
+                                    }else{
+                                        saleItemProductName = "Product Not Found";
+                                    }
+
+                                    String saleItemPieces=saleItems.getJSONObject(j).getString("pieces");
+                                    allProductsSalesitemString=allProductsSalesitemString+saleItemProductName+" - "+saleItemPieces+" ";
+
+                                    System.out.println("SaleItem: "+allProductsSalesitemString);
+
+                                    SaleItem saleItem=new SaleItem();
+                                    if(!saleItems.getJSONObject(j).isNull("product")){
+                                        saleItem.productName = saleItems.getJSONObject(j).getJSONObject("product")
+                                                .getString("name");
+                                    }else{
+                                        saleItem.productName = "Product Not Found";
+                                    }
+                                    saleItem.pieces=saleItems.getJSONObject(j).getString("pieces");
+                                    saleItem.price=saleItems.getJSONObject(j).getString("price");
+                                    saleItem.value=saleItems.getJSONObject(j).getString("value");
+                                    saleItemsList.add(saleItem);
+
                                 }
-                                saleItem.pieces=saleItems.getJSONObject(j).getString("pieces");
-                                saleItem.price=saleItems.getJSONObject(j).getString("price");
-                                saleItem.value=saleItems.getJSONObject(j).getString("value");
-                                saleItemsList.add(saleItem);
+                                if(saleItems.length()>1){
+                                    singleProductsSalesitemString += "...";
+                                }
 
+
+                                System.out.println("SaleItems: "+saleItems.length());
+                                obj.name=singleProductsSalesitemString;
+                                obj.allproductsname=allProductsSalesitemString;
+                                obj.saleItems = saleItemsList;
+                                //saleItemsList.clear();
+
+
+                                //obj.name = sales.getJSONObject(i).getJSONObject("product").getString("name");
+                                String createdAt = sales.getJSONObject(i).getString("created_at");
+                                ZonedDateTime dateTime = Instant.parse(createdAt).atZone(ZoneId.of("Africa/Nairobi"));
+                                //removed time HH:mm  from formatting to decongest the recent sales layout
+                                String formatted = dateTime.format(DateTimeFormatter.ofPattern("dd-MMM-yyyy"));
+                                obj.time = formatted;
+
+                                Integer pieces = Integer.valueOf(sales.getJSONObject(i).getString("pieces"));
+                                String sellerName = sales.getJSONObject(i).getJSONObject("user").getString("name");
+                                String outletNameFromSales = sales.getJSONObject(i).getJSONObject("outlet").getString("name");
+                                String allProductsName = allProductsSalesitemString;
+                                obj.pieces=pieces+"";
+                                obj.sellerName=sellerName;
+                                obj.outletName=outletNameFromSales;
+                                obj.allproductsname=allProductsName;
+                                obj.status = sales.getJSONObject(i).getString("status");
+                                //Integer price = Integer.valueOf(sales.getJSONObject(i).getString("price"));
+                                Integer value = Integer.valueOf(sales.getJSONObject(i).getString("value"));
+                                obj.price = "KSh. "+NumberFormat.getNumberInstance(Locale.US).format(value) ;
+                                //obj.imageDrw = drw_arr.getDrawable(obj.image);
+                                items.add(obj);
                             }
-                            if(saleItems.length()>1){
-                                singleProductsSalesitemString += "...";
-                            }
-
-
-                            System.out.println("SaleItems: "+saleItems.length());
-                            obj.name=singleProductsSalesitemString;
-                            obj.allproductsname=allProductsSalesitemString;
-                            obj.saleItems = saleItemsList;
-                            //saleItemsList.clear();
-
-
-                            //obj.name = sales.getJSONObject(i).getJSONObject("product").getString("name");
-                            String createdAt = sales.getJSONObject(i).getString("created_at");
-                            ZonedDateTime dateTime = Instant.parse(createdAt).atZone(ZoneId.of("Africa/Nairobi"));
-                            //removed time HH:mm  from formatting to decongest the recent sales layout
-                            String formatted = dateTime.format(DateTimeFormatter.ofPattern("dd-MMM-yyyy"));
-                            obj.time = formatted;
-
-                            Integer pieces = Integer.valueOf(sales.getJSONObject(i).getString("pieces"));
-                            String sellerName = sales.getJSONObject(i).getJSONObject("user").getString("name");
-                            String outletNameFromSales = sales.getJSONObject(i).getJSONObject("outlet").getString("name");
-                            String allProductsName = allProductsSalesitemString;
-                            obj.pieces=pieces+"";
-                            obj.sellerName=sellerName;
-                            obj.outletName=outletNameFromSales;
-                            obj.allproductsname=allProductsName;
-                            obj.status = sales.getJSONObject(i).getString("status");
-                            //Integer price = Integer.valueOf(sales.getJSONObject(i).getString("price"));
-                            Integer value = Integer.valueOf(sales.getJSONObject(i).getString("value"));
-                            obj.price = "KSh. "+NumberFormat.getNumberInstance(Locale.US).format(value) ;
-                            //obj.imageDrw = drw_arr.getDrawable(obj.image);
-                            items.add(obj);
-                        }
 
                             //displaying recent sales
                             itemsTargets = new ArrayList<>();
@@ -943,7 +1553,7 @@ public class MainActivity extends AppCompatActivity {
                                 arrayLimitTargets=4;
                             }
 
-                        for (int i = 0; i < arrayLimitTargets; i++) {
+                            for (int i = 0; i < arrayLimitTargets; i++) {
                                 Product obj = new Product();
                                 //obj.image = drw_arr.getResourceId(i, -1);
 
@@ -990,7 +1600,7 @@ public class MainActivity extends AppCompatActivity {
 
                                     }else{
                                         obj.target = NumberFormat.getNumberInstance(Locale.US).format(
-                                            Integer.valueOf(product.getString("target")));
+                                                Integer.valueOf(product.getString("target")));
 
                                     }
 
@@ -1007,7 +1617,7 @@ public class MainActivity extends AppCompatActivity {
 
                                 //obj.imageDrw = drw_arr.getDrawable(obj.image);
                                 itemsTargets.add(obj);
-                            System.out.println("Nametarget"+obj.name+" "+obj.target);
+                                System.out.println("Nametarget"+obj.name+" "+obj.target);
 
                             }
 
@@ -1047,153 +1657,82 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-                        //set data and list adapter
-                        mAdapter = new AdapterListRecentSales(items);
-                        recyclerViewRecentSales.setAdapter(mAdapter);
+                            //set data and list adapter
+                            mAdapter = new AdapterListRecentSales(items);
+                            recyclerViewRecentSales.setAdapter(mAdapter);
 
 
 
 
 
-                        // on item list clicked
-                        mAdapter.setOnItemClickListener(new AdapterListRecentSales.OnItemClickListener() {
-                            @Override
-                            public void onItemClick(View view, Sale obj, int position) {
-                                //Snackbar.make(parent_view, "Item " + obj.name + " clicked", Snackbar.LENGTH_SHORT).show();
-                                Intent intent = new Intent(MainActivity.this, IndividualSaleActivity.class);
-                                //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
-                                //intent.putExtra("visitId", visitId);
-                                //intent.putExtra2("outletId", outletId);
-                                intent.putExtra("sale", items.get(position));
-                                startActivity(intent);
-                            }
-                        });
+                            // on item list clicked
+                            mAdapter.setOnItemClickListener(new AdapterListRecentSales.OnItemClickListener() {
+                                @Override
+                                public void onItemClick(View view, Sale obj, int position) {
+                                    //Snackbar.make(parent_view, "Item " + obj.name + " clicked", Snackbar.LENGTH_SHORT).show();
+                                    Intent intent = new Intent(MainActivity.this, IndividualSaleActivity.class);
+                                    //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                                    //intent.putExtra("visitId", visitId);
+                                    //intent.putExtra2("outletId", outletId);
+                                    intent.putExtra("sale", items.get(position));
+                                    startActivity(intent);
+                                }
+                            });
 
 
 
-                    outletsNumber.setText(outletsTotal);
-                    salesNumber.setText(salesTotal);
-                    feedbackNumber.setText(feedbackTotal);
-                    visitsNumber.setText(visitsTotal);
+                            outletsNumber.setText(outletsTotal);
+                            salesNumber.setText(salesTotal);
+                            feedbackNumber.setText(feedbackTotal);
+                            visitsNumber.setText(visitsTotal);
 
-//                    currentSales.setText("KSh " + NumberFormat.getNumberInstance(Locale.US).format(parseInt(dailySalesTotal)));
-//                    targetSales.setText("KSh " + NumberFormat.getNumberInstance(Locale.US).format(parseInt(currentSalesTarget)));
-//                    if(parseInt(dailySalesTotal)>=parseInt(currentSalesTarget)){
-//                        currentSales.setTextColor(ContextCompat.getColor(MainActivity.this, R.color.green_400));
-//                    }
+                        }
 
-                    //firstProductName.setText(sales.getJSONObject(0).getJSONObject("product").getString("name"));
-                    //secondProductName.setText(sales.getJSONObject(1).getJSONObject("product").getString("name"));
-                    //thirdProductName.setText(sales.getJSONObject(2).getJSONObject("product").getString("name"));
-                    //fourthProductName.setText(sales.getJSONObject(3).getJSONObject("product").getString("name"));
-
-                    //secondProductName.setText(sales.getJSONObject(1).getString("name"));
-                    //thirdProductName.setText(sales.getJSONObject(2).getString("name"));
-                    //fourthProductName.setText(sales.getJSONObject(3).getString("name"));
-
-               /* for (int i = 0; i < sales.length(); i++) {
-                    JSONObject c = sales.getJSONObject(i);
-
-                    // Storing each json item in variable
-                    String id = c.getString("id");
-                    String user_id = c.getString("user_id");
-                    String name = c.getString("name");
-                    String sku = c.getString("sku");
-                    String pieces = c.getString("pieces");
-
-                    txtJson.setText("id: "+id);
-
-
-                    // creating new HashMap
-                    //HashMap<String, String> map = new HashMap<String, String>();
-
-                    // adding each child node to HashMap key => value
-                    //map.put(TAG_PID, id);
-                    //map.put(TAG_NAME, name);
-
-                    //productName = name;
-                    //productImageUrl=c.getString("image");
-
-                    //productsList.add(new ProductOnline(name, price,specs,image,profit,id));
-
-                }
-
-                */
-                }
-//                    else if(result.contains("Clockin")){
-//                        Intent intent = new Intent(MainActivity.this, CheckinActivity.class);
-//                        //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
-//                        startActivity(intent);
-//                    }
-                    else{
-                    //Intent intent = new Intent(MainActivity.this, CheckinActivity.class);
-                    //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
-                    //startActivity(intent);
-                    swipeRefreshLayout.setVisibility(View.GONE);
-                    FirebaseCrashlytics.getInstance().recordException(new Exception("Dashboard Error: "+result));
-                    errorLoadingRelativeLayout.setVisibility(View.VISIBLE);
+                        else{
+                            //Intent intent = new Intent(MainActivity.this, CheckinActivity.class);
+                            //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                            //startActivity(intent);
+                            swipeRefreshLayout.setVisibility(View.GONE);
+                            FirebaseCrashlytics.getInstance().recordException(new Exception("Dashboard Error: "+result));
+                            errorLoadingRelativeLayout.setVisibility(View.VISIBLE);
 //                    Toasts.toastIconError(MainActivity.this,
 //                            "Does not Contain Sales");
 
-                }
+                        }
 
-            }else{
+                    }
+                    else if(result.contains("Unauthenticated")){
 
-                    swipeRefreshLayout.setVisibility(View.GONE);
-                    FirebaseCrashlytics.getInstance().recordException(new Exception("Dashboard Error: "+result));
-                    errorLoadingRelativeLayout.setVisibility(View.VISIBLE);
+                        EncryptedPrefsUtil.saveString("userId", "0");
+                        EncryptedPrefsUtil.saveString("authToken", "");
+                        EncryptedPrefsUtil.saveString("email", "");
+                        EncryptedPrefsUtil.saveString("password","");
+                        Intent intent = new Intent(MainActivity.this,LoginActivity.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                        startActivity(intent);
+
+                    }
+                    else{
+
+                        swipeRefreshLayout.setVisibility(View.GONE);
+                        FirebaseCrashlytics.getInstance().recordException(new Exception("Dashboard Error: "+result));
+                        errorLoadingRelativeLayout.setVisibility(View.VISIBLE);
 //                    Toasts.toastIconError(MainActivity.this,"Is Null");
 
+                    }
+
+                } catch (JSONException e) {
+                    throw new RuntimeException(e);
                 }
 
-            } catch (JSONException e) {
-                throw new RuntimeException(e);
             }
+        }).execute(
+                Constants.BASE_URL + "api/dashboard",
+                "GET"
+//                                        "email", mEmail,
+//                                        "password", mPassword
 
-        }
-
-        public String convertMysqlTimestampToDate(String dateAsString) {
-
-            ZonedDateTime dateTime = Instant.parse(dateAsString).atZone(ZoneId.of("Africa/Nairobi"));
-            String formatted = dateTime.format(DateTimeFormatter.ofPattern("dd-MMM-yyyy HH:mm"));
-
-            return formatted;
-        }
-
-    }
-
-    private boolean isNetworkConnected() {
-        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-
-        return cm.getActiveNetworkInfo() != null && cm.getActiveNetworkInfo().isConnected();
-    }
-
-    //make sure mainactivity is restarted on back button pressed
-    @Override
-    public void onRestart()
-    {
-        super.onRestart();
-        fetchData();
-//        Intent intent = new Intent(MainActivity.this, MainActivity.class);
-//        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-//        //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
-//        startActivity(intent);
-
-
-
-    }
-    public void fetchData(){
-
-        if (isNetworkConnected() != true) {
-            Intent intent = new Intent(MainActivity.this, NoInternetActivity.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(intent);
-        } else {
-
-            new JsonTask().execute(Constants.BASE_URL + "api/dashboard", "GET");
-
-        }
-
+        );
     }
 
 
@@ -1225,7 +1764,7 @@ public class MainActivity extends AppCompatActivity {
                             String lat = location.getLatitude()+"";
                             String lon = location.getLongitude()+"";
                             long unixTime = System.currentTimeMillis() / 1000L;
-                            new JsonTask().execute(Constants.BASE_URL + "api/clockin", "POST", mUserId, unixTime + "", lat + "", lon + "");
+//                            new JsonTask().execute(Constants.BASE_URL + "api/clockin", "POST", mUserId, unixTime + "", lat + "", lon + "");
 
 //                        }
                     }

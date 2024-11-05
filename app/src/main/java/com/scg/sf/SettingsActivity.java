@@ -19,6 +19,8 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
+import com.scg.sf.util.EncryptedPrefsUtil;
+import com.scg.sf.util.Toasts;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -36,7 +38,7 @@ public class SettingsActivity extends AppCompatActivity {
     private ActionBar actionBar;
     private LinearLayout reportLayout;
     private String mUserId;
-    private SharedPreferences mPrefs;
+//    private SharedPreferences mPrefs;
     private LinearLayout termsAndConditionsLayout;
     private TextView organizationName;
     private TextView organizationPhone;
@@ -53,9 +55,12 @@ public class SettingsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_settings);
 
         initToolbar();
-        mPrefs = getSharedPreferences("label", 0);
-        mUserId = mPrefs.getString("userId", "0");
-        mAuthToken = mPrefs.getString("authToken", "");
+//        mPrefs = getSharedPreferences("label", 0);
+//        mUserId = mPrefs.getString("userId", "0");
+//        mAuthToken = mPrefs.getString("authToken", "");
+
+        mAuthToken = EncryptedPrefsUtil.getString("authToken", "");
+
 
        // LinearLayout contactUsLayout = (LinearLayout)findViewById(R.id.contactUsLayout);
         LinearLayout faqLayout = (LinearLayout) findViewById(R.id.faqLayout);
@@ -66,7 +71,23 @@ public class SettingsActivity extends AppCompatActivity {
         organizationPhone = (TextView) findViewById(R.id.organizationPhone);
         organizationEmail = (TextView) findViewById(R.id.organizationEmail);
 
-        new JsonTask().execute(Constants.BASE_URL + "api/organization","GET");
+//        new JsonTask().execute(Constants.BASE_URL + "api/organization","GET");
+
+        new TokenManager(SettingsActivity.this,  (success, result) -> {
+            if (success) {
+                // Handle the JSON result, update UI, etc.
+                System.out.println("API Result: " + result);
+
+                handleResult(result);
+
+            } else {
+                // Handle errors (e.g., token refresh failed)
+                Toasts.toastIconError(SettingsActivity.this, result);
+                Intent intent = new Intent(SettingsActivity.this, LoginActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+            }
+        }).executeRequest(Constants.BASE_URL +"api/organization", "GET");
 
 
 //        contactUsLayout.setOnClickListener(new View.OnClickListener() {
@@ -165,135 +186,47 @@ public class SettingsActivity extends AppCompatActivity {
 
     }
 
-    private class JsonTask extends AsyncTask<String, String, String> {
-
-        protected void onPreExecute() {
-            super.onPreExecute();
-
-            pd = new ProgressDialog(SettingsActivity.this);
-
-            pd.setMessage("Please wait");
-            pd.setCancelable(false);
-            pd.show();
-
+    private void handleResult(String result){
+        if(pd != null && pd.isShowing() && !isFinishing()){
+            pd.dismiss();
         }
 
-        protected String doInBackground(String... params) {
+        try {
 
-
-            HttpURLConnection connection = null;
-            BufferedReader reader = null;
-
-            try {
-
-                URL url = new URL(params[0]);
-                String requestMethod = params[1];
-
-                connection = (HttpURLConnection) url.openConnection();
-                connection.setRequestMethod(requestMethod);
-                connection.setRequestProperty("Accept","application/json");
-                connection.setRequestProperty("Authorization", "Bearer " + mAuthToken);
-
-                connection.connect();
-
-                InputStream stream;
-
-                if (connection.getResponseCode() == 200) {
-                    stream = connection.getInputStream();
-
-                } else {
-                    /* error from server */
-                    //_is = httpConn.getErrorStream();
-                    stream = connection.getErrorStream();
-
-                }
-
-                reader = new BufferedReader(new InputStreamReader(stream));
-
-                StringBuffer buffer = new StringBuffer();
-                String line = "";
-
-                while ((line = reader.readLine()) != null) {
-
-                    buffer.append(line + "\n");
-                    Log.d("Response: ", "> " + line);   //here u ll get whole response...... :-)
-
-                }
-
-                return buffer.toString();
-
-
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-                Log.e(TAG,"Malf Message");
-            } catch (IOException e) {
-                Log.e("Message here: ",e.getMessage());
-                e.printStackTrace();
-            } finally {
-                if (connection != null) {
-                    connection.disconnect();
-                }
-                try {
-                    if (reader != null) {
-                        reader.close();
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                // Dismiss the dialog on the UI thread
-                runOnUiThread(() -> {
-                    if (pd != null && pd.isShowing() && !isFinishing()) {
-                        pd.dismiss();
-                    }
-                });
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(String result) {
-            super.onPostExecute(result);
-
-                       if(pd != null && pd.isShowing() && !isFinishing()){
-                pd.dismiss();
-            }
-
-            try {
-
-                System.out.println("Result: "+result);
-                if (result != null && result.contains("organization")){
-                    JSONObject jsonObject = new JSONObject(result);
-                    //txtJson.setText(jsonObject.toString());
+            System.out.println("Result: "+result);
+            if (result != null && result.contains("organization")){
+                JSONObject jsonObject = new JSONObject(result);
+                //txtJson.setText(jsonObject.toString());
 //                    List<Sale> items = new ArrayList<>();
-                    if (jsonObject.has("organization") &&
-                            jsonObject.get("organization") instanceof JSONObject) {
+                if (jsonObject.has("organization") &&
+                        jsonObject.get("organization") instanceof JSONObject) {
 
-                        organizationDetails = jsonObject.getJSONObject("organization");
+                    organizationDetails = jsonObject.getJSONObject("organization");
 
-                        organizationName.setText(organizationDetails.getString("name"));
-                        organizationPhone.setText(organizationDetails.getString("phone"));
-                        organizationEmail.setText(organizationDetails.getString("email"));
-                    }else{
-                        Intent intent = new Intent(SettingsActivity.this, ErrorLoadingActivity.class);
-                        //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
-                        intent.putExtra("callingActivity", "Settings");
-                        FirebaseCrashlytics.getInstance().recordException(new Exception("Settings Error: "+result));
-
-                        startActivity(intent);
-                        finish();
-
-                    }
+                    organizationName.setText(organizationDetails.getString("name"));
+                    organizationPhone.setText(organizationDetails.getString("phone"));
+                    organizationEmail.setText(organizationDetails.getString("email"));
                 }else{
                     Intent intent = new Intent(SettingsActivity.this, ErrorLoadingActivity.class);
                     //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
                     intent.putExtra("callingActivity", "Settings");
                     FirebaseCrashlytics.getInstance().recordException(new Exception("Settings Error: "+result));
 
-                    //startActivity(intent, ActivityOptions.makeSceneTransitionAnimation(ProductsListActivity.this).toBundle());
                     startActivity(intent);
                     finish();
 
                 }
+            }else{
+                Intent intent = new Intent(SettingsActivity.this, ErrorLoadingActivity.class);
+                //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                intent.putExtra("callingActivity", "Settings");
+                FirebaseCrashlytics.getInstance().recordException(new Exception("Settings Error: "+result));
+
+                //startActivity(intent, ActivityOptions.makeSceneTransitionAnimation(ProductsListActivity.this).toBundle());
+                startActivity(intent);
+                finish();
+
+            }
 //                }else{
 //                    Intent intent = new Intent(ProfileActivity.this, ErrorLoadingActivity.class);
 //                    //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -305,17 +238,163 @@ public class SettingsActivity extends AppCompatActivity {
 //                    finish();
 //                }
 
-            } catch (JSONException e) {
-                throw new RuntimeException(e);
-            }
-
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
         }
 
-
-
-
-
     }
+//
+//    private class JsonTask extends AsyncTask<String, String, String> {
+//
+//        protected void onPreExecute() {
+//            super.onPreExecute();
+//
+//            pd = new ProgressDialog(SettingsActivity.this);
+//
+//            pd.setMessage("Please wait");
+//            pd.setCancelable(false);
+//            pd.show();
+//
+//        }
+//
+//        protected String doInBackground(String... params) {
+//
+//
+//            HttpURLConnection connection = null;
+//            BufferedReader reader = null;
+//
+//            try {
+//
+//                URL url = new URL(params[0]);
+//                String requestMethod = params[1];
+//
+//                connection = (HttpURLConnection) url.openConnection();
+//                connection.setRequestMethod(requestMethod);
+//                connection.setRequestProperty("Accept","application/json");
+//                connection.setRequestProperty("Authorization", "Bearer " + mAuthToken);
+//
+//                connection.connect();
+//
+//                InputStream stream;
+//
+//                if (connection.getResponseCode() == 200) {
+//                    stream = connection.getInputStream();
+//
+//                } else {
+//                    /* error from server */
+//                    //_is = httpConn.getErrorStream();
+//                    stream = connection.getErrorStream();
+//
+//                }
+//
+//                reader = new BufferedReader(new InputStreamReader(stream));
+//
+//                StringBuffer buffer = new StringBuffer();
+//                String line = "";
+//
+//                while ((line = reader.readLine()) != null) {
+//
+//                    buffer.append(line + "\n");
+//                    Log.d("Response: ", "> " + line);   //here u ll get whole response...... :-)
+//
+//                }
+//
+//                return buffer.toString();
+//
+//
+//            } catch (MalformedURLException e) {
+//                e.printStackTrace();
+//                Log.e(TAG,"Malf Message");
+//            } catch (IOException e) {
+//                Log.e("Message here: ",e.getMessage());
+//                e.printStackTrace();
+//            } finally {
+//                if (connection != null) {
+//                    connection.disconnect();
+//                }
+//                try {
+//                    if (reader != null) {
+//                        reader.close();
+//                    }
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//                // Dismiss the dialog on the UI thread
+//                runOnUiThread(() -> {
+//                    if (pd != null && pd.isShowing() && !isFinishing()) {
+//                        pd.dismiss();
+//                    }
+//                });
+//            }
+//            return null;
+//        }
+//
+//        @Override
+//        protected void onPostExecute(String result) {
+//            super.onPostExecute(result);
+//
+//                       if(pd != null && pd.isShowing() && !isFinishing()){
+//                pd.dismiss();
+//            }
+//
+//            try {
+//
+//                System.out.println("Result: "+result);
+//                if (result != null && result.contains("organization")){
+//                    JSONObject jsonObject = new JSONObject(result);
+//                    //txtJson.setText(jsonObject.toString());
+////                    List<Sale> items = new ArrayList<>();
+//                    if (jsonObject.has("organization") &&
+//                            jsonObject.get("organization") instanceof JSONObject) {
+//
+//                        organizationDetails = jsonObject.getJSONObject("organization");
+//
+//                        organizationName.setText(organizationDetails.getString("name"));
+//                        organizationPhone.setText(organizationDetails.getString("phone"));
+//                        organizationEmail.setText(organizationDetails.getString("email"));
+//                    }else{
+//                        Intent intent = new Intent(SettingsActivity.this, ErrorLoadingActivity.class);
+//                        //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+//                        intent.putExtra("callingActivity", "Settings");
+//                        FirebaseCrashlytics.getInstance().recordException(new Exception("Settings Error: "+result));
+//
+//                        startActivity(intent);
+//                        finish();
+//
+//                    }
+//                }else{
+//                    Intent intent = new Intent(SettingsActivity.this, ErrorLoadingActivity.class);
+//                    //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+//                    intent.putExtra("callingActivity", "Settings");
+//                    FirebaseCrashlytics.getInstance().recordException(new Exception("Settings Error: "+result));
+//
+//                    //startActivity(intent, ActivityOptions.makeSceneTransitionAnimation(ProductsListActivity.this).toBundle());
+//                    startActivity(intent);
+//                    finish();
+//
+//                }
+////                }else{
+////                    Intent intent = new Intent(ProfileActivity.this, ErrorLoadingActivity.class);
+////                    //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+////                    intent.putExtra("callingActivity", "Profile");
+//////
+////                    FirebaseCrashlytics.getInstance().recordException(new Exception("Profile Error: "+result));
+////                    //startActivity(intent, ActivityOptions.makeSceneTransitionAnimation(ProductsListActivity.this).toBundle());
+////                    startActivity(intent);
+////                    finish();
+////                }
+//
+//            } catch (JSONException e) {
+//                throw new RuntimeException(e);
+//            }
+//
+//        }
+//
+//
+//
+//
+//
+//    }
 
     private void initToolbar() {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);

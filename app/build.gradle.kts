@@ -20,10 +20,11 @@ android {
 
     buildTypes {
         getByName("release") {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
+
             )
         }
     }
@@ -60,5 +61,9 @@ dependencies {
     implementation("com.squareup.picasso:picasso:2.8")
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("androidx.security:security-crypto:1.1.0-alpha03")
+    implementation("com.google.android.play:integrity:1.0.2")
+    implementation("com.scottyab:rootbeer-lib:0.0.7")
+
 
 }

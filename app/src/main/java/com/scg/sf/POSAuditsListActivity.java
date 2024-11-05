@@ -28,6 +28,7 @@ import com.scg.sf.adapters.AdapterListPOSAudits;
 
 import com.scg.sf.models.POSAudit;
 import com.scg.sf.models.POSAuditItem;
+import com.scg.sf.util.EncryptedPrefsUtil;
 import com.scg.sf.util.PreventDoubleClickOnLists;
 
 
@@ -57,7 +58,7 @@ public class POSAuditsListActivity extends AppCompatActivity {
     private JSONArray posAudits = null;
     private AdapterListPOSAudits mAdapter;
     private String mAuthToken;
-    private SharedPreferences mPrefs;
+//    private SharedPreferences mPrefs;
     private ArrayList<POSAuditItem> posAuditItemsList;
     private View parent_view;
     private TextView emptyView;
@@ -74,8 +75,9 @@ public class POSAuditsListActivity extends AppCompatActivity {
 
         initToolbar();
 
-        mPrefs = getSharedPreferences("label", 0);
-        mAuthToken = mPrefs.getString("authToken", "");
+//        mPrefs = getSharedPreferences("label", 0);
+//        mAuthToken = mPrefs.getString("authToken", "");
+        mAuthToken = EncryptedPrefsUtil.getString("authToken", "");
         mNoPOSAuditsTextView= (TextView)findViewById(R.id.noPOSAuditsText);
 
         recyclerView = (RecyclerView) findViewById(R.id.recyclerView);

@@ -31,6 +31,7 @@ public class DealsActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_deals);
 
         initToolbar();
@@ -59,11 +60,12 @@ public class DealsActivity extends AppCompatActivity {
         SectionsPagerAdapter adapter = new SectionsPagerAdapter(getSupportFragmentManager());
 //        adapter.addFragment(PlaceholderFragment.newInstance(1), "PENDING");
 //        adapter.addFragment(PlaceholderFragment.newInstance(2), "PENDING");
+        adapter.addFragment(DealsFragment.newInstance("api/sales"), "ALL");
         adapter.addFragment(DealsFragment.newInstance("api/pendingsales"), "PENDING");
         adapter.addFragment(DealsFragment.newInstance("api/completesales"), "COMPLETE");
 
-//        adapter.addFragment(PlaceholderFragment.newInstance(3), "ALL");
-        adapter.addFragment(DealsFragment.newInstance("api/sales"), "ALL");
+
+//        adapter.addFragment(PlaceholderFragment.newInstance(3), "CANCELLED");
         viewPager.setAdapter(adapter);
     }
 
@@ -86,6 +88,8 @@ public class DealsActivity extends AppCompatActivity {
         }
         return super.onOptionsItemSelected(item);
     }
+
+
 
 
     public static class PlaceholderFragment extends Fragment {

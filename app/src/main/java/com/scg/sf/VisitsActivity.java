@@ -26,7 +26,9 @@ import android.widget.TextView;
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.scg.sf.adapters.AdapterListVisits;
 import com.scg.sf.models.Visit;
+import com.scg.sf.util.EncryptedPrefsUtil;
 import com.scg.sf.util.PreventDoubleClickOnLists;
+import com.scg.sf.util.Toasts;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -56,7 +58,7 @@ public class VisitsActivity extends AppCompatActivity {
     private JSONArray visits = null;
     private AdapterListVisits mAdapter;
     private String mAuthToken;
-    private SharedPreferences mPrefs;
+//    private SharedPreferences mPrefs;
     private TextView emptyView;
 
     private long lastIntentTime = 0;
@@ -71,8 +73,9 @@ public class VisitsActivity extends AppCompatActivity {
 
         initToolbar();
 
-        mPrefs = getSharedPreferences("label", 0);
-        mAuthToken = mPrefs.getString("authToken", "");
+//        mPrefs = getSharedPreferences("label", 0);
+//        mAuthToken = mPrefs.getString("authToken", "");
+        mAuthToken = EncryptedPrefsUtil.getString("authToken", "");
         mNoVisitsTextView = (TextView) findViewById(R.id.noVisitsText);
 
         recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
@@ -81,7 +84,148 @@ public class VisitsActivity extends AppCompatActivity {
 
         emptyView = (TextView) findViewById(R.id.empty_view);
 
-        new JsonTask().execute(Constants.BASE_URL + "api/visits","GET");
+//        new JsonTask().execute(Constants.BASE_URL + "api/visits","GET");
+
+        new TokenManager(this,  (success, result) -> {
+            if (success) {
+                // Handle the JSON result, update UI, etc.
+                System.out.println("API Result: " + result);
+
+                handleResult(result);
+
+            } else {
+                // Handle errors (e.g., token refresh failed)
+                Toasts.toastIconError(VisitsActivity.this, result);
+                Intent intent = new Intent(VisitsActivity.this, LoginActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+            }
+        }).executeRequest(Constants.BASE_URL +"api/visits", "GET");
+
+    }
+
+    private void handleResult(String result){
+
+        if(pd != null && pd.isShowing() && !isFinishing()){
+            pd.dismiss();
+        }
+
+        try {
+
+            System.out.println("Result: " + result);
+            if (result != null && result.contains("visits")){
+                JSONObject jsonObject = new JSONObject(result);
+                //txtJson.setText(jsonObject.toString());
+                if (jsonObject.has("visits") &&
+                        jsonObject.get("visits") instanceof JSONArray) {
+                    items = new ArrayList<>();
+
+                    visits = jsonObject.getJSONArray("visits");
+                    System.out.println("Visits length: "+visits.length());
+
+                    for (int i = 0; i < visits.length(); i++) {
+                        Visit obj = new Visit();
+                        //obj.image = drw_arr.getResourceId(i, -1);
+                        if(!visits.getJSONObject(i).isNull("outlet")){
+                            obj.outletName = visits.getJSONObject(i).getJSONObject("outlet").getString("name");
+                            obj.outletLat = visits.getJSONObject(i).getJSONObject("outlet").getString("lat");
+                            obj.outletLong = visits.getJSONObject(i).getJSONObject("outlet").getString("long");
+                        }else{
+                            obj.outletName="Outlet Not Found";
+                            obj.outletLat="-1.3";
+                            obj.outletLong="36.8";
+                        }
+
+                        String createdAt = visits.getJSONObject(i).getString("created_at");
+                        ZonedDateTime dateTime = Instant.parse(createdAt).atZone(ZoneId.of("Africa/Nairobi"));
+                        String formatted = dateTime.format(DateTimeFormatter.ofPattern("dd-MMM-yyyy \nHH:mm"));
+                        obj.date = formatted;
+
+                        String checkoutTime = visits.getJSONObject(i).getString("checkout_time");
+                        String checkinTime = visits.getJSONObject(i).getString("checkin_time");
+
+                        if(!checkoutTime.equals("")) {
+                            ZonedDateTime checkoutDateTime = Instant.ofEpochSecond(Long.parseLong(checkoutTime)).atZone(ZoneId.of("Africa/Nairobi"));
+                            String formattedCheckout = checkoutDateTime.format(DateTimeFormatter.ofPattern("dd-MMM-yyyy HH:mm"));
+                            obj.checkoutTime = formattedCheckout;
+                        }else {
+                            obj.checkoutTime = "Not Checked Out";
+                        }
+
+                        Integer timeSpent=0;
+                        if(!checkoutTime.equals("")){
+                            timeSpent=Integer.parseInt( checkoutTime)-Integer.parseInt(checkinTime);
+                        }
+                        LocalTime time = LocalTime.MIN.plusSeconds(timeSpent);
+                        String formatted2 = time.format(DateTimeFormatter.ofPattern("HH:mm:ss"));
+                        obj.duration= formatted2;
+                        obj.id = visits.getJSONObject(i).getString("id");
+                        //obj.imageDrw = drw_arr.getDrawable(obj.image);
+                        items.add(obj);
+                    }
+
+                    if (items.isEmpty()) {
+                        recyclerView.setVisibility(View.GONE);
+                        emptyView.setVisibility(View.VISIBLE);
+                    }
+                    else {
+                        recyclerView.setVisibility(View.VISIBLE);
+                        emptyView.setVisibility(View.GONE);
+                    }
+
+
+                    //set data and list adapter
+                    mAdapter = new AdapterListVisits(items);
+                    recyclerView.setAdapter(mAdapter);
+
+                    // on item list clicked
+                    mAdapter.setOnItemClickListener(new AdapterListVisits.OnItemClickListener() {
+                        @Override
+                        public void onItemClick(View view, Visit obj, int position) {
+
+                            Visit visit = items.get(position);
+
+                            PreventDoubleClickOnLists.
+                                    showActivityWithoutDoubleClick(
+                                            "visit",VisitsActivity.this,
+                                            visit, IndividualVisitActivity.class);
+
+
+
+                        }
+                    });
+
+                }else {
+                    FirebaseCrashlytics.getInstance().recordException(new Exception("Visits JSONOBJECT Error: "+result));
+
+                    Intent intent = new Intent(VisitsActivity.this, ErrorLoadingActivity.class);
+                    //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                    intent.putExtra("callingActivity", "Visits");
+
+                    //startActivity(intent, ActivityOptions.makeSceneTransitionAnimation(ProductsListActivity.this).toBundle());
+                    startActivity(intent);
+                    finish();
+
+                    //Error
+                    //Toast.makeText(ProductsListActivity.this,result,Toast.LENGTH_SHORT).show();
+
+                }
+
+            }else{
+                FirebaseCrashlytics.getInstance().recordException(new Exception("Visits Null Contains Error: "+result));
+
+                Intent intent = new Intent(VisitsActivity.this, ErrorLoadingActivity.class);
+                //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                intent.putExtra("callingActivity", "Visits");
+
+                //startActivity(intent, ActivityOptions.makeSceneTransitionAnimation(ProductsListActivity.this).toBundle());
+                startActivity(intent);
+                finish();
+            }
+
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
+        }
 
     }
 
@@ -313,7 +457,7 @@ public class VisitsActivity extends AppCompatActivity {
         protected void onPostExecute(String result) {
             super.onPostExecute(result);
 
-                       if(pd != null && pd.isShowing() && !isFinishing()){
+            if(pd != null && pd.isShowing() && !isFinishing()){
                 pd.dismiss();
             }
 

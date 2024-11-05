@@ -28,6 +28,7 @@ import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.scg.sf.adapters.AdapterListRoutePlans;
 import com.scg.sf.models.Routeplan;
 import com.scg.sf.models.RouteplanItem;
+import com.scg.sf.util.EncryptedPrefsUtil;
 import com.scg.sf.util.PreventDoubleClickOnLists;
 
 
@@ -57,7 +58,7 @@ public class RouteplansActivity extends AppCompatActivity {
     private JSONArray routeplans = null;
     private AdapterListRoutePlans mAdapter;
     private String mAuthToken;
-    private SharedPreferences mPrefs;
+//    private SharedPreferences mPrefs;
     private ArrayList<RouteplanItem> routeplanItemsList;
     private View parent_view;
     private TextView emptyView;
@@ -75,8 +76,10 @@ public class RouteplansActivity extends AppCompatActivity {
 
         initToolbar();
 
-        mPrefs = getSharedPreferences("label", 0);
-        mAuthToken = mPrefs.getString("authToken", "");
+//        mPrefs = getSharedPreferences("label", 0);
+//        mAuthToken = mPrefs.getString("authToken", "");
+//        mUserId = EncryptedPrefsUtil.getString("userId","0");
+        mAuthToken = EncryptedPrefsUtil.getString("authToken", "");
         mNoRouteplansTextView= (TextView)findViewById(R.id.noRouteplansText);
 
 

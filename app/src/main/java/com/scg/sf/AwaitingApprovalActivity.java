@@ -22,6 +22,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.cardview.widget.CardView;
 
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
+import com.scg.sf.util.EncryptedPrefsUtil;
 import com.scg.sf.util.Toasts;
 import com.scg.sf.util.ViewLoadingDotsBounce;
 
@@ -66,9 +67,11 @@ public class AwaitingApprovalActivity extends AppCompatActivity {
 
         initToolbar();
 
-        mPrefs = getSharedPreferences("label", 0);
-        mAuthToken = mPrefs.getString("authToken", "");
-        mUserId = mPrefs.getString("userId", "0");
+//        mPrefs = getSharedPreferences("label", 0);
+//        mAuthToken = mPrefs.getString("authToken", "");
+//        mUserId = mPrefs.getString("userId", "0");
+        mUserId = EncryptedPrefsUtil.getString("userId","0");
+        mAuthToken = EncryptedPrefsUtil.getString("authToken", "");
         Intent i = getIntent();
         routePlanId = i.getStringExtra("routePlanId");
 

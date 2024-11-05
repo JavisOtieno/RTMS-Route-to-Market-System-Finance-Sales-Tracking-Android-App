@@ -17,6 +17,7 @@ import android.widget.Button;
 import android.widget.EditText;
 
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
+import com.scg.sf.util.EncryptedPrefsUtil;
 import com.scg.sf.util.Toasts;
 
 import org.json.JSONException;
@@ -59,9 +60,10 @@ public class AddCompetitiveAnalysisActivity extends AppCompatActivity {
 
         initToolbar();
 
-        mPrefs = getSharedPreferences("label", 0);
-        mUserId = mPrefs.getString("userId", "0");
-        mAuthToken = mPrefs.getString("authToken", "");
+//        mPrefs = getSharedPreferences("label", 0);
+//        mUserId = mPrefs.getString("userId", "0");
+        mUserId = EncryptedPrefsUtil.getString("userId","0");
+        mAuthToken = EncryptedPrefsUtil.getString("authToken", "");
 
         submitCompetitiveAnalysisButton = (Button)findViewById(R.id.submitAnalysisButton);
         pricingEditText = (EditText)findViewById(R.id.pricingEditText);
@@ -84,7 +86,27 @@ public class AddCompetitiveAnalysisActivity extends AppCompatActivity {
                     outletName = i.getStringExtra("outletName");
 
 
-                    new JsonTask().execute(Constants.BASE_URL + "api/addcompetitoranalysis", "POST", userId, outletId, visitId, brandVisibility, pricing);
+//                    new JsonTask().execute(Constants.BASE_URL + "api/addcompetitoranalysis", "POST", userId, outletId, visitId, brandVisibility, pricing);
+
+                    new TokenManager(AddCompetitiveAnalysisActivity.this,  (success, result) -> {
+                        if (success) {
+                            // Handle the JSON result, update UI, etc.
+                            System.out.println("API Result: " + result);
+
+                            handleResult(result);
+
+                        } else {
+                            // Handle errors (e.g., token refresh failed)
+                            Toasts.toastIconError(AddCompetitiveAnalysisActivity.this, result);
+                            Intent intent = new Intent(AddCompetitiveAnalysisActivity.this, LoginActivity.class);
+                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                            startActivity(intent);
+
+                        }
+                    }).executeRequest(Constants.BASE_URL +"api/addcompetitoranalysis", "POST",
+                            "userId",mUserId,"outletId",outletId,"visitId",visitId,"brandVisibility",
+                            brandVisibility,"pricing",pricing);
+
 
                 }
             }
@@ -109,6 +131,50 @@ public class AddCompetitiveAnalysisActivity extends AppCompatActivity {
         getSupportActionBar().setTitle("Competitive Analysis");
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         //Tools.setSystemBarColor(this);
+    }
+
+    private void handleResult(String result){
+
+        isTaskRunning = false;
+        System.out.println("Result: " + result);
+        try {
+
+            JSONObject jsonObject = new JSONObject(result);
+            //Submit Failed means server returns nothing
+            //Error saving means server responds with something other than success
+            if (result != null) {
+                if(result.contains("errors")){
+                    String message = jsonObject.getString("message");
+                    Toasts.toastIconError(AddCompetitiveAnalysisActivity.this,
+                            message);
+                    //Toast.makeText(getBaseContext(), message, Toast.LENGTH_SHORT).show();
+                }
+                else if(result.contains("success")){
+                    Intent intent = new Intent(AddCompetitiveAnalysisActivity.this, SelectActionActivity.class);
+                    //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                    intent.putExtra("visitId",visitId);
+                    intent.putExtra("lastUpdatedActivity","competitiveanalysis");
+                    intent.putExtra("outletName",outletName);
+                    intent.putExtra("outletId",outletId);
+                    startActivity(intent);
+                }else{
+                    Toasts.toastIconError(AddCompetitiveAnalysisActivity.this,
+                            "Error Saving. Please Try Again");
+                    FirebaseCrashlytics.getInstance().recordException(new Exception("AddCompetitiveAnalysis Error: "+result));
+
+                }
+
+            }else
+            {
+                FirebaseCrashlytics.getInstance().recordException(new Exception("AddCompetitiveAnalysis Error: "+result));
+                Toasts.toastIconError(AddCompetitiveAnalysisActivity.this,
+                        "Submit Feedback Failed. Please Try Again");
+            }
+
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
+        }
+
     }
 
     private class JsonTask extends AsyncTask<String, String, String> {

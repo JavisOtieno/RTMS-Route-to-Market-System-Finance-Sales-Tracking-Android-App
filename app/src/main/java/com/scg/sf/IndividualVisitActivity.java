@@ -21,7 +21,7 @@ public class IndividualVisitActivity extends AppCompatActivity {
     private EditText mDurationText;
 
     private Button viewSalesButton;
-    private Button viewPOSAuditsButton;
+//    private Button viewPOSAuditsButton;
     private Button viewCompetitiveAnalysisButton;
     private Button viewFeedbackButton;
     private Button viewOnMapsButton;
@@ -41,7 +41,7 @@ public class IndividualVisitActivity extends AppCompatActivity {
         mDurationText=(EditText) findViewById(R.id.durationText);
         viewFeedbackButton = (Button) findViewById(R.id.viewFeedbackButton);
         viewCompetitiveAnalysisButton = (Button) findViewById(R.id.viewCompetitiveAnalysisButton);
-        viewPOSAuditsButton = (Button) findViewById(R.id.viewPOSAuditsButton);
+//        viewPOSAuditsButton = (Button) findViewById(R.id.viewPOSAuditsButton);
         viewSalesButton = (Button) findViewById(R.id.viewSalesButton);
 
         mOutletNameText.setText(mVisit.outletName);

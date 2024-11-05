@@ -19,3 +19,38 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# Keep all public classes, methods, and fields
+#  -keep public class * {
+#    public * ;
+#  }
+# Keep specific classes and their methods
+#  -keep class com.scg.sf.models.** {
+#    *;
+#  }
+
+# Don 't obfuscate specific classes and their methods -
+#  -keepnames class com.scg.sf.util.** {
+#    *;
+#  }
+
+# Remove debug logs
+#  -assumenosideeffects class android.util.Log {
+#    public static boolean isLoggable(java.lang.String, int);
+#    public static *** d(...);
+#    public static *** v(...);
+#    public static *** i(...);
+#    public static *** w(...);
+#    public static *** e(...);
+#  }
+
+#    public static int v(…);
+#    public static int d(…);
+#    public static int i(…);
+#    public static int w(…);
+#    public static int e(…);
+
+-dontskipnonpubliclibraryclasses
+-dontobfuscate
+
+

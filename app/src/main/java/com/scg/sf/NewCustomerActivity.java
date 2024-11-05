@@ -32,6 +32,7 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
+import com.scg.sf.util.EncryptedPrefsUtil;
 import com.scg.sf.util.LocationUtils;
 import com.scg.sf.util.Toasts;
 
@@ -127,8 +128,10 @@ public class NewCustomerActivity extends AppCompatActivity {
         //mylistener = new MyLocationListener();
 
         mPrefs = getSharedPreferences("label", 0);
-        mUserId = mPrefs.getString("userId", "0");
-        mAuthToken = mPrefs.getString("authToken", "");
+//        mUserId = mPrefs.getString("userId", "0");
+//        mAuthToken = mPrefs.getString("authToken", "");
+        mUserId = EncryptedPrefsUtil.getString("userId","0");
+        mAuthToken = EncryptedPrefsUtil.getString("authToken", "");
 //        Toasts.toastIconError(NewOutletActivity.this,mUserId);
 
         clockinId = mPrefs.getString("clockinId", "0");
@@ -189,9 +192,39 @@ public class NewCustomerActivity extends AppCompatActivity {
                     long unixTime = System.currentTimeMillis() / 1000L;
                     //Toast.makeText(NewOutletActivity.this,mUserId+" This",Toast.LENGTH_SHORT).show();
                     //new JsonTask().execute(Constants.BASE_URL + "api/clockin", "POST", mUserId, unixTime + "", lat + "", lon + "");
-                    new JsonTask().execute(Constants.BASE_URL + "api/addoutlet", "POST",
-                            mUserId, outletName, contactPersonName, phone,
-                            lat + "", lon + "", unixTime + "", clockinId);
+//                    new JsonTask().execute(Constants.BASE_URL + "api/addoutlet", "POST",
+//                            mUserId, outletName, contactPersonName, phone,
+//                            lat + "", lon + "", unixTime + "", clockinId);
+
+
+
+                    new TokenManager(NewCustomerActivity.this,  (success, result) -> {
+                        if (success) {
+                            // Handle the JSON result, update UI, etc.
+                            System.out.println("API Result: " + result);
+
+                            handleResult(result);
+
+                        } else {
+                            // Handle errors (e.g., token refresh failed)
+                            Toasts.toastIconError(NewCustomerActivity.this, result);
+                            Intent intent = new Intent(NewCustomerActivity.this, LoginActivity.class);
+                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                            startActivity(intent);
+                        }
+                    }).executeRequest(Constants.BASE_URL +"api/addoutlet", "POST",
+                            "userId",mUserId,"time", unixTime + "", "lat",lat + "",
+                            "long", lon + "","outletName",outletName,
+                            "phone", phone+"","contactPersonName",
+                            contactPersonName,"clockinId", clockinId);
+
+
+
+
+
+
+
+
 
                 } else {
                     Toasts.toastIconError(NewCustomerActivity.this,
@@ -403,6 +436,67 @@ public class NewCustomerActivity extends AppCompatActivity {
 
 
         }
+    }
+
+    private void handleResult(String result) {
+
+            isTaskRunning = false;
+
+            if(pd != null && pd.isShowing() && !isFinishing()){
+                pd.dismiss();
+            }
+
+            System.out.println("Result: " + result);
+            try {
+
+                if (result != null) {
+
+                    JSONObject jsonObject = new JSONObject(result);
+                    //txtJson.setText(jsonObject.toString());
+                    //Submit Sale Failed means server returns nothing
+                    //Error saving means server responds with something other than success
+                    if(result.contains("errors")){
+                        String message = jsonObject.getString("message");
+                        Toasts.toastIconError(NewCustomerActivity.this, message);
+                        //Toast.makeText(getBaseContext(), message, Toast.LENGTH_SHORT).show();
+                    }
+                    else if(result.contains("success")){
+                        String outletId=jsonObject.getString("outletId");
+                        String visitId=jsonObject.getString("visitId");
+                        long unixTimestamp = Instant.now().getEpochSecond();
+
+                        Intent intent = new Intent(NewCustomerActivity.this, TakePhotoActivity.class);
+                        //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+//                        Toast.makeText(NewOutletActivity.this,"visitid"+visitId+" outletid"+outletId,Toast.LENGTH_SHORT).show();
+                        intent.putExtra("outletId", outletId);
+                        intent.putExtra("visitId", visitId);
+                        intent.putExtra("callingActivity","Outlet");
+                        intent.putExtra("outletName",outletName);
+
+                        startActivity(intent);
+                    }else{
+                        Toasts.toastIconError(NewCustomerActivity.this,
+                                "Error Saving. Please Try Again");
+                        FirebaseCrashlytics.getInstance().recordException(new Exception("New Customer Error: "+result));
+
+                    }
+
+
+
+                }else
+                {
+                    Toasts.toastIconError(NewCustomerActivity.this,
+                            "Add Customer Failed. Please Try Again");
+                    FirebaseCrashlytics.getInstance().recordException(new Exception("New Customer Error: "+result));
+
+                }
+
+            } catch (JSONException e) {
+                throw new RuntimeException(e);
+            }
+
+
+
     }
 
     //START OF LATEST LOCATION CODE

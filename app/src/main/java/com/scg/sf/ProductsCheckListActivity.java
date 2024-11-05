@@ -28,6 +28,7 @@ import android.widget.TextView;
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.scg.sf.adapters.AdapterListCheckProducts;
 import com.scg.sf.models.Product;
+import com.scg.sf.util.EncryptedPrefsUtil;
 import com.scg.sf.util.Toasts;
 
 import org.json.JSONArray;
@@ -53,7 +54,7 @@ public class ProductsCheckListActivity extends AppCompatActivity {
     private JSONArray products = null;
     private AdapterListCheckProducts mAdapter;
     private String mAuthToken;
-    private SharedPreferences mPrefs;
+//    private SharedPreferences mPrefs;
 
     private Button auditSelectedButton;
     private String visitId;
@@ -79,8 +80,9 @@ public class ProductsCheckListActivity extends AppCompatActivity {
         mCallingActivity=i.getStringExtra("callingActivity");
         mNoProductsTextView=(TextView)findViewById(R.id.noProductsText);
 
-        mPrefs = getSharedPreferences("label", 0);
-        mAuthToken = mPrefs.getString("authToken", "");
+//        mPrefs = getSharedPreferences("label", 0);
+//        mAuthToken = mPrefs.getString("authToken", "");
+        mAuthToken = EncryptedPrefsUtil.getString("authToken", "");
         auditSelectedButton = (Button) findViewById(R.id.auditSelectedButton);
 
         if (mCallingActivity.equals("makeSale")){
@@ -95,8 +97,190 @@ public class ProductsCheckListActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setHasFixedSize(true);
 
-        new JsonTask().execute(Constants.BASE_URL + "api/productsinstock","GET");
+//        new JsonTask().execute(Constants.BASE_URL + "api/productsinstock","GET");
+
+        new TokenManager(ProductsCheckListActivity.this,  (success, result) -> {
+            if (success) {
+                // Handle the JSON result, update UI, etc.
+                System.out.println("API Result: " + result);
+
+                handleResult(result);
+
+            } else {
+                // Handle errors (e.g., token refresh failed)
+                Toasts.toastIconError(ProductsCheckListActivity.this, result);
+                Intent intent = new Intent(ProductsCheckListActivity.this, LoginActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+            }
+        }).executeRequest(Constants.BASE_URL +"api/productsinstock", "GET"
+                );
     }
+
+    private void handleResult(String result){
+
+        if(pd != null && pd.isShowing() && !isFinishing()){
+            pd.dismiss();
+        }
+
+        try {
+
+            System.out.println("Result: " + result);
+            if (result != null && result.contains("products")){
+
+                JSONObject jsonObject = new JSONObject(result);
+                //txtJson.setText(jsonObject.toString());
+                items = new ArrayList<>();
+
+                if (jsonObject.has("products") &&
+                        jsonObject.get("products") instanceof JSONArray) {
+
+                    products = jsonObject.getJSONArray("products");
+                    System.out.println("Products length: "+products.length());
+
+                    for (int i = 0; i < products.length(); i++) {
+                        Product obj = new Product();
+                        //obj.image = drw_arr.getResourceId(i, -1);
+                        obj.name = products.getJSONObject(i).getString("name");
+                        obj.sku = products.getJSONObject(i).getString("sku");
+                        obj.price = products.getJSONObject(i).getString("price");
+                        obj.id = products.getJSONObject(i).getString("id");
+                        obj.stock = products.getJSONObject(i).getInt("stock");
+                        obj.productType = products.getJSONObject(i).getString("producttype");
+                        obj.targetType = products.getJSONObject(i).getString("targettype");
+                        System.out.println("targettype: "+obj.targetType);
+                        obj.target = products.getJSONObject(i).getString("target");
+                        //obj.imageDrw = drw_arr.getDrawable(obj.image);
+                        items.add(obj);
+                    }
+
+                    if (items.isEmpty()) {
+                        recyclerView.setVisibility(View.GONE);
+                        emptyView.setVisibility(View.VISIBLE);
+                    }
+                    else {
+                        recyclerView.setVisibility(View.VISIBLE);
+                        emptyView.setVisibility(View.GONE);
+                    }
+
+                    //set data and list adapter
+                    mAdapter = new AdapterListCheckProducts(items);
+                    recyclerView.setAdapter(mAdapter);
+
+                    mAdapter.setOnItemClickListener(new AdapterListCheckProducts.OnItemClickListener() {
+                        @Override
+                        public void onItemClick(View view, Product obj, int position) {
+                            //Snackbar.make(parent_view, "Item " + obj.name + " clicked - id"+obj.id, Snackbar.LENGTH_SHORT).show();
+                            System.out.println("Item clicked " + obj.name + " clicked - id"+obj.id);
+
+                            CheckBox checkBox=view.findViewById(R.id.checkProduct);
+                            if(checkBox.isChecked()) {
+                                checkBox.setChecked(false);
+                                obj.checked=false;
+                            }else{
+                                checkBox.setChecked(true);
+                                obj.checked=true;
+                            }
+                        }
+                    });
+
+                    auditSelectedButton.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            productList = new ArrayList<>();
+
+
+                            for (int i = 0; i < items.size(); i++) {
+                                Product product = items.get(i);
+                                //String productId = product.id;
+//                                    CheckBox checkProduct = (CheckBox) vie.findViewById(R.id.checkProduct);
+//                                    Boolean productSelected = checkProduct.isChecked();
+                                if(product.checked){
+                                    productList.add(product);
+                                }
+
+                                Log.d("productCount: ", productList+"");
+
+
+
+//                                    for (int i = 0; i < recyclerView.getChildCount(); i++) {
+//                                    View vie = recyclerView.getChildAt(i);
+//                                    Product product = items.get(i);
+//                                    //String productId = product.id;
+//                                    CheckBox checkProduct = (CheckBox) vie.findViewById(R.id.checkProduct);
+//                                    Boolean productSelected = checkProduct.isChecked();
+//                                    if(productSelected){
+//                                        productList.add(product);
+//                                    }
+//                                    Log.d("productCount: ", productList+"");
+
+
+                            }
+
+                            Intent i = getIntent();
+                            visitId = i.getStringExtra("visitId");
+                            outletId = i.getStringExtra("outletId");
+                            outletName = i.getStringExtra("outletName");
+                            mCallingActivity = i.getStringExtra("callingActivity");
+
+                            if(productList.isEmpty()){
+                                Toasts.toastIconError(ProductsCheckListActivity.this,"You have not selected any products");
+                            }else{
+                                Intent intent = new Intent(ProductsCheckListActivity.this, AddSalePOSAuditActivity.class);
+
+                                //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                                intent.putExtra("visitId", visitId);
+                                intent.putExtra("outletId", outletId);
+                                intent.putExtra("outletName", outletName);
+                                intent.putExtra("productList", (Serializable) productList);
+                                intent.putExtra("callingActivity",mCallingActivity);
+                                startActivity(intent);
+
+                                //new JsonTask().execute(Constants.BASE_URL + "api/addposaudit", "POST", productString, userId, outletId, visitId);
+                                //Toast.makeText(getBaseContext(), productString, Toast.LENGTH_SHORT).show();
+                                System.out.println("productString: " + productList);
+
+                            }
+
+
+
+
+                        }
+                    });
+
+                    // on item list clicked
+//                        mAdapter.setOnItemClickListener(new AdapterListOutlets.OnItemClickListener() {
+//                            @Override
+//                            public void onItemClick(View view, Outlet obj, int position) {
+//                                //Snackbar.make(parent_view, "Item " + obj.name + " clicked - id"+obj.id, Snackbar.LENGTH_SHORT).show();
+//                                System.out.println("Item clicked " + obj.name + " clicked - id"+obj.id);
+//                                long unixTime = System.currentTimeMillis() / 1000L;
+//                                new JsonTask().execute(Constants.BASE_URL + "api/checkin","POST","1",unixTime+"","32.45567","44.4594",obj.id);
+//                            }
+//                        });
+
+                }else {
+                    FirebaseCrashlytics.getInstance().recordException(new Exception("ProductsCheckList Error: "+result));
+                    Toasts.toastIconError(ProductsCheckListActivity.this,"Error Loading Products");
+
+                    //Error
+                    //Toast.makeText(ProductsListActivity.this,result,Toast.LENGTH_SHORT).show();
+
+                }
+
+            }else{
+                FirebaseCrashlytics.getInstance().recordException(new Exception("ProductsCheckList Error: "+result));
+                Toasts.toastIconError(ProductsCheckListActivity.this,"Error Loading Products");
+
+
+            }
+
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
 
     private void initToolbar() {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -206,7 +390,7 @@ public class ProductsCheckListActivity extends AppCompatActivity {
         protected void onPostExecute(String result) {
             super.onPostExecute(result);
 
-                       if(pd != null && pd.isShowing() && !isFinishing()){
+            if(pd != null && pd.isShowing() && !isFinishing()){
                 pd.dismiss();
             }
 

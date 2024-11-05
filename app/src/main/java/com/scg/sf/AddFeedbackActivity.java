@@ -17,6 +17,7 @@ import android.widget.Button;
 import android.widget.EditText;
 
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
+import com.scg.sf.util.EncryptedPrefsUtil;
 import com.scg.sf.util.Toasts;
 
 import org.json.JSONException;
@@ -54,9 +55,12 @@ public class AddFeedbackActivity extends AppCompatActivity {
 
         initToolbar();
 
-        mPrefs = getSharedPreferences("label", 0);
-        mUserId = mPrefs.getString("userId", "0");
-        mAuthToken = mPrefs.getString("authToken", "");
+//        mPrefs = getSharedPreferences("label", 0);
+//        mUserId = mPrefs.getString("userId", "0");
+//        mAuthToken = mPrefs.getString("authToken", "");
+
+        mUserId = EncryptedPrefsUtil.getString("userId","0");
+        mAuthToken = EncryptedPrefsUtil.getString("authToken", "");
 
         submitFeedbackButton = (Button)findViewById(R.id.submitFeedbackButton);
         feedbackEditText = (EditText)findViewById(R.id.feedbackEditText);
@@ -80,13 +84,75 @@ public class AddFeedbackActivity extends AppCompatActivity {
 
                     //long unixTime = System.currentTimeMillis() / 1000L;
 
-                    new JsonTask().execute(Constants.BASE_URL + "api/addfeedback", "POST", userId, outletId, visitId, feedback);
+//                    new JsonTask().execute(Constants.BASE_URL + "api/addfeedback", "POST",
+//                            userId, outletId, visitId, feedback);
+
+                    new TokenManager(AddFeedbackActivity.this,  (success, result) -> {
+                        if (success) {
+                            // Handle the JSON result, update UI, etc.
+                            System.out.println("API Result: " + result);
+
+                            handleResult(result);
+
+                        } else {
+                            // Handle errors (e.g., token refresh failed)
+                            Toasts.toastIconError(AddFeedbackActivity.this, result);
+                            Intent intent = new Intent(AddFeedbackActivity.this, LoginActivity.class);
+                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                            startActivity(intent);
+                        }
+                    }).executeRequest(Constants.BASE_URL +"api/addfeedback", "POST",
+                            "userId",mUserId,"outletId",outletId,"visitId",visitId,"feedback",
+                            feedback);
                 }
 
 
             }
         });
     }
+
+    private void handleResult(String result){
+        isTaskRunning = false;
+
+        System.out.println("Result: " + result);
+        try {
+            JSONObject jsonObject = new JSONObject(result);
+            //Submit Failed means server returns nothing
+            //Error saving means server responds with something other than success
+            if (result != null) {
+                if(result.contains("errors")){
+                    String message = jsonObject.getString("message");
+                    Toasts.toastIconError(AddFeedbackActivity.this,message);
+                    //Toast.makeText(getBaseContext(), message, Toast.LENGTH_SHORT).show();
+                }
+                else if(result.contains("success")){
+                    Intent intent = new Intent(AddFeedbackActivity.this, SelectActionActivity.class);
+                    //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                    intent.putExtra("lastUpdatedActivity","feedback");
+                    intent.putExtra("visitId",visitId);
+                    intent.putExtra("outletId",outletId);
+                    intent.putExtra("outletName",outletName);
+                    startActivity(intent);
+                }else{
+                    Toasts.toastIconError(AddFeedbackActivity.this,
+                            "Error Saving. Please Try Again");
+                    FirebaseCrashlytics.getInstance().recordException(new Exception("AddFeedback Error: "+result));
+
+                }
+
+            }else
+            {
+                Toasts.toastIconError(AddFeedbackActivity.this,
+                        "Submit Feedback Failed. Please Try Again");
+                FirebaseCrashlytics.getInstance().recordException(new Exception("AddFeedback Error: "+result));
+
+            }
+
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 
     private class JsonTask extends AsyncTask<String, String, String> {
 

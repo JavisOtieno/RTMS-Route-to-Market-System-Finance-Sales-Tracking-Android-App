@@ -23,7 +23,9 @@ import android.widget.Toast;
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.scg.sf.adapters.AdapterListFeedback;
 import com.scg.sf.models.Feedback;
+import com.scg.sf.util.EncryptedPrefsUtil;
 import com.scg.sf.util.PreventDoubleClickOnLists;
+import com.scg.sf.util.Toasts;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -54,7 +56,7 @@ public class VisitFeedbackActivity extends AppCompatActivity {
     private JSONArray feedback = null;
     private AdapterListFeedback mAdapter;
     private String mAuthToken;
-    private SharedPreferences mPrefs;
+//    private SharedPreferences mPrefs;
     private TextView emptyView;
 
     private String visitId;
@@ -70,8 +72,9 @@ public class VisitFeedbackActivity extends AppCompatActivity {
 
         initToolbar();
 
-        mPrefs = getSharedPreferences("label", 0);
-        mAuthToken = mPrefs.getString("authToken", "");
+//        mPrefs = getSharedPreferences("label", 0);
+//        mAuthToken = mPrefs.getString("authToken", "");
+        mAuthToken = EncryptedPrefsUtil.getString("authToken", "");
 
         recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -85,7 +88,132 @@ public class VisitFeedbackActivity extends AppCompatActivity {
         //callingActivity=i.getStringExtra("callingActivity");
         outletName=i.getStringExtra("outletName");
 
-        new JsonTask().execute( Constants.BASE_URL + "api/visitfeedback","POST",visitId);
+//        new JsonTask().execute( Constants.BASE_URL + "api/visitfeedback","POST",visitId);
+
+        new TokenManager(VisitFeedbackActivity.this,  (success, result) -> {
+            if (success) {
+                // Handle the JSON result, update UI, etc.
+                System.out.println("API Result: " + result);
+
+                handleResult(result);
+
+            } else {
+                // Handle errors (e.g., token refresh failed)
+                Toasts.toastIconError(VisitFeedbackActivity.this, result);
+                Intent intent = new Intent(VisitFeedbackActivity.this, LoginActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+            }
+        }).executeRequest(Constants.BASE_URL +"api/visitfeedback", "POST",
+                "visitId",visitId);
+
+    }
+
+    private void handleResult(String result){
+
+        if(pd != null && pd.isShowing() && !isFinishing()){
+            pd.dismiss();
+        }
+
+        try {
+            System.out.println("Result: " + result);
+            if (result != null && result.contains("feedback")){
+                JSONObject jsonObject = new JSONObject(result);
+                //txtJson.setText(jsonObject.toString());
+                List<Feedback> items = new ArrayList<>();
+
+                if (jsonObject.has("feedback") &&
+                        jsonObject.get("feedback") instanceof JSONArray) {
+
+                    feedback = jsonObject.getJSONArray("feedback");
+                    System.out.println("Outlets length: "+feedback.length());
+
+                    for (int i = 0; i < feedback.length(); i++) {
+                        Feedback obj = new Feedback();
+                        //obj.image = drw_arr.getResourceId(i, -1);
+                        obj.feedback = feedback.getJSONObject(i).getString("feedback");
+                        String createdAt = feedback.getJSONObject(i).getString("created_at");
+                        ZonedDateTime dateTime = Instant.parse(createdAt).atZone(ZoneId.of("Africa/Nairobi"));
+                        String formatted = dateTime.format(DateTimeFormatter.ofPattern("dd-MMM-yyyy \nHH:mm "));
+                        obj.created_at = formatted;
+                        if(!feedback.getJSONObject(i).isNull("outlet"))
+                        {
+                            obj.created_outlet = feedback.getJSONObject(i).getJSONObject("outlet").getString("name");
+                        }
+                        else{
+                            obj.created_outlet="Outlet Not Found";
+                        }
+                        //obj.created_outlet = feedback.getJSONObject(i).getJSONObject("outlet").getString("name");
+                        obj.id = feedback.getJSONObject(i).getString("id");
+                        //obj.imageDrw = drw_arr.getDrawable(obj.image);
+                        items.add(obj);
+                    }
+
+                    if (items.isEmpty()) {
+                        recyclerView.setVisibility(View.GONE);
+                        emptyView.setVisibility(View.VISIBLE);
+                    }
+                    else {
+                        recyclerView.setVisibility(View.VISIBLE);
+                        emptyView.setVisibility(View.GONE);
+                    }
+
+
+                    //set data and list adapter
+                    mAdapter = new AdapterListFeedback(items);
+                    recyclerView.setAdapter(mAdapter);
+
+                    // on item list clicked
+                    mAdapter.setOnItemClickListener(new AdapterListFeedback.OnItemClickListener() {
+                        @Override
+                        public void onItemClick(View view, Feedback obj, int position) {
+
+                            //Snackbar.make(parent_view, "Item " + obj.name + " clicked", Snackbar.LENGTH_SHORT).show();
+//                                Intent intent = new Intent(VisitFeedbackActivity.this, IndividualFeedbackActivity.class);
+                            //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                            //intent.putExtra("visitId", visitId);
+                            //intent.putExtra("outletId", outletId);
+//                                intent.putExtra("feedback", items.get(position));
+//                                startActivity(intent);
+
+                            Feedback feedback = items.get(position);
+
+                            PreventDoubleClickOnLists.
+                                    showActivityWithoutDoubleClick(
+                                            "feedback",VisitFeedbackActivity.this,
+                                            feedback, IndividualFeedbackActivity.class);
+
+
+                        }
+                    });
+
+                }else {
+                    FirebaseCrashlytics.getInstance().recordException(new Exception("VisitFeedback Error: "+result));
+
+                    Intent intent = new Intent(VisitFeedbackActivity.this, ErrorLoadingActivity.class);
+                    //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                    intent.putExtra("callingActivity", "VisitFeedback");
+
+                    //startActivity(intent, ActivityOptions.makeSceneTransitionAnimation(ProductsListActivity.this).toBundle());
+                    startActivity(intent);
+                    finish();
+                }
+
+            }else {
+                FirebaseCrashlytics.getInstance().recordException(new Exception("VisitFeedback Error: "+result));
+
+                Intent intent = new Intent(VisitFeedbackActivity.this, ErrorLoadingActivity.class);
+                //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                intent.putExtra("callingActivity", "VisitFeedback");
+
+                //startActivity(intent, ActivityOptions.makeSceneTransitionAnimation(ProductsListActivity.this).toBundle());
+                startActivity(intent);
+                finish();
+            }
+
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
+        }
 
     }
 
@@ -195,7 +323,7 @@ public class VisitFeedbackActivity extends AppCompatActivity {
         protected void onPostExecute(String result) {
             super.onPostExecute(result);
 
-                       if(pd != null && pd.isShowing() && !isFinishing()){
+            if(pd != null && pd.isShowing() && !isFinishing()){
                 pd.dismiss();
             }
 

@@ -28,7 +28,9 @@ import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.scg.sf.adapters.AdapterListSales;
 import com.scg.sf.models.Sale;
 import com.scg.sf.models.SaleItem;
+import com.scg.sf.util.EncryptedPrefsUtil;
 import com.scg.sf.util.PreventDoubleClickOnLists;
+import com.scg.sf.util.Toasts;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -67,7 +69,7 @@ public class VisitSalesActivity extends AppCompatActivity {
     private TypedArray drw_arr;
     private String name_arr[];
     private String mAuthToken;
-    private SharedPreferences mPrefs;
+//    private SharedPreferences mPrefs;
     private TextView emptyView;
     private String visitId;
     private String outletName;
@@ -83,8 +85,9 @@ public class VisitSalesActivity extends AppCompatActivity {
         setContentView(R.layout.activity_sales);
         parent_view = findViewById(android.R.id.content);
 
-        mPrefs = getSharedPreferences("label", 0);
-        mAuthToken = mPrefs.getString("authToken", "");
+//        mPrefs = getSharedPreferences("label", 0);
+//        mAuthToken = mPrefs.getString("authToken", "");
+        mAuthToken = EncryptedPrefsUtil.getString("authToken", "");
 
         emptyView = (TextView) findViewById(R.id.empty_view);
 
@@ -101,8 +104,223 @@ public class VisitSalesActivity extends AppCompatActivity {
         initToolbar();
         initComponent();
 
-        new JsonTask().execute( Constants.BASE_URL + "api/visitsales","POST",visitId);
+//        new JsonTask().execute( Constants.BASE_URL + "api/visitsales","POST",visitId);
 
+        new TokenManager(VisitSalesActivity.this,  (success, result) -> {
+            if (success) {
+                // Handle the JSON result, update UI, etc.
+                System.out.println("API Result: " + result);
+
+                handleResult(result);
+
+            } else {
+                // Handle errors (e.g., token refresh failed)
+                Toasts.toastIconError(VisitSalesActivity.this, result);
+                Intent intent = new Intent(VisitSalesActivity.this, LoginActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+            }
+        }).executeRequest(Constants.BASE_URL +"api/visitsales", "POST",
+                "visitId",visitId);
+
+
+
+
+    }
+    private void handleResult(String result){
+
+        if(pd != null && pd.isShowing() && !isFinishing()){
+            pd.dismiss();
+        }
+
+        try {
+
+            System.out.println("Result: "+result);
+            if (result != null && result.contains("sales")) {
+                JSONObject jsonObject = new JSONObject(result);
+                //txtJson.setText(jsonObject.toString());
+                List<Sale> items = new ArrayList<>();
+
+                if (jsonObject.has("sales") &&
+                        jsonObject.get("sales") instanceof JSONArray) {
+
+                    sales = jsonObject.getJSONArray("sales");
+                    System.out.println("Sales length: " + sales.length());
+
+                    for (int i = 0; i < sales.length(); i++) {
+                        Sale obj = new Sale();
+                        //obj.image = drw_arr.getResourceId(i, -1);
+
+                        JSONArray saleItems = sales.getJSONObject(i).getJSONArray("saleitems");
+
+                        String allProductsSalesitemString = "";
+
+                        String firstsaleItemProductName = "";
+
+                        if(!saleItems.getJSONObject(0).isNull("product")){
+                            firstsaleItemProductName =
+                                    saleItems.getJSONObject(0).getJSONObject("product")
+                                            .getString("name");
+                        }else{
+                            firstsaleItemProductName = "Product Not Found";
+                        }
+
+                        String firstsaleItemPieces =
+                                saleItems.getJSONObject(0).getString("pieces");
+                        String singleProductsSalesitemString = firstsaleItemProductName + " - " + firstsaleItemPieces;
+                        if (saleItems.length() > 1) {
+                            singleProductsSalesitemString += "...";
+                        }
+
+
+//                            for (int j = 0; j < saleItems.length(); j++) {
+//                                String saleItemProductName = saleItems.getJSONObject(j).getJSONObject("product").getString("name");
+//                                String saleItemPieces = saleItems.getJSONObject(j).getString("pieces");
+//                                allProductsSalesitemString = allProductsSalesitemString + saleItemProductName + " - " + saleItemPieces + " ";
+//
+//                                System.out.println("SaleItem: " + allProductsSalesitemString);
+//
+//                            }
+
+                        saleItemsList = new ArrayList<>();
+
+                        for (int j = 0; j < saleItems.length(); j++) {
+                            String saleItemProductName="";
+                            if(!saleItems.getJSONObject(j).isNull("product")){
+                                //obj.name = posAudits.getJSONObject(j).getJSONObject("outlet").getString("name");
+                                saleItemProductName = saleItems.getJSONObject(j).
+                                        getJSONObject("product").getString("name");
+                            }else{
+                                saleItemProductName="Product Not Found";
+                            }
+
+                            // String saleItemProductName = saleItems.getJSONObject(j).getJSONObject("product").getString("name");
+                            String saleItemPieces = saleItems.getJSONObject(j).getString("pieces");
+                            allProductsSalesitemString = allProductsSalesitemString + saleItemProductName + " - " + saleItemPieces + " ";
+
+                            System.out.println("SaleItem: " + allProductsSalesitemString);
+
+                            SaleItem saleItem = new SaleItem();
+
+                            if(!saleItems.getJSONObject(j).isNull("product")){
+                                saleItem.productName = saleItems.getJSONObject(j).
+                                        getJSONObject("product").getString("name");
+                            }
+                            else{
+                                saleItem.productName = saleItems.getJSONObject(j).
+                                        getJSONObject("product").getString("name");
+                            }
+                            saleItem.pieces = saleItems.getJSONObject(j).getString("pieces");
+                            saleItem.price = saleItems.getJSONObject(j).getString("price");
+                            saleItem.value = saleItems.getJSONObject(j).getString("value");
+                            saleItemsList.add(saleItem);
+
+                        }
+
+                        System.out.println("SaleItems: " + saleItems.length());
+                        obj.name = singleProductsSalesitemString;
+                        obj.allproductsname = allProductsSalesitemString;
+                        obj.saleItems = saleItemsList;
+
+                        //obj.name = sales.getJSONObject(i).getJSONObject("product").getString("name");
+                        String createdAt = sales.getJSONObject(i).getString("created_at");
+                        ZonedDateTime dateTime = Instant.parse(createdAt).atZone(ZoneId.of("Africa/Nairobi"));
+                        String formatted = dateTime.format(DateTimeFormatter.ofPattern("dd/MM/yyyy \nHH:mm "));
+                        obj.time = formatted;
+
+                        String status = sales.getJSONObject(i).getString("status");
+                        obj.status=status.substring(0, 1).toUpperCase() + status.substring(1);
+
+
+
+                        Integer pieces = Integer.valueOf(sales.getJSONObject(i).getString("pieces"));
+                        String outletName="";
+                        if(!sales.getJSONObject(i).isNull("outlet")){
+                            //obj.name = posAudits.getJSONObject(j).getJSONObject("outlet").getString("name");
+                            outletName = sales.getJSONObject(i).getJSONObject("outlet").getString("name");
+                        }else{
+                            outletName="Outlet Not Found";
+                        }
+                        //String sellerName = sales.getJSONObject(i).getJSONObject("user").getString("name");
+                        //String outletName = sales.getJSONObject(i).getJSONObject("outlet").getString("name");
+                        String allProductsName = allProductsSalesitemString;
+                        obj.pieces = pieces + "";
+                        //obj.sellerName = sellerName;
+                        obj.outletName = outletName;
+                        obj.allproductsname = allProductsName;
+                        //Integer price = Integer.valueOf(sales.getJSONObject(i).getString("price"));
+                        Integer value = Integer.valueOf(sales.getJSONObject(i).getString("value"));
+                        obj.price = "KSh. " + NumberFormat.getNumberInstance(Locale.US).format(value);
+                        //obj.imageDrw = drw_arr.getDrawable(obj.image);
+                        items.add(obj);
+                    }
+
+                    if (items.isEmpty()) {
+                        recyclerView.setVisibility(View.GONE);
+                        emptyView.setVisibility(View.VISIBLE);
+                    } else {
+                        recyclerView.setVisibility(View.VISIBLE);
+                        emptyView.setVisibility(View.GONE);
+                    }
+
+                    //set data and list adapter
+                    mAdapter = new AdapterListSales(items);
+                    recyclerView.setAdapter(mAdapter);
+
+                    // on item list clicked
+                    mAdapter.setOnItemClickListener(new AdapterListSales.OnItemClickListener() {
+                        @Override
+                        public void onItemClick(View view, Sale obj, int position) {
+                            //Snackbar.make(parent_view, "Item " + obj.name + " clicked", Snackbar.LENGTH_SHORT).show();
+//                                Intent intent = new Intent(VisitSalesActivity.this, IndividualSaleActivity.class);
+                            //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                            //intent.putExtra("visitId", visitId);
+                            //intent.putExtra("outletId", outletId);
+//                                intent.putExtra("sale", items.get(position));
+//                                startActivity(intent);
+                            Sale sale=items.get(position);
+
+                            PreventDoubleClickOnLists.
+                                    showActivityWithoutDoubleClick(
+                                            "sale",VisitSalesActivity.this,
+                                            sale, IndividualSaleActivity.class);
+                        }
+                    });
+
+
+
+//                    outletsNumber.setText(outletsTotal);
+//                    posAuditsNumber.setText(posAuditsTotal);
+//                    salesNumber.setText(salesTotal);
+//                    feedbackNumber.setText(feedbackTotal);
+//                    targetSales.setText("KSh " + NumberFormat.getNumberInstance(Locale.US).format(parseInt(dailySalesTotal)));
+//                    currentSales.setText("KSh " + NumberFormat.getNumberInstance(Locale.US).format(parseInt(currentSalesTarget)));
+
+
+                }else{
+                    FirebaseCrashlytics.getInstance().recordException(new Exception("VisitSales Error: "+result));
+                    Intent intent = new Intent(VisitSalesActivity.this, ErrorLoadingActivity.class);
+                    //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                    intent.putExtra("callingActivity", "VisitSales");
+
+                    //startActivity(intent, ActivityOptions.makeSceneTransitionAnimation(ProductsListActivity.this).toBundle());
+                    startActivity(intent);
+                    finish();
+                }
+            }else{
+                FirebaseCrashlytics.getInstance().recordException(new Exception("VisitSales Error: "+result));
+                Intent intent = new Intent(VisitSalesActivity.this, ErrorLoadingActivity.class);
+                //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                intent.putExtra("callingActivity", "VisitSales");
+
+                //startActivity(intent, ActivityOptions.makeSceneTransitionAnimation(ProductsListActivity.this).toBundle());
+                startActivity(intent);
+                finish();
+            }
+
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
+        }
 
     }
     private void initComponent() {
@@ -233,7 +451,7 @@ public class VisitSalesActivity extends AppCompatActivity {
         protected void onPostExecute(String result) {
             super.onPostExecute(result);
 
-                       if(pd != null && pd.isShowing() && !isFinishing()){
+            if(pd != null && pd.isShowing() && !isFinishing()){
                 pd.dismiss();
             }
 
@@ -472,7 +690,7 @@ public class VisitSalesActivity extends AppCompatActivity {
     private void initToolbar() {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        getSupportActionBar().setTitle("Visit Sales");
+        getSupportActionBar().setTitle("Visit Deals");
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         //Tools.setSystemBarColor(this);
     }

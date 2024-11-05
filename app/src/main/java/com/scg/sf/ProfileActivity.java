@@ -12,10 +12,17 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.TextView;
 
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
+import com.scg.sf.adapters.AdapterListFeedback;
+import com.scg.sf.models.Feedback;
+import com.scg.sf.util.EncryptedPrefsUtil;
+import com.scg.sf.util.PreventDoubleClickOnLists;
+import com.scg.sf.util.Toasts;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -26,6 +33,11 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 
 public class ProfileActivity extends AppCompatActivity {
     private ProgressDialog pd;
@@ -43,15 +55,16 @@ public class ProfileActivity extends AppCompatActivity {
 
     private TextView nameTopTextView;
     private String mAuthToken;
-    private SharedPreferences mPrefs;
+//    private SharedPreferences mPrefs;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
         initToolbar();
 
-        mPrefs = getSharedPreferences("label", 0);
-        mAuthToken = mPrefs.getString("authToken", "");
+//        mPrefs = getSharedPreferences("label", 0);
+//        mAuthToken = mPrefs.getString("authToken", "");
+        mAuthToken = EncryptedPrefsUtil.getString("authToken", "");
 
         postTopTextView = (TextView)findViewById(R.id.postTopTextView);
 //        postTextView = (TextView) findViewById(R.id.postTextView);
@@ -65,7 +78,129 @@ public class ProfileActivity extends AppCompatActivity {
         territoryTextView = (TextView) findViewById(R.id.territoryTextView);
         teamTextView = (TextView) findViewById(R.id.teamTextView);
 
-        new JsonTask().execute(Constants.BASE_URL + "api/profile","GET");
+//        new JsonTask().execute(Constants.BASE_URL + "api/profile","GET");
+
+        new TokenManager(ProfileActivity.this,  (success, result) -> {
+            if (success) {
+                // Handle the JSON result, update UI, etc.
+                System.out.println("API Result: " + result);
+
+                handleResult(result);
+
+            } else {
+                // Handle errors (e.g., token refresh failed)
+                Toasts.toastIconError(ProfileActivity.this, result);
+                Intent intent = new Intent(ProfileActivity.this, LoginActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+            }
+        }).executeRequest(Constants.BASE_URL +"api/profile", "GET");
+
+
+    }
+
+    private void handleResult(String result){
+        if(pd != null && pd.isShowing() && !isFinishing()){
+            pd.dismiss();
+        }
+
+        try {
+
+            System.out.println("Result: "+result);
+            if (result != null && result.contains("user")){
+                JSONObject jsonObject = new JSONObject(result);
+                //txtJson.setText(jsonObject.toString());
+//                    List<Sale> items = new ArrayList<>();
+                if (jsonObject.has("user") &&
+                        jsonObject.get("user") instanceof JSONObject) {
+
+                    profileDetails = jsonObject.getJSONObject("user");
+
+                    nameTextView.setText(profileDetails.getString("name"));
+                    phoneTextView.setText(profileDetails.getString("phone"));
+                    emailTextView.setText(profileDetails.getString("email"));
+                    String post = profileDetails.getString("usertype");
+                    String postCapitalFirst = post.substring(0, 1).toUpperCase() + post.substring(1).toLowerCase();
+//                    postTextView.setText(postCapitalFirst);
+                    postTopTextView.setText(postCapitalFirst);
+                    nameTopTextView.setText(profileDetails.getString("name"));
+
+//                    if(!profileDetails.isNull("targetgroup")){
+//                        String salesTarget = "KSh. "+ NumberFormat.getNumberInstance(Locale.US).format(
+//                                Integer.valueOf(profileDetails.getJSONObject("targetgroup").getString("amount")));
+//                        salesTargetTextView.setText(salesTarget);
+//
+//                    }else{
+//                        salesTargetTextView.setText("N/A");
+//                    }
+
+                    if(!profileDetails.isNull("organization")){
+                        organizationTextView.setText(profileDetails.getJSONObject("organization").getString("name"));
+                    }else{
+                        organizationTextView.setText("N/A");
+                    }
+
+                    if(!profileDetails.isNull("region")){
+                        regionTextView.setText(profileDetails.getJSONObject("region").getString("name"));
+                    }else{
+                        regionTextView.setText("N/A");
+                    }
+                    if(!profileDetails.isNull("team")){
+                        teamTextView.setText(profileDetails.getJSONObject("team").getString("name"));
+                    }else{
+                        teamTextView.setText("N/A");
+                    }
+
+                    if(!profileDetails.isNull("territory")){
+                        territoryTextView.setText(profileDetails.getJSONObject("territory").getString("name"));
+                    }else{
+                        territoryTextView.setText("N/A");
+                    }
+
+                    //System.out.println("ProfileDetails length: "+profileDetails.length());
+
+//                    outletsNumber.setText(outletsTotal);
+//                    posAuditsNumber.setText(posAuditsTotal);
+//                    salesNumber.setText(salesTotal);
+//                    feedbackNumber.setText(feedbackTotal);
+//                    targetSales.setText("KSh " + NumberFormat.getNumberInstance(Locale.US).format(parseInt(dailySalesTotal)));
+//                    currentSales.setText("KSh " + NumberFormat.getNumberInstance(Locale.US).format(parseInt(currentSalesTarget)));
+                }else{
+                    Intent intent = new Intent(ProfileActivity.this, ErrorLoadingActivity.class);
+                    //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                    intent.putExtra("callingActivity", "Profile");
+                    FirebaseCrashlytics.getInstance().recordException(new Exception("Profile Error: "+result));
+
+                    startActivity(intent);
+                    finish();
+
+                }
+            }else{
+                Intent intent = new Intent(ProfileActivity.this, ErrorLoadingActivity.class);
+                //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                intent.putExtra("callingActivity", "Profile");
+                FirebaseCrashlytics.getInstance().recordException(new Exception("Profile Error: "+result));
+
+                //startActivity(intent, ActivityOptions.makeSceneTransitionAnimation(ProductsListActivity.this).toBundle());
+                startActivity(intent);
+                finish();
+
+            }
+//                }else{
+//                    Intent intent = new Intent(ProfileActivity.this, ErrorLoadingActivity.class);
+//                    //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+//                    intent.putExtra("callingActivity", "Profile");
+////
+//                    FirebaseCrashlytics.getInstance().recordException(new Exception("Profile Error: "+result));
+//                    //startActivity(intent, ActivityOptions.makeSceneTransitionAnimation(ProductsListActivity.this).toBundle());
+//                    startActivity(intent);
+//                    finish();
+//                }
+
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
+        }
+
 
     }
 

@@ -28,6 +28,7 @@ import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.scg.sf.adapters.AdapterListPOSAudits;
 import com.scg.sf.models.POSAudit;
 import com.scg.sf.models.POSAuditItem;
+import com.scg.sf.util.EncryptedPrefsUtil;
 import com.scg.sf.util.PreventDoubleClickOnLists;
 
 import org.json.JSONArray;
@@ -65,7 +66,7 @@ public class VisitPOSAuditsActivity extends AppCompatActivity {
     private TypedArray drw_arr;
     private String name_arr[];
     private String mAuthToken;
-    private SharedPreferences mPrefs;
+//    private SharedPreferences mPrefs;
     private TextView emptyView;
     private String visitId;
     private String outletName;
@@ -81,8 +82,10 @@ public class VisitPOSAuditsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_posaudits_list);
         parent_view = findViewById(android.R.id.content);
 
-        mPrefs = getSharedPreferences("label", 0);
-        mAuthToken = mPrefs.getString("authToken", "");
+//        mPrefs = getSharedPreferences("label", 0);
+//        mAuthToken = mPrefs.getString("authToken", "");
+
+        mAuthToken = EncryptedPrefsUtil.getString("authToken", "");
 
         emptyView = (TextView) findViewById(R.id.empty_view);
 

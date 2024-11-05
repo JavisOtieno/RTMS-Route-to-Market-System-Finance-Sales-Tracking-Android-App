@@ -22,13 +22,15 @@ public class Constants {
 //    public static final String BASE_URL = "http://rtmstest.javytech.com/";
 //    public static final String STORAGE_URL = "http://rtmstest.javytech.com/storage/";
 //
-//    public static final String BASE_URL = "https://rtms.scgafrica.com/";
-//    public static final String STORAGE_URL = "https://rtms.scgafrica.com/storage/";
+    public static final String BASE_URL = "https://rtms.scgafrica.com/";
+    public static final String STORAGE_URL = "https://rtms.scgafrica.com/storage/";
 
-    public static final String BASE_URL = "http://rtmssplit.av.ke/";
-    public static final String STORAGE_URL = "http://rtmssplit.av.ke/storage/";
+//    public static final String BASE_URL = "https://rtmssplit.av.ke/";
+//    public static final String STORAGE_URL = "https://rtmssplit.av.ke/storage/";
 
     public static final Integer EARTH_RADIUS = 6371;
+    // refresh after 110 minutes - set to 120
+    public static final long EXPIRY_MILLIS = 6600000;
 
     public static double SEMI_MAJOR_AXIS_MT = 6378137;
     public static double SEMI_MINOR_AXIS_MT = 6356752.314245;

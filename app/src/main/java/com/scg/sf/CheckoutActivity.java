@@ -35,6 +35,7 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
+import com.scg.sf.util.EncryptedPrefsUtil;
 import com.scg.sf.util.LocationUtils;
 import com.scg.sf.util.NotificationHelper;
 import com.scg.sf.util.Toasts;
@@ -65,7 +66,7 @@ public class CheckoutActivity extends AppCompatActivity {
     //private MyLocationListener mylistener;
     private Criteria criteria;
     private Location location;
-    private SharedPreferences mPrefs;
+//    private SharedPreferences mPrefs;
     private String mUserId;
     private String mAuthToken;
     int PERMISSION_ID = 44;
@@ -99,9 +100,11 @@ public class CheckoutActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_checkout);
 
-        mPrefs = getSharedPreferences("label", 0);
-        mUserId = mPrefs.getString("userId", "0");
-        mAuthToken = mPrefs.getString("authToken", "");
+//        mPrefs = getSharedPreferences("label", 0);
+//        mUserId = mPrefs.getString("userId", "0");
+//        mAuthToken = mPrefs.getString("authToken", "");
+        mUserId = EncryptedPrefsUtil.getString("userId","0");
+        mAuthToken = EncryptedPrefsUtil.getString("authToken", "");
 
 
         confirmCheckOutButton = (Button) findViewById(R.id.checkOutButton);
@@ -259,8 +262,31 @@ public class CheckoutActivity extends AppCompatActivity {
                     // toastIconError("Distance: "+distanceEstimate);
 //                    if (distanceEstimate < 0.04) {
                         // toastIconError(unixTime+" - "+lat2+" - "+lon2);
-                        new JsonTask().execute(Constants.BASE_URL + "api/checkout/" +
-                                visitId, "PUT", unixTime + "", lat2 + "", lon2 + "");
+//                        new JsonTask().execute(Constants.BASE_URL + "api/checkout/" +
+//                                visitId, "PUT", unixTime + "", lat2 + "", lon2 + "");
+
+                    new TokenManager(CheckoutActivity.this,  (success, result) -> {
+                        if (success) {
+                            // Handle the JSON result, update UI, etc.
+                            System.out.println("API Result: " + result);
+
+                            handleResult(result);
+
+                        } else {
+                            // Handle errors (e.g., token refresh failed)
+                            Toasts.toastIconError(CheckoutActivity.this, result);
+                            Intent intent = new Intent(CheckoutActivity.this, LoginActivity.class);
+                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                            startActivity(intent);
+
+                        }
+                    }).executeRequest(Constants.BASE_URL +"api/checkout/" +
+                                visitId   , "PUT",
+                            "checkout_time",unixTime+"","checkout_latitude",lat2,
+                            "checkout_longitude",lon2);
+
+
+
 
                         // new JsonTask().execute(Constants.BASE_URL + "api/checkout", "POST", mUserId, unixTime + "", lat2 + "", lon2 + "", outletId);
 
@@ -283,6 +309,68 @@ public class CheckoutActivity extends AppCompatActivity {
 
 
 
+
+    }
+
+    private void handleResult(String result){
+        isTaskRunning = false;
+
+        try {
+
+            System.out.println("Result: " + result);
+            if (result != null) {
+                JSONObject jsonObject = new JSONObject(result);
+
+                //Checkout Failed means server returns nothing
+                //Error checking out means server responds with something other than success
+
+                if(result.contains("errors")){
+                    String message = jsonObject.getString("message");
+                    Toasts.toastIconError(CheckoutActivity.this,message);
+                    //Toast.makeText(getBaseContext(), message, Toast.LENGTH_SHORT).show();
+                }
+                else if (result.contains("success") ){
+
+
+                    //txtJson.setText(jsonObject.toString());
+                    //String visitId = jsonObject.getString("visitId");
+                    //String outletId = jsonObject.getString("outletId");
+                    //long unixTimestamp = Instant.now().getEpochSecond();
+
+
+
+                    Intent intent = new Intent(CheckoutActivity.this, MainActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                    //Toast.makeText(SelectExistingCustomerActivity.this,"visitId"+visitId+" - outletId"+outletId+" - outletName"+mOutletName,Toast.LENGTH_SHORT).show();
+                    //intent.putExtra("visitId", visitId);
+                    //intent.putExtra("outletName",mOutletName);
+                    //intent.putExtra("outletId", outletId);
+                    //intent.putExtra("lat","");
+                    //intent.putExtra("long","");
+                    startActivity(intent);
+
+
+                }else{
+                    Toasts.toastIconError(CheckoutActivity.this,
+                            "Error Checking Out. Please Try Again");
+                    FirebaseCrashlytics.getInstance().recordException(new Exception("Checkout Error: "+result));
+
+                }
+
+
+
+            }else
+            {
+                Toasts.toastIconError(CheckoutActivity.this,
+                        "Checkout Failed. Please Try Again");
+                FirebaseCrashlytics.getInstance().recordException(new Exception("Checkout Error: "+result));
+
+            }
+
+
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
+        }
 
     }
 

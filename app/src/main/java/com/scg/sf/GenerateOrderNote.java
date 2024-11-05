@@ -27,6 +27,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
+import com.scg.sf.util.EncryptedPrefsUtil;
 import com.scg.sf.util.Toasts;
 
 import org.json.JSONException;
@@ -60,7 +61,7 @@ public class GenerateOrderNote extends AppCompatActivity {
     private String outletName;
     private String saleId;
     private String mAuthToken;
-    private SharedPreferences mPrefs;
+//    private SharedPreferences mPrefs;
     private BroadcastReceiver onComplete;
     private boolean isTaskRunning = false;
     private ProgressDialog pd;
@@ -72,8 +73,9 @@ public class GenerateOrderNote extends AppCompatActivity {
         //EdgeToEdge.enable(this);
         setContentView(R.layout.activity_generate_order_note);
 
-        mPrefs = getSharedPreferences("label", 0);
-        mAuthToken = mPrefs.getString("authToken", "");
+//        mPrefs = getSharedPreferences("label", 0);
+//        mAuthToken = mPrefs.getString("authToken", "");
+        mAuthToken = EncryptedPrefsUtil.getString("authToken", "");
 
         Intent intent = getIntent();
         visitId=intent.getStringExtra("visitId");

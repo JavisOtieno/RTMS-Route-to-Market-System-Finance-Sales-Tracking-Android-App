@@ -31,6 +31,7 @@ import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.scg.sf.adapters.AdapterListSales;
 import com.scg.sf.models.Sale;
 import com.scg.sf.models.SaleItem;
+import com.scg.sf.util.EncryptedPrefsUtil;
 import com.scg.sf.util.PreventDoubleClickOnLists;
 
 import org.json.JSONArray;
@@ -70,7 +71,7 @@ public class SalesActivity extends AppCompatActivity {
     private TypedArray drw_arr;
     private String name_arr[];
     private String mAuthToken;
-    private SharedPreferences mPrefs;
+//    private SharedPreferences mPrefs;
     private TextView emptyView;
     private long lastIntentTime = 0;
     private static final long MIN_CLICK_INTERVAL = 1000; // 1000 milliseconds
@@ -84,8 +85,10 @@ public class SalesActivity extends AppCompatActivity {
         setContentView(R.layout.activity_sales);
         parent_view = findViewById(android.R.id.content);
 
-        mPrefs = getSharedPreferences("label", 0);
-        mAuthToken = mPrefs.getString("authToken", "");
+//        mPrefs = getSharedPreferences("label", 0);
+//        mAuthToken = mPrefs.getString("authToken", "");
+        mAuthToken = EncryptedPrefsUtil.getString("authToken", "");
+
 
         //drw_arr = this.getResources().obtainTypedArray(R.array.people_images);
         //name_arr = this.getResources().getStringArray(R.array.people_names);
@@ -415,6 +418,7 @@ public class SalesActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -455,15 +459,6 @@ public class SalesActivity extends AppCompatActivity {
             if (!word.contains(k)) return false;
         return true;
     }
-    private void initToolbar() {
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        getSupportActionBar().setTitle("Deals");
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        //Tools.setSystemBarColor(this);
-    }
-
-
     //searchview
     private void populateAdapter(String query) {
 //        if(query.equals("")){
@@ -472,30 +467,30 @@ public class SalesActivity extends AppCompatActivity {
 //        }
 //        else {
 
-            //final ArrayList<Integer> counterGroup = new ArrayList<Integer>();
-            List<Sale> newSalesList =new ArrayList<>();
+        //final ArrayList<Integer> counterGroup = new ArrayList<Integer>();
+        List<Sale> newSalesList =new ArrayList<>();
 
-            for (int counter = 0; counter < items.size(); counter++) {
-                if(query.contains(" ")){
-                    String[] querySplit = query.toLowerCase().split("\\s+");
-                    String outlet_name_searched=items.get(counter).outletName.toLowerCase();
+        for (int counter = 0; counter < items.size(); counter++) {
+            if(query.contains(" ")){
+                String[] querySplit = query.toLowerCase().split("\\s+");
+                String outlet_name_searched=items.get(counter).outletName.toLowerCase();
 //                    Toast.makeText(SalesActivity.this,"Contains space",Toast.LENGTH_SHORT).show();
 
 
-                    if(containsAllWords(outlet_name_searched,querySplit)){
-                        //counterGroup.add(counter);
-                        newSalesList.add(items.get(counter));
+                if(containsAllWords(outlet_name_searched,querySplit)){
+                    //counterGroup.add(counter);
+                    newSalesList.add(items.get(counter));
 //                        Toast.makeText(SalesActivity.this,outlet_name_searched+"-"+items.get(counter).name,Toast.LENGTH_SHORT).show();
-                    }
+                }
 
-                }else {
-                    // Toast.makeText(SalesActivity.this,"No space",Toast.LENGTH_SHORT).show();
-                    if (items.get(counter).outletName.toLowerCase().contains(query.toLowerCase())) {
-                        //mNoProductsTextView.setVisibility(View.GONE);
-                        //counterGroup.add(counter);
-                        newSalesList.add(items.get(counter));
+            }else {
+                // Toast.makeText(SalesActivity.this,"No space",Toast.LENGTH_SHORT).show();
+                if (items.get(counter).outletName.toLowerCase().contains(query.toLowerCase())) {
+                    //mNoProductsTextView.setVisibility(View.GONE);
+                    //counterGroup.add(counter);
+                    newSalesList.add(items.get(counter));
 
-                    }
+                }
 
 //                }
 
@@ -543,4 +538,16 @@ public class SalesActivity extends AppCompatActivity {
             });
         }
     }
+
+
+    private void initToolbar() {
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setTitle("Deals");
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        //Tools.setSystemBarColor(this);
+    }
+
+
+
 }

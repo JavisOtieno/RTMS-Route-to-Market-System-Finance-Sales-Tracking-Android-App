@@ -17,6 +17,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
+import com.scg.sf.util.EncryptedPrefsUtil;
 import com.scg.sf.util.Toasts;
 
 import org.json.JSONException;
@@ -38,7 +39,7 @@ public class CompleteSaleActivity extends AppCompatActivity {
     private Boolean isTaskRunning;
     private ProgressDialog pd;
     private String mAuthToken;
-    private SharedPreferences mPrefs;
+//    private SharedPreferences mPrefs;
     private String saleId;
 
     @Override
@@ -49,8 +50,11 @@ public class CompleteSaleActivity extends AppCompatActivity {
 
         initToolbar();
 
-        mPrefs = getSharedPreferences("label", 0);
-        mAuthToken = mPrefs.getString("authToken", "");
+//        mPrefs = getSharedPreferences("label", 0);
+//        mAuthToken = mPrefs.getString("authToken", "");
+
+//        mUserId = EncryptedPrefsUtil.getString("userId","0");
+        mAuthToken = EncryptedPrefsUtil.getString("authToken", "");
 
         Intent intent = getIntent();
 //        saleId=intent.getStringExtra("saleId");
@@ -225,9 +229,10 @@ public class CompleteSaleActivity extends AppCompatActivity {
                         //String outletId = jsonObject.getString("outletId");
                         //long unixTimestamp = Instant.now().getEpochSecond();
 
-
-
-                        Intent intent = new Intent(CompleteSaleActivity.this,SalesActivity.class);
+                        String message = jsonObject.getString("message");
+                        Toasts.toastIconSuccess(CompleteSaleActivity.this,message);
+                        Intent intent = new Intent(CompleteSaleActivity.this,DealsActivity.class);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                         startActivity(intent);
 
 
@@ -235,7 +240,7 @@ public class CompleteSaleActivity extends AppCompatActivity {
 
                         Toasts.toastIconError(CompleteSaleActivity.this,
                                 "Error Completing Sale. Please Try Again");
-                        FirebaseCrashlytics.getInstance().recordException(new Exception("Sale Mark Complete Error: "+result));
+                        FirebaseCrashlytics.getInstance().recordException(new Exception("Sale Complete Activity Error: "+result));
 
                     }
 
@@ -245,7 +250,7 @@ public class CompleteSaleActivity extends AppCompatActivity {
                 {
                     Toasts.toastIconError(CompleteSaleActivity.this,
                             "Sale Completion Failed. Please Try Again");
-                    FirebaseCrashlytics.getInstance().recordException(new Exception("Sale Mark Complete Error: "+result));
+                    FirebaseCrashlytics.getInstance().recordException(new Exception("Sale Complete Activity Error: "+result));
 
                 }
 

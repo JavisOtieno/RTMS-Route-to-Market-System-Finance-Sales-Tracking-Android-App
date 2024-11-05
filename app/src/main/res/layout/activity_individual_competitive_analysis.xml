@@ -103,7 +103,7 @@
                             android:ems="10"
                             android:layout_alignParentLeft="true"
                             android:layout_alignParentStart="true"
-                            android:text="Outlet Name"
+                            android:text="Customer Name"
                             android:layout_weight="2"
                             android:layout_marginRight="5dp"
                             android:padding="8dp"

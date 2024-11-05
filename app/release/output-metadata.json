@@ -4,7 +4,7 @@
     "type": "APK",
     "kind": "Directory"
   },
-  "applicationId": "com.scg.rtms",
+  "applicationId": "com.scg.sf",
   "variantName": "release",
   "elements": [
     {

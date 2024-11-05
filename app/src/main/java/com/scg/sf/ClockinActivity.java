@@ -34,6 +34,7 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
+import com.scg.sf.util.EncryptedPrefsUtil;
 import com.scg.sf.util.LocationUtils;
 import com.scg.sf.util.Toasts;
 
@@ -83,8 +84,14 @@ public class ClockinActivity extends AppCompatActivity {
         setContentView(R.layout.activity_clockin);
 
         mPrefs = getSharedPreferences("label", 0);
-        mUserId = mPrefs.getString("userId", "0");
-        mAuthToken = mPrefs.getString("authToken", "");
+//        mUserId = mPrefs.getString("userId", "0");
+//        mAuthToken = mPrefs.getString("authToken", "");
+
+        mUserId = EncryptedPrefsUtil.getString("userId","0");
+        mAuthToken = EncryptedPrefsUtil.getString("authToken", "");
+
+        System.out.println("Retrieved token: " + mAuthToken);
+        System.out.println("Retrieved userId: " + mUserId);
 
         backButton = (Button) findViewById(R.id.backButton);
         confirmClockinButton = (Button) findViewById(R.id.confirmClockinButton);
@@ -144,7 +151,34 @@ public class ClockinActivity extends AppCompatActivity {
                         String lat = mLastLocation.getLatitude() + "";
                         String lon = mLastLocation.getLongitude() + "";
                         long unixTime = System.currentTimeMillis() / 1000L;
-                        new JsonTask().execute(Constants.BASE_URL + "api/clockin", "POST", mUserId, unixTime + "", lat + "", lon + "");
+
+
+
+
+
+
+//                        new JsonTask().execute(Constants.BASE_URL + "api/clockin", "POST", mUserId, unixTime + "", lat + "", lon + "");
+
+                        new TokenManager(ClockinActivity.this,  (success, result) -> {
+                            if (success) {
+                                // Handle the JSON result, update UI, etc.
+                                System.out.println("API Result: " + result);
+
+                                handleResult(result);
+
+                            } else {
+                                // Handle errors (e.g., token refresh failed)
+                                Toasts.toastIconError(ClockinActivity.this, result);
+                                Intent intent = new Intent(ClockinActivity.this, LoginActivity.class);
+                                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                                startActivity(intent);
+                            }
+                        }).executeRequest(Constants.BASE_URL +"api/clockin", "POST",
+                                "userId",mUserId,"time",unixTime+"","lat",lat+"","long",lon+"");
+
+                        //new JsonTask().execute(Constants.BASE_URL + "api/clockin", "POST", mUserId, unixTime + "", lat + "", lon + "");
+
+
                     } else {
                         Toasts.toastIconError(ClockinActivity.this,"Detecting Location ...");
                         isTaskRunning = false;
@@ -268,6 +302,60 @@ public class ClockinActivity extends AppCompatActivity {
         }
     }
     //PICKED FROM OLD CODE BUT MIGHT BE VALID
+
+
+    private void handleResult(String result){
+        isTaskRunning = false;
+
+        try {
+
+            System.out.println("Result: " + result);
+            if (result != null && result.contains("Clockin")){
+
+                JSONObject jsonObject = new JSONObject(result);
+                if (jsonObject.has("message") &&
+                        jsonObject.get("message") instanceof String &&
+                        jsonObject.get("message").equals("Clockin Successful")
+                ) {
+                    //txtJson.setText(jsonObject.toString());
+                    String clockinId = jsonObject.getString("clockinId");
+                    SharedPreferences.Editor mEditor = mPrefs.edit();
+                    mEditor.putString("clockinId", clockinId).commit();
+//                        Toasts.toastIconError(ClockinActivity.this,clockinId);
+
+                    Intent intent = new Intent(ClockinActivity.this, CheckinActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivity(intent);
+
+                }
+                else if(result.contains("errors")){
+                    String message = jsonObject.getString("message");
+                    Toasts.toastIconError(ClockinActivity.this,message);
+                    //Toast.makeText(getBaseContext(), message, Toast.LENGTH_SHORT).show();
+                }
+                else{
+
+                    Toasts.toastIconError(ClockinActivity.this,"Error Clocking in. Please Try Again");
+                    FirebaseCrashlytics.getInstance().recordException(new Exception("Clockin Error: "+result));
+
+                }
+
+            }else{
+
+                Toasts.toastIconError(ClockinActivity.this,"Clockin Failed. Please Try Again");
+                FirebaseCrashlytics.getInstance().recordException(new Exception("Clockin Error: "+result));
+
+            }
+
+
+
+
+
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
 
     private class JsonTask extends AsyncTask<String, String, String> {
 

@@ -103,7 +103,7 @@
                             android:ems="10"
                             android:layout_alignParentLeft="true"
                             android:layout_alignParentStart="true"
-                            android:text="Outlet Name"
+                            android:text="Customer Name"
                             android:layout_weight="2"
                             android:layout_marginRight="5dp"
                             android:padding="8dp"
@@ -248,7 +248,7 @@
                     <Button
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text= "View Sales"
+                        android:text= "View Deals"
                         android:id="@+id/viewSalesButton"
                         android:textColor="#ffffff"
                         android:background="@drawable/btn_rounded_primary"
@@ -256,15 +256,15 @@
                         android:layout_below="@id/durationLayout"/>
 
 
-                    <Button
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text= "View POS Audits"
-                        android:id="@+id/viewPOSAuditsButton"
-                        android:textColor="#ffffff"
-                        android:background="@drawable/btn_rounded_primary"
-                        android:layout_marginTop="5dp"
-                        android:layout_below="@id/durationLayout"/>
+<!--                    <Button-->
+<!--                        android:layout_width="match_parent"-->
+<!--                        android:layout_height="wrap_content"-->
+<!--                        android:text= "View POS Audits"-->
+<!--                        android:id="@+id/viewPOSAuditsButton"-->
+<!--                        android:textColor="#ffffff"-->
+<!--                        android:background="@drawable/btn_rounded_primary"-->
+<!--                        android:layout_marginTop="5dp"-->
+<!--                        android:layout_below="@id/durationLayout"/>-->
 
                     <Button
                         android:layout_width="match_parent"

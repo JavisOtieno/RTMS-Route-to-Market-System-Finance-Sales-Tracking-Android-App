@@ -5,6 +5,7 @@ import static androidx.constraintlayout.helper.widget.MotionEffect.TAG;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -23,6 +24,7 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
+import com.scg.sf.util.EncryptedPrefsUtil;
 import com.scg.sf.util.ImageUtil;
 import com.scg.sf.util.Toasts;
 
@@ -32,6 +34,7 @@ import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -42,6 +45,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
 
 public class TakePhotoActivity extends AppCompatActivity {
 
@@ -59,7 +64,7 @@ public class TakePhotoActivity extends AppCompatActivity {
     //public static String URL = "https://av.ke/testfileupload.php";
     public static String URL;
 
-    private SharedPreferences mPrefs;
+//    private SharedPreferences mPrefs;
     private String visitId;
     private String outletPOSAuditId;
     private String outletId;
@@ -80,8 +85,10 @@ public class TakePhotoActivity extends AppCompatActivity {
 
         initToolbar();
 
-        mPrefs = getSharedPreferences("label", 0);
-        mAuthToken = mPrefs.getString("authToken", "");
+//        mPrefs = getSharedPreferences("label", 0);
+//        mAuthToken = mPrefs.getString("authToken", "");
+//
+        mAuthToken = EncryptedPrefsUtil.getString("authToken", "");
 
         btpic = (Button) findViewById(R.id.cpic);
         skipPhotoTakingButton = (Button) findViewById(R.id.skipPhotoButton);
@@ -206,31 +213,63 @@ public class TakePhotoActivity extends AppCompatActivity {
 //            picturePath = cursor.getString(columnIndex);
 //            cursor.close();
 
-            Bitmap photo = (Bitmap) data.getExtras().get("data");
-            ByteArrayOutputStream bao = new ByteArrayOutputStream();
-            photo.compress(Bitmap.CompressFormat.JPEG, 95, bao);
-            byte[] ba = bao.toByteArray();
-            ba1 = ImageUtil.convert(photo);
+//            Bitmap photo = (Bitmap) data.getExtras().get("data");
+//            ByteArrayOutputStream bao = new ByteArrayOutputStream();
+//            photo.compress(Bitmap.CompressFormat.JPEG, 95, bao);
+//            byte[] ba = bao.toByteArray();
+//            ba1 = ImageUtil.convert(photo);
+//
+//            //byte[] byteArray = {0x41, 0x42, 0x43, 0x44}; // Sample byte array
+//
+//            // Convert byte array to Base64
+//            String base64String = Base64.getEncoder().encodeToString(ba);
+//            System.out.println("Base64 String: " + base64String);
+//
+//            Log.e("base64", "-----" + base64String);
+//
+//            URL = Constants.BASE_URL+"api/uploadimage";
+//
+//            // Upload image to server
+//            //new uploadToServer().execute();
+//            //"https://av.ke/testfileupload.php"
+//            //new uploadToServer2().execute("https://av.ke/testfileupload.php","POST",System.currentTimeMillis() + ".jpg",ba1);
+//            new uploadToServer2().execute(URL,
+//                    "POST",System.currentTimeMillis() + ".jpg",ba1,outletPOSAuditId,mCallingActivity);
 
-            //byte[] byteArray = {0x41, 0x42, 0x43, 0x44}; // Sample byte array
 
-            // Convert byte array to Base64
-            String base64String = Base64.getEncoder().encodeToString(ba);
-            System.out.println("Base64 String: " + base64String);
 
-            Log.e("base64", "-----" + base64String);
 
-            URL = Constants.BASE_URL+"api/uploadimage";
 
-            // Upload image to server
-            //new uploadToServer().execute();
-            //"https://av.ke/testfileupload.php"
-            //new uploadToServer2().execute("https://av.ke/testfileupload.php","POST",System.currentTimeMillis() + ".jpg",ba1);
-            new uploadToServer2().execute(URL,
-                    "POST",System.currentTimeMillis() + ".jpg",ba1,outletPOSAuditId,mCallingActivity);
 
             ImageView imageView = (ImageView) findViewById(R.id.Imageprev);
             imageView.setImageBitmap(photo);
+
+            URL = Constants.BASE_URL+"api/uploadmobileimage";
+
+            Bitmap photo2 = (Bitmap) data.getExtras().get("data");
+            ByteArrayOutputStream bao2 = new ByteArrayOutputStream();
+            photo2.compress(Bitmap.CompressFormat.JPEG, 95, bao2);
+            byte[] ba2 = bao2.toByteArray();
+
+            String folder = "outlets";
+            if(mCallingActivity.equals("POSAudit")){
+                folder = "posaudits";
+            }
+
+// Prepare additional form fields, if needed
+            Map<String, String> formFields = new HashMap<>();
+            formFields.put("folder", folder);
+            formFields.put("outletPOSAuditId", outletPOSAuditId);
+            formFields.put("ImageName",System.currentTimeMillis() + ".jpg");
+
+// Start the JsonTask with image and form data
+            new JsonTask(ba2, formFields).execute(URL);
+
+
+
+
+
+
         }
     }
 
@@ -274,6 +313,148 @@ public class TakePhotoActivity extends AppCompatActivity {
 
         }
     }
+
+
+
+    public class JsonTask extends AsyncTask<String, String, String> {
+        private byte[] byteArray;
+        private Map<String, String> formFields; // Additional form data
+
+
+
+        public JsonTask(byte[] byteArray, Map<String, String> formFields) {
+            this.byteArray = byteArray;
+            this.formFields = formFields;
+        }
+
+        @Override
+        protected String doInBackground(String... params) {
+            String serverUrl = params[0];
+            String boundary = "Boundary-" + System.currentTimeMillis();
+
+            try {
+                URL url = new URL(serverUrl);
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                connection.setRequestMethod("POST");
+                connection.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
+                connection.setRequestProperty("Accept","application/json");
+                connection.setRequestProperty("Authorization", "Bearer " + mAuthToken);
+                connection.setDoOutput(true);
+
+                DataOutputStream dos = new DataOutputStream(connection.getOutputStream());
+
+                // Add form fields
+                for (Map.Entry<String, String> entry : formFields.entrySet()) {
+                    dos.writeBytes("--" + boundary + "\r\n");
+                    dos.writeBytes("Content-Disposition: form-data; name=\"" + entry.getKey() + "\"\r\n\r\n");
+                    dos.writeBytes(entry.getValue() + "\r\n");
+                }
+
+                // Add image file
+                dos.writeBytes("--" + boundary + "\r\n");
+                dos.writeBytes("Content-Disposition: form-data; name=\"image\"; filename=\"image.jpg\"\r\n");
+                dos.writeBytes("Content-Type: image/jpeg\r\n\r\n");
+                dos.write(byteArray);
+                dos.writeBytes("\r\n");
+
+                // End of multipart/form-data
+                dos.writeBytes("--" + boundary + "--\r\n");
+                dos.flush();
+                dos.close();
+
+                // Get server response
+                InputStream responseStream = connection.getInputStream();
+                StringBuilder response = new StringBuilder();
+                int ch;
+                while ((ch = responseStream.read()) != -1) {
+                    response.append((char) ch);
+                }
+                responseStream.close();
+
+                System.out.println(" Photoupload: Upload somehow ok"+response);
+
+                return response.toString();
+
+            } catch (Exception e) {
+                e.printStackTrace();
+
+                System.out.println(" Photoupload: Upload failed"+e.getMessage());
+                return "Upload failed: " + e.getMessage();
+            }
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            super.onPostExecute(result);
+
+//            isTaskRunning = false;
+
+            try {
+
+                System.out.println("Result: " + result);
+                if (result != null && result.contains("Image")){
+
+                    JSONObject jsonObject = new JSONObject(result);
+                    if (jsonObject.has("message") &&
+                            jsonObject.get("message") instanceof String &&
+                            jsonObject.get("message").equals("Image uploaded successfully")
+                    ) {
+                        //txtJson.setText(jsonObject.toString());
+//                        String clockinId = jsonObject.getString("clockinId");
+//                        SharedPreferences.Editor mEditor = mPrefs.edit();
+//                        mEditor.putString("clockinId", clockinId).commit();
+//                        Toasts.toastIconError(TakePhotoActivity.this,"Success");
+
+                        Toasts.toastIconSuccess(TakePhotoActivity.this,"Image uploaded successfully");
+
+                        Intent intent = new Intent(TakePhotoActivity.this, SelectActionActivity.class);
+                        //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+
+
+                        intent.putExtra("visitId",visitId);
+                        intent.putExtra("lastUpdatedActivity",mActivity);
+                        intent.putExtra("outletName",outletName);
+                        intent.putExtra("outletId",outletId);
+
+                        startActivity(intent);
+
+//                        Intent intent = new Intent(ClockinActivity.this, CheckinActivity.class);
+//                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+//                        startActivity(intent);
+
+                    }
+                    else if(result.contains("errors")){
+                        String message = jsonObject.getString("message");
+                        Toasts.toastIconError(TakePhotoActivity.this,message);
+                        FirebaseCrashlytics.getInstance().recordException(new Exception("Upload Error Stage 1: "+result));
+                        //Toast.makeText(getBaseContext(), message, Toast.LENGTH_SHORT).show();
+                    }
+                    else{
+
+                        Toasts.toastIconError(TakePhotoActivity.this,"Error Uploading. Please Try Again");
+                        FirebaseCrashlytics.getInstance().recordException(new Exception("Upload Error Stage 2: "+result));
+
+                    }
+
+                }else{
+
+                    Toasts.toastIconError(TakePhotoActivity.this,"Take Photo Failed. Please Try Again");
+                    FirebaseCrashlytics.getInstance().recordException(new Exception("Upload Error Stage 3: "+result));
+
+                }
+
+
+
+
+
+            } catch (JSONException e) {
+                throw new RuntimeException(e);
+            }
+
+        }
+    }
+
+
     public class uploadToServer2 extends AsyncTask<String, String, String> {
         private ProgressDialog pd;
         protected void onPreExecute() {
@@ -366,7 +547,7 @@ public class TakePhotoActivity extends AppCompatActivity {
                 jsonParam.put("folder", folder);
                 jsonParam.put("outletPOSAuditId", outletPOSAuditId);
                 jsonParam.put("ImageName", imageName);
-                jsonParam.put("base64", URLEncoder.encode(base64, "UTF-8"));
+                jsonParam.put("base64", base64);
 
 
                 writer.write(jsonParam.toString());

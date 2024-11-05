@@ -18,6 +18,7 @@ import android.view.View;
 
 import com.scg.sf.adapters.AdapterListProducts;
 import com.scg.sf.models.Product;
+import com.scg.sf.util.EncryptedPrefsUtil;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -51,7 +52,7 @@ public class UNUSEDSelectProductActivity extends AppCompatActivity {
 
         initToolbar();
         mPrefs = getSharedPreferences("label", 0);
-        mAuthToken = mPrefs.getString("authToken", "");
+       mAuthToken= EncryptedPrefsUtil.getString("authToken", "");
 
         recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));

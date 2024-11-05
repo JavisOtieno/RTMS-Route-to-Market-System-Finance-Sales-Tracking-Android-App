@@ -3,29 +3,37 @@ package com.scg.sf;
 import static androidx.constraintlayout.helper.widget.MotionEffect.TAG;
 import static java.lang.Integer.parseInt;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.ProgressDialog;
+import android.app.SearchManager;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.TypedArray;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.SearchView;
 import android.widget.TextView;
 
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.scg.sf.adapters.AdapterListSales;
 import com.scg.sf.models.Sale;
 import com.scg.sf.models.SaleItem;
+import com.scg.sf.util.EncryptedPrefsUtil;
 import com.scg.sf.util.PreventDoubleClickOnLists;
 
 import org.json.JSONArray;
@@ -74,7 +82,7 @@ public class DealsFragment extends Fragment  {
     private TypedArray drw_arr;
     private String name_arr[];
     private String mAuthToken;
-    private SharedPreferences mPrefs;
+//    private SharedPreferences mPrefs;
     private TextView emptyView;
     private long lastIntentTime = 0;
     private static final long MIN_CLICK_INTERVAL = 1000; // 1000 milliseconds
@@ -96,7 +104,8 @@ public class DealsFragment extends Fragment  {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {        super.onCreate(savedInstanceState);
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
 //        setContentView(R.layout.activity_sales);
         view = inflater.inflate(R.layout.fragment_deals, container, false);
         parent_view = view.findViewById(android.R.id.content);
@@ -105,8 +114,10 @@ public class DealsFragment extends Fragment  {
             endpointUrl = getArguments().getString(ARG_URL);
         }
 
-        mPrefs = getActivity().getSharedPreferences("label", 0);
-        mAuthToken = mPrefs.getString("authToken", "");
+//        mPrefs = getActivity().getSharedPreferences("label", 0);
+//        mUserId = EncryptedPrefsUtil.getString("userId","0");
+        mAuthToken = EncryptedPrefsUtil.getString("authToken", "");
+//        mAuthToken = mPrefs.getString("authToken", "");
 
         //drw_arr = this.getResources().obtainTypedArray(R.array.people_images);
         //name_arr = this.getResources().getStringArray(R.array.people_names);
@@ -116,6 +127,9 @@ public class DealsFragment extends Fragment  {
         recyclerView = (RecyclerView) view.findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setHasFixedSize(true);
+
+
+        context = getContext();
 
 //        initToolbar();
 //        initComponent();
@@ -127,16 +141,165 @@ public class DealsFragment extends Fragment  {
             @Override
             public void onClick(final View v) {
                 //   lyt_no_connection.setVisibility(View.GONE);
-                new JsonTask().execute(Constants.BASE_URL + endpointUrl,"GET");
+//                new JsonTask().execute(Constants.BASE_URL + endpointUrl,"GET");
+                showDealsFromApi();
+
             }
         });
 
-        new JsonTask().execute(Constants.BASE_URL + endpointUrl,"GET");
-        fetchData(mAuthToken);
+        showDealsFromApi();
+
+
+//        new JsonTask().execute(Constants.BASE_URL + endpointUrl,"GET");
+//        fetchData(mAuthToken);
 
         return view;
 
     }
+
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true); // Enable the fragment to have its own menu options
+    }
+
+    @Override
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+        inflater.inflate(R.menu.menu_search, menu);
+
+        SearchManager searchManager = (SearchManager) requireContext().getSystemService(Context.SEARCH_SERVICE);
+
+        // Update this cast to use androidx.appcompat.widget.SearchView
+        androidx.appcompat.widget.SearchView searchView =
+                (androidx.appcompat.widget.SearchView) menu.findItem(R.id.action_search).getActionView();
+
+        searchView.setSearchableInfo(searchManager.getSearchableInfo(requireActivity().getComponentName()));
+        searchView.setQueryHint("Search by outlet name...");
+
+        // Set the search query listener directly in the fragment
+        searchView.setOnQueryTextListener(new androidx.appcompat.widget.SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                return false; // Handle submit if needed
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+//                filterData(newText);
+                populateAdapter(newText);
+//                Toasts.toastIconError(getContext(),newText);
+                return true;
+            }
+        });
+    }
+
+    private void showDealsFromApi(){
+        new TokenManager(context,  (success, result) -> {
+            if (success) {
+                // Handle the JSON result, update UI, etc.
+                System.out.println("API Result: " + result);
+
+                handleResult(result);
+
+            } else {
+                // Handle errors (e.g., token refresh failed)
+                Toasts.toastIconError(context, result);
+                Intent intent = new Intent(context, LoginActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+            }
+        }).executeRequest(Constants.BASE_URL +endpointUrl, "GET");
+
+    }
+
+    //searchview
+    private void populateAdapter(String query) {
+//        if(query.equals("")){
+//            Toast.makeText(SalesActivity.this,"Nothing",Toast.LENGTH_SHORT).show();
+//
+//        }
+//        else {
+
+        //final ArrayList<Integer> counterGroup = new ArrayList<Integer>();
+        List<Sale> newSalesList =new ArrayList<>();
+
+        for (int counter = 0; counter < items.size(); counter++) {
+            if(query.contains(" ")){
+                String[] querySplit = query.toLowerCase().split("\\s+");
+                String outlet_name_searched=items.get(counter).outletName.toLowerCase();
+//                    Toast.makeText(SalesActivity.this,"Contains space",Toast.LENGTH_SHORT).show();
+
+
+                if(containsAllWords(outlet_name_searched,querySplit)){
+                    //counterGroup.add(counter);
+                    newSalesList.add(items.get(counter));
+//                        Toast.makeText(SalesActivity.this,outlet_name_searched+"-"+items.get(counter).name,Toast.LENGTH_SHORT).show();
+                }
+
+            }else {
+                // Toast.makeText(SalesActivity.this,"No space",Toast.LENGTH_SHORT).show();
+                if (items.get(counter).outletName.toLowerCase().contains(query.toLowerCase())) {
+                    //mNoProductsTextView.setVisibility(View.GONE);
+                    //counterGroup.add(counter);
+                    newSalesList.add(items.get(counter));
+
+                }
+
+//                }
+
+            }
+
+            if (newSalesList.size()>0) {
+                mNoSalesTextView.setVisibility(View.GONE);
+            }else
+            {
+                mNoSalesTextView.setVisibility(View.VISIBLE);
+            }
+
+            if(recyclerView==null) {
+                recyclerView = (RecyclerView) view.findViewById(R.id.recyclerView);
+            }
+            mAdapter = new AdapterListSales(newSalesList);
+            recyclerView.setAdapter(mAdapter);
+//            recyclerView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+//                @Override
+//                public void onItemClick(AdapterView<?> parent, View v,
+//                                        int position, long id) {
+//
+//                    // Sending image id to FullScreenActivity
+//                    Intent i = new Intent(MainActivity.this, DisplayProductsActivity.class);
+//                    // passing array index
+//                    i.putExtra("productClicked",productsList.get(counterGroup.get(position)) );
+//                    startActivity(i);
+//
+//                }
+//            });
+            mAdapter.setOnItemClickListener(new AdapterListSales.OnItemClickListener() {
+                @Override
+                public void onItemClick(View view, Sale obj, int position) {
+
+                    Sale sale = newSalesList.get(position);
+
+                    PreventDoubleClickOnLists.
+                            showActivityWithoutDoubleClick(
+                                    "sale",getContext(),
+                                    sale, IndividualSaleActivity.class);
+
+
+
+                }
+            });
+        }
+    }
+    public static boolean containsAllWords(String word, String ...keywords) {
+        for (String k : keywords)
+            if (!word.contains(k)) return false;
+        return true;
+    }
+
+
+
 
     private void fetchData(String token) {
         ApiService apiService = ApiClient.getInstance().getApiService();
@@ -216,218 +379,136 @@ public class DealsFragment extends Fragment  {
         });
     }
 
+//    @Override
+//    public void onSaveInstanceState(Bundle outState) {
+//        super.onSaveInstanceState(outState);
+//        // Do not save specific data that you want to prevent from being retained
+//    }
 
-    private class JsonTask extends AsyncTask<String, String, String> {
+    private void handleResult(String result){
 
-        protected void onPreExecute() {
-            super.onPreExecute();
-
-            pd = new ProgressDialog(getContext());
-
-            pd.setMessage("Please wait");
-            pd.setCancelable(false);
-            pd.show();
-
+        if(pd != null && pd.isShowing()){
+            pd.dismiss();
         }
 
-        protected String doInBackground(String... params) {
+        try {
+
+            System.out.println("Result: "+result);
+            if (result != null && result.contains("sales")) {
+                JSONObject jsonObject = new JSONObject(result);
+                //txtJson.setText(jsonObject.toString());
+
+                if (jsonObject.has("sales") &&
+                        jsonObject.get("sales") instanceof JSONArray) {
+
+                    items = new ArrayList<>();
+
+                    sales = jsonObject.getJSONArray("sales");
+
+                    System.out.println("Sales length: " + sales.length());
 
 
-            HttpURLConnection connection = null;
-            BufferedReader reader = null;
+                    for (int i = 0; i < sales.length(); i++) {
+                        Sale obj = new Sale();
+                        //obj.image = drw_arr.getResourceId(i, -1);
 
-            try {
+                        JSONArray saleItems = sales.getJSONObject(i).getJSONArray("saleitems");
 
-                URL url = new URL(params[0]);
-                String requestMethod = params[1];
+                        String allProductsSalesitemString = "";
 
-                connection = (HttpURLConnection) url.openConnection();
-                connection.setRequestMethod(requestMethod);
-                connection.setRequestProperty("Accept","application/json");
-                connection.setRequestProperty("Authorization", "Bearer " + mAuthToken);
+                        String firstsaleItemProductName =
+                                saleItems.getJSONObject(0).getJSONObject("product")
+                                        .getString("name");
+                        String firstsaleItemPieces =
+                                saleItems.getJSONObject(0).getString("pieces");
+                        String singleProductsSalesitemString = firstsaleItemProductName + " - " + firstsaleItemPieces;
 
-                connection.connect();
+                        saleItemsList = new ArrayList<>();
 
-                InputStream stream;
+                        for (int j = 0; j < saleItems.length(); j++) {
 
-                if (connection.getResponseCode() == 200) {
-                    stream = connection.getInputStream();
+                            String saleItemProductName = saleItems.getJSONObject(j).getJSONObject("product").getString("name");
+                            String saleItemPieces = saleItems.getJSONObject(j).getString("pieces");
+                            allProductsSalesitemString = allProductsSalesitemString + saleItemProductName + " - " + saleItemPieces + " ";
 
-                } else {
-                    /* error from server */
-                    //_is = httpConn.getErrorStream();
-                    stream = connection.getErrorStream();
+                            System.out.println("SaleItem: " + allProductsSalesitemString);
 
-                }
+                            SaleItem saleItem = new SaleItem();
+                            saleItem.productName = saleItems.getJSONObject(j).getJSONObject("product").getString("name");
+                            saleItem.pieces = saleItems.getJSONObject(j).getString("pieces");
+                            saleItem.price = saleItems.getJSONObject(j).getString("price");
+                            saleItem.value = saleItems.getJSONObject(j).getString("value");
+                            saleItemsList.add(saleItem);
 
-                reader = new BufferedReader(new InputStreamReader(stream));
-
-                StringBuffer buffer = new StringBuffer();
-                String line = "";
-
-                while ((line = reader.readLine()) != null) {
-
-                    buffer.append(line + "\n");
-                    Log.d("Response: ", "> " + line);   //here u ll get whole response...... :-)
-
-                }
-
-                return buffer.toString();
+                        }
+                        if (saleItems.length() > 1) {
+                            singleProductsSalesitemString += "...";
+                        }
 
 
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-                Log.e(TAG,"Malf Message");
-            } catch (IOException e) {
-                Log.e("Message here: ",e.getMessage());
-                e.printStackTrace();
-            } finally {
-                if (connection != null) {
-                    connection.disconnect();
-                }
-                try {
-                    if (reader != null) {
-                        reader.close();
+                        System.out.println("SaleItems: " + saleItems.length());
+                        obj.name = singleProductsSalesitemString;
+                        obj.allproductsname = allProductsSalesitemString;
+                        obj.saleItems = saleItemsList;
+                        //saleItemsList.clear();
+
+
+                        //obj.name = sales.getJSONObject(i).getJSONObject("product").getString("name");
+                        String createdAt = sales.getJSONObject(i).getString("created_at");
+                        ZonedDateTime dateTime = Instant.parse(createdAt).atZone(ZoneId.of("Africa/Nairobi"));
+                        String formatted = dateTime.format(DateTimeFormatter.ofPattern("dd-MMM-yyyy \nHH:mm "));
+                        obj.time = formatted;
+
+
+                        String status = sales.getJSONObject(i).getString("status");
+                        obj.status=status.substring(0, 1).toUpperCase() + status.substring(1);
+
+                        Integer pieces = Integer.valueOf(sales.getJSONObject(i).getString("pieces"));
+
+                        String outletName = "";
+                        String sellerName = "";
+
+                        if(!sales.getJSONObject(i).isNull("outlet")){
+                            outletName = sales.getJSONObject(i).getJSONObject("outlet").getString("name");
+                        }else{
+                            outletName="Outlet Not Found";
+                        }
+
+                        if(!sales.getJSONObject(i).isNull("user")){
+                            sellerName = sales.getJSONObject(i).getJSONObject("user").getString("name");
+                        }else{
+                            sellerName="Seller Not Found";
+                        }
+
+                        String allProductsName = allProductsSalesitemString;
+                        obj.pieces = pieces + "";
+                        obj.sellerName = sellerName;
+                        obj.outletName = outletName;
+                        obj.allproductsname = allProductsName;
+                        obj.id = sales.getJSONObject(i).getString("id");
+                        //Integer price = Integer.valueOf(sales.getJSONObject(i).getString("price"));
+                        Integer value = Integer.valueOf(sales.getJSONObject(i).getString("value"));
+                        obj.price = "KSh. " + NumberFormat.getNumberInstance(Locale.US).format(value);
+                        //obj.imageDrw = drw_arr.getDrawable(obj.image);
+                        items.add(obj);
                     }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                // Dismiss the dialog on the UI thread
-//                runOnUiThread(() -> {
-//                    if (pd != null && pd.isShowing() && !isFinishing()) {
-//                        pd.dismiss();
-//                    }
-//                });
-            }
-            return null;
-        }
 
-        @Override
-        protected void onPostExecute(String result) {
-            super.onPostExecute(result);
+                    if (items.isEmpty()) {
+                        recyclerView.setVisibility(View.GONE);
+                        emptyView.setVisibility(View.VISIBLE);
+                    } else {
+                        recyclerView.setVisibility(View.VISIBLE);
+                        emptyView.setVisibility(View.GONE);
+                    }
 
-            if(pd != null && pd.isShowing()){
-                pd.dismiss();
-            }
+                    //set data and list adapter
+                    mAdapter = new AdapterListSales(items);
+                    recyclerView.setAdapter(mAdapter);
 
-            try {
-
-                System.out.println("Result: "+result);
-                if (result != null && result.contains("sales")) {
-                    JSONObject jsonObject = new JSONObject(result);
-                    //txtJson.setText(jsonObject.toString());
-
-                    if (jsonObject.has("sales") &&
-                            jsonObject.get("sales") instanceof JSONArray) {
-
-                        items = new ArrayList<>();
-
-                        sales = jsonObject.getJSONArray("sales");
-
-                        System.out.println("Sales length: " + sales.length());
-
-
-                        for (int i = 0; i < sales.length(); i++) {
-                            Sale obj = new Sale();
-                            //obj.image = drw_arr.getResourceId(i, -1);
-
-                            JSONArray saleItems = sales.getJSONObject(i).getJSONArray("saleitems");
-
-                            String allProductsSalesitemString = "";
-
-                            String firstsaleItemProductName =
-                                    saleItems.getJSONObject(0).getJSONObject("product")
-                                            .getString("name");
-                            String firstsaleItemPieces =
-                                    saleItems.getJSONObject(0).getString("pieces");
-                            String singleProductsSalesitemString = firstsaleItemProductName + " - " + firstsaleItemPieces;
-
-                            saleItemsList = new ArrayList<>();
-
-                            for (int j = 0; j < saleItems.length(); j++) {
-
-                                String saleItemProductName = saleItems.getJSONObject(j).getJSONObject("product").getString("name");
-                                String saleItemPieces = saleItems.getJSONObject(j).getString("pieces");
-                                allProductsSalesitemString = allProductsSalesitemString + saleItemProductName + " - " + saleItemPieces + " ";
-
-                                System.out.println("SaleItem: " + allProductsSalesitemString);
-
-                                SaleItem saleItem = new SaleItem();
-                                saleItem.productName = saleItems.getJSONObject(j).getJSONObject("product").getString("name");
-                                saleItem.pieces = saleItems.getJSONObject(j).getString("pieces");
-                                saleItem.price = saleItems.getJSONObject(j).getString("price");
-                                saleItem.value = saleItems.getJSONObject(j).getString("value");
-                                saleItemsList.add(saleItem);
-
-                            }
-                            if (saleItems.length() > 1) {
-                                singleProductsSalesitemString += "...";
-                            }
-
-
-                            System.out.println("SaleItems: " + saleItems.length());
-                            obj.name = singleProductsSalesitemString;
-                            obj.allproductsname = allProductsSalesitemString;
-                            obj.saleItems = saleItemsList;
-                            //saleItemsList.clear();
-
-
-                            //obj.name = sales.getJSONObject(i).getJSONObject("product").getString("name");
-                            String createdAt = sales.getJSONObject(i).getString("created_at");
-                            ZonedDateTime dateTime = Instant.parse(createdAt).atZone(ZoneId.of("Africa/Nairobi"));
-                            String formatted = dateTime.format(DateTimeFormatter.ofPattern("dd-MMM-yyyy \nHH:mm "));
-                            obj.time = formatted;
-
-
-                            String status = sales.getJSONObject(i).getString("status");
-                            obj.status=status.substring(0, 1).toUpperCase() + status.substring(1);
-
-                            Integer pieces = Integer.valueOf(sales.getJSONObject(i).getString("pieces"));
-
-                            String outletName = "";
-                            String sellerName = "";
-
-                            if(!sales.getJSONObject(i).isNull("outlet")){
-                                outletName = sales.getJSONObject(i).getJSONObject("outlet").getString("name");
-                            }else{
-                                outletName="Outlet Not Found";
-                            }
-
-                            if(!sales.getJSONObject(i).isNull("user")){
-                                sellerName = sales.getJSONObject(i).getJSONObject("user").getString("name");
-                            }else{
-                                sellerName="Seller Not Found";
-                            }
-
-                            String allProductsName = allProductsSalesitemString;
-                            obj.pieces = pieces + "";
-                            obj.sellerName = sellerName;
-                            obj.outletName = outletName;
-                            obj.allproductsname = allProductsName;
-                            obj.id = sales.getJSONObject(i).getString("id");
-                            //Integer price = Integer.valueOf(sales.getJSONObject(i).getString("price"));
-                            Integer value = Integer.valueOf(sales.getJSONObject(i).getString("value"));
-                            obj.price = "KSh. " + NumberFormat.getNumberInstance(Locale.US).format(value);
-                            //obj.imageDrw = drw_arr.getDrawable(obj.image);
-                            items.add(obj);
-                        }
-
-                        if (items.isEmpty()) {
-                            recyclerView.setVisibility(View.GONE);
-                            emptyView.setVisibility(View.VISIBLE);
-                        } else {
-                            recyclerView.setVisibility(View.VISIBLE);
-                            emptyView.setVisibility(View.GONE);
-                        }
-
-                        //set data and list adapter
-                        mAdapter = new AdapterListSales(items);
-                        recyclerView.setAdapter(mAdapter);
-
-                        // on item list clicked
-                        mAdapter.setOnItemClickListener(new AdapterListSales.OnItemClickListener() {
-                            @Override
-                            public void onItemClick(View view, Sale obj, int position) {
+                    // on item list clicked
+                    mAdapter.setOnItemClickListener(new AdapterListSales.OnItemClickListener() {
+                        @Override
+                        public void onItemClick(View view, Sale obj, int position) {
 //                            //Snackbar.make(parent_view, "Item " + obj.name + " clicked", Snackbar.LENGTH_SHORT).show();
 //                            Intent intent = new Intent(SalesActivity.this, IndividualSaleActivity.class);
 //                            //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -435,17 +516,17 @@ public class DealsFragment extends Fragment  {
 //                            //intent.putExtra("outletId", outletId);
 //                            intent.putExtra("sale", items.get(position));
 //                            startActivity(intent);
-                                Sale sale=items.get(position);
+                            Sale sale=items.get(position);
 
-                                PreventDoubleClickOnLists.
-                                        showActivityWithoutDoubleClick(
-                                                "sale",getContext(),
-                                                sale, IndividualSaleActivity.class);
+                            PreventDoubleClickOnLists.
+                                    showActivityWithoutDoubleClick(
+                                            "sale",getContext(),
+                                            sale, IndividualSaleActivity.class);
 
 
 
-                            }
-                        });
+                        }
+                    });
 
 //                    recyclerView.setMotionEventSplittingEnabled(false);
 
@@ -458,32 +539,300 @@ public class DealsFragment extends Fragment  {
 //                    currentSales.setText("KSh " + NumberFormat.getNumberInstance(Locale.US).format(parseInt(currentSalesTarget)));
 
 
-                    } else {
-                        recyclerView.setVisibility(View.GONE);
-                        FirebaseCrashlytics.getInstance().recordException(new Exception("Sales Error: "+result));
-                        errorLoadingRelativeLayout.setVisibility(View.VISIBLE);
-//                        Toasts.toastIconError(SalesActivity.this,
-//                                "Does not Contain Sales");
-                        //Toast.makeText(SalesActivity.this,"Does not contain Sales",Toast.LENGTH_SHORT).show();
-
-                    }
-                }
-                else{
+                } else {
                     recyclerView.setVisibility(View.GONE);
                     FirebaseCrashlytics.getInstance().recordException(new Exception("Sales Error: "+result));
                     errorLoadingRelativeLayout.setVisibility(View.VISIBLE);
-//                        Toasts.toastIconError(SalesActivity.this,"Is Null");
-                    //Toast.makeText(SalesActivity.this,"Is Null",Toast.LENGTH_SHORT).show();
+//                        Toasts.toastIconError(SalesActivity.this,
+//                                "Does not Contain Sales");
+                    //Toast.makeText(SalesActivity.this,"Does not contain Sales",Toast.LENGTH_SHORT).show();
 
                 }
+            }
+            else{
+                recyclerView.setVisibility(View.GONE);
+                FirebaseCrashlytics.getInstance().recordException(new Exception("Sales Error: "+result));
+                errorLoadingRelativeLayout.setVisibility(View.VISIBLE);
+//                        Toasts.toastIconError(SalesActivity.this,"Is Null");
+                //Toast.makeText(SalesActivity.this,"Is Null",Toast.LENGTH_SHORT).show();
 
-            } catch (JSONException e) {
-                throw new RuntimeException(e);
             }
 
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
         }
 
     }
+
+
+
+//    private class JsonTask extends AsyncTask<String, String, String> {
+//
+//        protected void onPreExecute() {
+//            super.onPreExecute();
+//
+//            pd = new ProgressDialog(getContext());
+//
+//            pd.setMessage("Please wait");
+//            pd.setCancelable(false);
+//            pd.show();
+//
+//        }
+//
+//        protected String doInBackground(String... params) {
+//
+//
+//            HttpURLConnection connection = null;
+//            BufferedReader reader = null;
+//
+//            try {
+//
+//                URL url = new URL(params[0]);
+//                String requestMethod = params[1];
+//
+//                connection = (HttpURLConnection) url.openConnection();
+//                connection.setRequestMethod(requestMethod);
+//                connection.setRequestProperty("Accept","application/json");
+//                connection.setRequestProperty("Authorization", "Bearer " + mAuthToken);
+//
+//                connection.connect();
+//
+//                InputStream stream;
+//
+//                if (connection.getResponseCode() == 200) {
+//                    stream = connection.getInputStream();
+//
+//                } else {
+//                    /* error from server */
+//                    //_is = httpConn.getErrorStream();
+//                    stream = connection.getErrorStream();
+//
+//                }
+//
+//                reader = new BufferedReader(new InputStreamReader(stream));
+//
+//                StringBuffer buffer = new StringBuffer();
+//                String line = "";
+//
+//                while ((line = reader.readLine()) != null) {
+//
+//                    buffer.append(line + "\n");
+//                    Log.d("Response: ", "> " + line);   //here u ll get whole response...... :-)
+//
+//                }
+//
+//                return buffer.toString();
+//
+//
+//            } catch (MalformedURLException e) {
+//                e.printStackTrace();
+//                Log.e(TAG,"Malf Message");
+//            } catch (IOException e) {
+//                Log.e("Message here: ",e.getMessage());
+//                e.printStackTrace();
+//            } finally {
+//                if (connection != null) {
+//                    connection.disconnect();
+//                }
+//                try {
+//                    if (reader != null) {
+//                        reader.close();
+//                    }
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//                // Dismiss the dialog on the UI thread
+////                runOnUiThread(() -> {
+////                    if (pd != null && pd.isShowing() && !isFinishing()) {
+////                        pd.dismiss();
+////                    }
+////                });
+//            }
+//            return null;
+//        }
+//
+//        @Override
+//        protected void onPostExecute(String result) {
+//            super.onPostExecute(result);
+//
+//            if(pd != null && pd.isShowing()){
+//                pd.dismiss();
+//            }
+//
+//            try {
+//
+//                System.out.println("Result: "+result);
+//                if (result != null && result.contains("sales")) {
+//                    JSONObject jsonObject = new JSONObject(result);
+//                    //txtJson.setText(jsonObject.toString());
+//
+//                    if (jsonObject.has("sales") &&
+//                            jsonObject.get("sales") instanceof JSONArray) {
+//
+//                        items = new ArrayList<>();
+//
+//                        sales = jsonObject.getJSONArray("sales");
+//
+//                        System.out.println("Sales length: " + sales.length());
+//
+//
+//                        for (int i = 0; i < sales.length(); i++) {
+//                            Sale obj = new Sale();
+//                            //obj.image = drw_arr.getResourceId(i, -1);
+//
+//                            JSONArray saleItems = sales.getJSONObject(i).getJSONArray("saleitems");
+//
+//                            String allProductsSalesitemString = "";
+//
+//                            String firstsaleItemProductName =
+//                                    saleItems.getJSONObject(0).getJSONObject("product")
+//                                            .getString("name");
+//                            String firstsaleItemPieces =
+//                                    saleItems.getJSONObject(0).getString("pieces");
+//                            String singleProductsSalesitemString = firstsaleItemProductName + " - " + firstsaleItemPieces;
+//
+//                            saleItemsList = new ArrayList<>();
+//
+//                            for (int j = 0; j < saleItems.length(); j++) {
+//
+//                                String saleItemProductName = saleItems.getJSONObject(j).getJSONObject("product").getString("name");
+//                                String saleItemPieces = saleItems.getJSONObject(j).getString("pieces");
+//                                allProductsSalesitemString = allProductsSalesitemString + saleItemProductName + " - " + saleItemPieces + " ";
+//
+//                                System.out.println("SaleItem: " + allProductsSalesitemString);
+//
+//                                SaleItem saleItem = new SaleItem();
+//                                saleItem.productName = saleItems.getJSONObject(j).getJSONObject("product").getString("name");
+//                                saleItem.pieces = saleItems.getJSONObject(j).getString("pieces");
+//                                saleItem.price = saleItems.getJSONObject(j).getString("price");
+//                                saleItem.value = saleItems.getJSONObject(j).getString("value");
+//                                saleItemsList.add(saleItem);
+//
+//                            }
+//                            if (saleItems.length() > 1) {
+//                                singleProductsSalesitemString += "...";
+//                            }
+//
+//
+//                            System.out.println("SaleItems: " + saleItems.length());
+//                            obj.name = singleProductsSalesitemString;
+//                            obj.allproductsname = allProductsSalesitemString;
+//                            obj.saleItems = saleItemsList;
+//                            //saleItemsList.clear();
+//
+//
+//                            //obj.name = sales.getJSONObject(i).getJSONObject("product").getString("name");
+//                            String createdAt = sales.getJSONObject(i).getString("created_at");
+//                            ZonedDateTime dateTime = Instant.parse(createdAt).atZone(ZoneId.of("Africa/Nairobi"));
+//                            String formatted = dateTime.format(DateTimeFormatter.ofPattern("dd-MMM-yyyy \nHH:mm "));
+//                            obj.time = formatted;
+//
+//
+//                            String status = sales.getJSONObject(i).getString("status");
+//                            obj.status=status.substring(0, 1).toUpperCase() + status.substring(1);
+//
+//                            Integer pieces = Integer.valueOf(sales.getJSONObject(i).getString("pieces"));
+//
+//                            String outletName = "";
+//                            String sellerName = "";
+//
+//                            if(!sales.getJSONObject(i).isNull("outlet")){
+//                                outletName = sales.getJSONObject(i).getJSONObject("outlet").getString("name");
+//                            }else{
+//                                outletName="Outlet Not Found";
+//                            }
+//
+//                            if(!sales.getJSONObject(i).isNull("user")){
+//                                sellerName = sales.getJSONObject(i).getJSONObject("user").getString("name");
+//                            }else{
+//                                sellerName="Seller Not Found";
+//                            }
+//
+//                            String allProductsName = allProductsSalesitemString;
+//                            obj.pieces = pieces + "";
+//                            obj.sellerName = sellerName;
+//                            obj.outletName = outletName;
+//                            obj.allproductsname = allProductsName;
+//                            obj.id = sales.getJSONObject(i).getString("id");
+//                            //Integer price = Integer.valueOf(sales.getJSONObject(i).getString("price"));
+//                            Integer value = Integer.valueOf(sales.getJSONObject(i).getString("value"));
+//                            obj.price = "KSh. " + NumberFormat.getNumberInstance(Locale.US).format(value);
+//                            //obj.imageDrw = drw_arr.getDrawable(obj.image);
+//                            items.add(obj);
+//                        }
+//
+//                        if (items.isEmpty()) {
+//                            recyclerView.setVisibility(View.GONE);
+//                            emptyView.setVisibility(View.VISIBLE);
+//                        } else {
+//                            recyclerView.setVisibility(View.VISIBLE);
+//                            emptyView.setVisibility(View.GONE);
+//                        }
+//
+//                        //set data and list adapter
+//                        mAdapter = new AdapterListSales(items);
+//                        recyclerView.setAdapter(mAdapter);
+//
+//                        // on item list clicked
+//                        mAdapter.setOnItemClickListener(new AdapterListSales.OnItemClickListener() {
+//                            @Override
+//                            public void onItemClick(View view, Sale obj, int position) {
+////                            //Snackbar.make(parent_view, "Item " + obj.name + " clicked", Snackbar.LENGTH_SHORT).show();
+////                            Intent intent = new Intent(SalesActivity.this, IndividualSaleActivity.class);
+////                            //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+////                            //intent.putExtra("visitId", visitId);
+////                            //intent.putExtra("outletId", outletId);
+////                            intent.putExtra("sale", items.get(position));
+////                            startActivity(intent);
+//                                Sale sale=items.get(position);
+//
+//                                PreventDoubleClickOnLists.
+//                                        showActivityWithoutDoubleClick(
+//                                                "sale",getContext(),
+//                                                sale, IndividualSaleActivity.class);
+//
+//
+//
+//                            }
+//                        });
+//
+////                    recyclerView.setMotionEventSplittingEnabled(false);
+//
+//
+////                    outletsNumber.setText(outletsTotal);
+////                    posAuditsNumber.setText(posAuditsTotal);
+////                    salesNumber.setText(salesTotal);
+////                    feedbackNumber.setText(feedbackTotal);
+////                    targetSales.setText("KSh " + NumberFormat.getNumberInstance(Locale.US).format(parseInt(dailySalesTotal)));
+////                    currentSales.setText("KSh " + NumberFormat.getNumberInstance(Locale.US).format(parseInt(currentSalesTarget)));
+//
+//
+//                    } else {
+//                        recyclerView.setVisibility(View.GONE);
+//                        FirebaseCrashlytics.getInstance().recordException(new Exception("Sales Error: "+result));
+//                        errorLoadingRelativeLayout.setVisibility(View.VISIBLE);
+////                        Toasts.toastIconError(SalesActivity.this,
+////                                "Does not Contain Sales");
+//                        //Toast.makeText(SalesActivity.this,"Does not contain Sales",Toast.LENGTH_SHORT).show();
+//
+//                    }
+//                }
+//                else{
+//                    recyclerView.setVisibility(View.GONE);
+//                    FirebaseCrashlytics.getInstance().recordException(new Exception("Sales Error: "+result));
+//                    errorLoadingRelativeLayout.setVisibility(View.VISIBLE);
+////                        Toasts.toastIconError(SalesActivity.this,"Is Null");
+//                    //Toast.makeText(SalesActivity.this,"Is Null",Toast.LENGTH_SHORT).show();
+//
+//                }
+//
+//            } catch (JSONException e) {
+//                throw new RuntimeException(e);
+//            }
+//
+//        }
+//
+//    }
 
 //    @Override
 //    public boolean onOptionsItemSelected(MenuItem item) {

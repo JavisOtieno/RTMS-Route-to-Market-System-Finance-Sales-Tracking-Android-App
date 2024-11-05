@@ -24,6 +24,7 @@ import android.widget.TextView;
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.scg.sf.adapters.AdapterListInputProducts;
 import com.scg.sf.models.Product;
+import com.scg.sf.util.EncryptedPrefsUtil;
 import com.scg.sf.util.Toasts;
 
 import org.json.JSONArray;
@@ -83,9 +84,11 @@ public class AddSalePOSAuditActivity extends AppCompatActivity implements OnEdit
 
         initToolbar();
 
-        mPrefs = getSharedPreferences("label", 0);
-        mAuthToken = mPrefs.getString("authToken", "");
-        mUserId = mPrefs.getString("userId", "0");
+//        mPrefs = getSharedPreferences("label", 0);
+//        mAuthToken = mPrefs.getString("authToken", "");
+//        mUserId = mPrefs.getString("userId", "0");
+        mUserId = EncryptedPrefsUtil.getString("userId","0");
+        mAuthToken = EncryptedPrefsUtil.getString("authToken", "");
         submitPosAuditButton = (Button) findViewById(R.id.posAuditButton);
         totalValueTextView = (TextView) findViewById(R.id.totalValueText);
         totalLayout = (LinearLayout) findViewById(R.id.totalLayout);
@@ -265,15 +268,34 @@ public class AddSalePOSAuditActivity extends AppCompatActivity implements OnEdit
                 outletId = i.getStringExtra("outletId");
                 outletName = i.getStringExtra("outletName");
 
-                String url=Constants.BASE_URL + "api/addposaudit";
+                String urlendpoint= "api/addposaudit";
 
                 if(mCallingActivity.equals("makeSale")){
-                    url=Constants.BASE_URL + "api/addsale";
+                    urlendpoint="api/addsale";
                 }
 
-                new JsonTask().execute(url, "POST", productString, userId, outletId, visitId);
+//                new JsonTask().execute(url, "POST", productString, userId, outletId, visitId);
                 //Toast.makeText(getBaseContext(), productString, Toast.LENGTH_SHORT).show();
                 System.out.println("productString: " + productString);
+
+                    new TokenManager(AddSalePOSAuditActivity.this,  (success, result) -> {
+                        if (success) {
+                            // Handle the JSON result, update UI, etc.
+                            System.out.println("API Result: " + result);
+
+                            handleResult(result);
+
+                        } else {
+                            // Handle errors (e.g., token refresh failed)
+                            Toasts.toastIconError(AddSalePOSAuditActivity.this, result);
+                            Intent intent = new Intent(AddSalePOSAuditActivity.this, LoginActivity.class);
+                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                            startActivity(intent);
+                        }
+                    }).executeRequest(Constants.BASE_URL +urlendpoint, "POST",
+                            "userId",mUserId,"outletId",outletId,"visitId",visitId,
+                            "products", productString);
+
 
                 }
 
@@ -284,6 +306,67 @@ public class AddSalePOSAuditActivity extends AppCompatActivity implements OnEdit
 
         //new JsonTask().execute(Constants.BASE_URL + "api/products","GET");
 
+
+    }
+
+    private void handleResult(String result){
+
+        isTaskRunning=false;
+        System.out.println("Result: " + result);
+        try {
+
+            if (result != null) {
+
+                JSONObject jsonObject = new JSONObject(result);
+                //txtJson.setText(jsonObject.toString());
+                //Add POS Failed means server returns nothing
+                //Error saving means server responds with something other than success or errors
+
+                if(result.contains("errors")){
+                    String message = jsonObject.getString("message");
+                    Toasts.toastIconError(AddSalePOSAuditActivity.this,message);
+                    //Toast.makeText(getBaseContext(), message, Toast.LENGTH_SHORT).show();
+                }
+                else if(result.contains("success")){
+                    Intent intent = new Intent(AddSalePOSAuditActivity.this, GenerateOrderNote.class);
+                    // Intent intent = new Intent(AddSalePOSAuditActivity.this, SelectActionActivity.class);
+
+                    if (mCallingActivity.equals("addPOSAudit")) {
+                        //toastIconError(mCallingActivity);
+                        String posAuditId = jsonObject.getString("posAuditId");
+                        intent = new Intent(AddSalePOSAuditActivity.this, TakePhotoActivity.class);
+                        intent.putExtra("callingActivity", "POSAudit");
+                        intent.putExtra("posAuditId",posAuditId);
+                    }else{
+                        String saleId = jsonObject.getString("saleId");
+                        intent.putExtra("saleId",saleId);
+//                            intent.putExtra("lastUpdatedActivity","sale");
+                    }
+                    intent.putExtra("visitId",visitId);
+                    intent.putExtra("outletName",outletName);
+                    intent.putExtra("outletId",outletId);
+                    startActivity(intent);
+                }else{
+                    Toasts.toastIconError(AddSalePOSAuditActivity.this,
+                            "Error Saving. Please Try Again");
+                    FirebaseCrashlytics.getInstance().recordException(new Exception("Add "+mCallingActivity+" Error: "+result));
+
+                }
+
+
+
+            }else
+            {
+                Toasts.toastIconError(AddSalePOSAuditActivity.this,
+                        "Submit POS Audit Failed. Please Try Again");
+                FirebaseCrashlytics.getInstance().recordException(new Exception("Add "+mCallingActivity+" Error: "+result));
+
+            }
+
+
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
+        }
 
     }
 

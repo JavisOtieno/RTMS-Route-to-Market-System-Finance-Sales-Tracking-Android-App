@@ -15,6 +15,7 @@ import android.widget.Button;
 
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
+import com.scg.sf.util.EncryptedPrefsUtil;
 import com.scg.sf.util.Toasts;
 
 import org.json.JSONException;
@@ -43,6 +44,8 @@ public class LoginActivity extends AppCompatActivity {
 
     private String mUserId;
 
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -53,6 +56,23 @@ public class LoginActivity extends AppCompatActivity {
         signInButton = (Button) findViewById(R.id.signInButton);
 
         mPrefs = getSharedPreferences("label", 0);
+
+        // Initialize EncryptedSharedPreferences in the util class
+        EncryptedPrefsUtil.init(this);
+
+        // Save a string value securely
+//        EncryptedPrefsUtil.saveString("user_token", "my_secure_token");
+//
+//        // Retrieve the encrypted value
+//        String token = EncryptedPrefsUtil.getString("user_token", "default_value");
+//
+//        // Output the retrieved value (should be encrypted in storage)
+//        System.out.println("Retrieved token: " + token);
+
+        // Remove a key securely
+//        EncryptedPrefsUtil.remove("user_token");
+
+
 
         signInButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -66,15 +86,19 @@ public class LoginActivity extends AppCompatActivity {
                 new JsonTask().execute(Constants.BASE_URL + "api/login","POST",email,password);
 
 
+
+
+
             }
         });
 
 
 
 
+
     }
 
-    private class JsonTask extends AsyncTask<String, String, String> {
+    public class JsonTask extends AsyncTask<String, String, String> {
 
         protected void onPreExecute() {
             super.onPreExecute();
@@ -214,9 +238,24 @@ public class LoginActivity extends AppCompatActivity {
                             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
                             SharedPreferences.Editor mEditor = mPrefs.edit();
-                            mEditor.putString("userId", jsonObject.getString("userId")).commit();
-                            mEditor.putString("authToken", jsonObject.getString("authToken")).commit();
-                            //Toast.makeText(getBaseContext(), jsonObject.getString("authToken") , Toast.LENGTH_SHORT).show();
+//                            mEditor.putString("userId", jsonObject.getString("userId")).commit();
+//                            mEditor.putString("authToken", jsonObject.getString("authToken")).commit();
+//
+
+//                            Toast.makeText(getBaseContext(), jsonObject.getString("authToken") , Toast.LENGTH_SHORT).show();
+
+                            EncryptedPrefsUtil.saveString("authToken", jsonObject.getString("authToken"));
+                            EncryptedPrefsUtil.saveString("userId", jsonObject.getString("userId"));
+                            EncryptedPrefsUtil.saveString("email", email);
+                            EncryptedPrefsUtil.saveString("password",password);
+
+                            long currentTimeMillis = System.currentTimeMillis();
+                            long expiryMillis = Constants.EXPIRY_MILLIS+currentTimeMillis;
+
+                            EncryptedPrefsUtil.saveString("tokenExpiry", expiryMillis+"");
+
+
+
 
                             startActivity(intent);
 

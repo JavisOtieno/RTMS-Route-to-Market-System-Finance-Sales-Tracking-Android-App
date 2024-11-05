@@ -14,7 +14,6 @@ import android.app.ProgressDialog;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -27,7 +26,9 @@ import android.widget.TextView;
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.scg.sf.adapters.AdapterListProducts;
 import com.scg.sf.models.Product;
+import com.scg.sf.util.EncryptedPrefsUtil;
 import com.scg.sf.util.PreventDoubleClickOnLists;
+import com.scg.sf.util.Toasts;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -48,14 +49,14 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ProductsListActivity extends AppCompatActivity {
+public class ProductsListActivity extends AppCompatActivity implements JsonTaskCallback {
     private RecyclerView recyclerView;
 
     private ProgressDialog pd;
     private JSONArray products = null;
     private AdapterListProducts mAdapter;
     private String mAuthToken;
-    private SharedPreferences mPrefs;
+//    private SharedPreferences mPrefs;
 
     private List<Product> items;
     private TextView emptyView;
@@ -64,14 +65,17 @@ public class ProductsListActivity extends AppCompatActivity {
     private static final long MIN_CLICK_INTERVAL = 1000; // 1000 milliseconds
     private TextView mNoProductsTextView;
 
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_products_list);
         initToolbar();
 
-        mPrefs = getSharedPreferences("label", 0);
-        mAuthToken = mPrefs.getString("authToken", "");
+//        mPrefs = getSharedPreferences("label", 0);
+//        mAuthToken = mPrefs.getString("authToken", "");
+        mAuthToken = EncryptedPrefsUtil.getString("authToken", "");
         mNoProductsTextView=(TextView)findViewById(R.id.noProductsText);
 
         recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
@@ -79,7 +83,152 @@ public class ProductsListActivity extends AppCompatActivity {
         recyclerView.setHasFixedSize(true);
         emptyView = (TextView) findViewById(R.id.empty_view);
 
-        new JsonTask().execute(Constants.BASE_URL + "api/products","GET");
+
+        String mEmail = EncryptedPrefsUtil.getString("email", "0");
+        String mPassword = EncryptedPrefsUtil.getString("password", "0");
+        //check token validity
+        String mTokenExpiry = EncryptedPrefsUtil.getString("tokenExpiry", "0");
+        long currentTimeMillis = System.currentTimeMillis();
+
+//        if(Long.valueOf(currentTimeMillis)>Long.valueOf(mTokenExpiry)) {
+//
+//            new JsonTaskInline(
+//                    new JsonTaskInline.JsonTaskListener() {
+//                        @Override
+//                        public void onTaskComplete(String result) {
+//                            System.out.println("Result: " + result);
+//
+//                            try {
+//
+//                            if (result != null) {
+//                                JSONObject jsonObject = new JSONObject(result);
+//
+//                                //txtJson.setText(jsonObject.toString());
+//                                if(result.contains("errors")){
+//                                    String message = jsonObject.getString("message");
+//                                    Toasts.toastIconError(ProductsListActivity.this,message);
+//                                    //Toast.makeText(getBaseContext(), message, Toast.LENGTH_SHORT).show();
+//                                }else if (
+//                                        jsonObject.has("message") &&
+//                                                jsonObject.get("message") instanceof String &&
+//                                                jsonObject.has("status") &&
+//                                                jsonObject.get("status") instanceof String
+//                                ) {
+//                                    String message = jsonObject.getString("message");
+//                                    String status = jsonObject.getString("status");
+//
+//                                    if (status.equals("success")) {
+//                                        //Toast.makeText(getBaseContext(), message, Toast.LENGTH_SHORT).show();
+//                                        Intent intent = new Intent(ProductsListActivity.this, MainActivity.class);
+//                                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+//
+//
+//                                        EncryptedPrefsUtil.saveString("authToken", jsonObject.getString("authToken"));
+//                                        EncryptedPrefsUtil.saveString("userId", jsonObject.getString("userId"));
+//                                        long currentTimeMillis = System.currentTimeMillis();
+//                                        long expiryMillis = Constants.EXPIRY_MILLIS+currentTimeMillis;
+//
+//                                        EncryptedPrefsUtil.saveString("tokenExpiry", expiryMillis+"");
+//                                        System.out.println("refreshState: token"+jsonObject.getString("authToken"));
+//
+//                                        //check if token refresh is successful
+//                                        new JsonTaskDecoupledResult(ProductsListActivity.this).execute(
+//                                                Constants.BASE_URL + "api/products",
+//                                                "GET"
+//
+//                                        );
+//
+//
+////                            startActivity(intent);
+//
+//                                    }
+////                                    else if(status.equals("failed")) {
+//////                                        Toasts.toastIconError(ProductsListActivity.this, message);
+////
+////                                    }
+//                                    else{
+////                                        Toasts.toastIconError(ProductsListActivity.this,
+////                                                "Refresh Token Failed! Please Try Again");
+//                                        FirebaseCrashlytics.getInstance().recordException(new Exception("Refresh Token  Error: "+result));
+//                                        EncryptedPrefsUtil.saveString("userId", "0");
+//                                        EncryptedPrefsUtil.saveString("authToken", "");
+//                                        EncryptedPrefsUtil.saveString("email", "");
+//                                        EncryptedPrefsUtil.saveString("password","");
+//                                        Intent intent = new Intent(ProductsListActivity.this,LoginActivity.class);
+//                                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+//                                        startActivity(intent);
+//                                    }
+//                                }else{
+////                                    Toasts.toastIconError(ProductsListActivity.this,
+////                                            "Refresh Token Failed! Please Try Again");
+//                                    FirebaseCrashlytics.getInstance().recordException(new Exception("Refresh Token Error JSON Object: "+result));
+//                                    EncryptedPrefsUtil.saveString("userId", "0");
+//                                    EncryptedPrefsUtil.saveString("authToken", "");
+//                                    EncryptedPrefsUtil.saveString("email", "");
+//                                    EncryptedPrefsUtil.saveString("password","");
+//                                    Intent intent = new Intent(ProductsListActivity.this,LoginActivity.class);
+//                                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+//                                    startActivity(intent);
+//
+//                                }
+//
+//
+//
+//                            }else{
+////                                Toasts.toastIconError(ProductsListActivity.this,
+////                                        "Refresh Token Failed! Please Try Again");
+//                                FirebaseCrashlytics.getInstance().recordException(new Exception("Refresh Token Null Error: "+result));
+//                                EncryptedPrefsUtil.saveString("userId", "0");
+//                                EncryptedPrefsUtil.saveString("authToken", "");
+//                                EncryptedPrefsUtil.saveString("email", "");
+//                                EncryptedPrefsUtil.saveString("password","");
+//                                Intent intent = new Intent(ProductsListActivity.this,LoginActivity.class);
+//                                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+//                                startActivity(intent);
+//
+//                            }
+//                            } catch (JSONException e) {
+//                                throw new RuntimeException(e);
+//                            }
+//
+//
+//
+//                        }
+//                    }).execute(
+//                    Constants.BASE_URL + "api/login",
+//                    "POST",
+//                    "email", mEmail,
+//                    "password", mPassword
+//
+//            );
+//
+//        }else {
+//
+//            new JsonTaskDecoupledResult(ProductsListActivity.this).execute(
+//                    Constants.BASE_URL + "api/products",
+//                    "GET"
+//            );
+//
+//        }
+
+
+        new TokenManager(this,  (success, result) -> {
+            if (success) {
+                // Handle the JSON result, update UI, etc.
+                System.out.println("API Result: " + result);
+
+                handleResult(result);
+
+            } else {
+                // Handle errors (e.g., token refresh failed)
+                Toasts.toastIconError(ProductsListActivity.this, result);
+                Intent intent = new Intent(ProductsListActivity.this, LoginActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+            }
+
+        }).executeRequest(Constants.BASE_URL +"api/products", "GET");
+
 
     }
 
@@ -118,6 +267,130 @@ public class ProductsListActivity extends AppCompatActivity {
 
         return true;
     }
+
+    private void handleResult(String result) {
+
+        if(pd != null && pd.isShowing() && !isFinishing()){
+            pd.dismiss();
+        }
+
+        System.out.println("Result: " + result);
+
+        if (result != null && result.contains("products")){
+
+            try {
+                JSONObject jsonObject = new JSONObject(result);
+                //txtJson.setText(jsonObject.toString());
+
+                if (jsonObject.has("products") &&
+                        jsonObject.get("products") instanceof JSONArray) {
+
+
+                    items = new ArrayList<>();
+
+                    products = jsonObject.getJSONArray("products");
+                    System.out.println("Products length: "+products.length());
+
+                    for (int i = 0; i < products.length(); i++) {
+                        Product obj = new Product();
+                        //obj.image = drw_arr.getResourceId(i, -1);
+                        obj.name = products.getJSONObject(i).getString("name");
+                        obj.sku = products.getJSONObject(i).getString("sku");
+                        obj.price =  products.getJSONObject(i).getString("price");
+                        obj.id = products.getJSONObject(i).getString("id");
+                        obj.description = products.getJSONObject(i).getString("description");
+                        obj.image = products.getJSONObject(i).getString("image");
+                        obj.stock = products.getJSONObject(i).getInt("stock");
+                        obj.productType = products.getJSONObject(i).getString("producttype");
+                        obj.targetType = products.getJSONObject(i).getString("targettype");
+                        obj.target = products.getJSONObject(i).getString("target");
+                        System.out.println("salestest"+
+                                products.getJSONObject(i).getString("total_sales")+" "+
+                                products.getJSONObject(i).getString("total_quantity")
+                        );
+                        if(!products.getJSONObject(i).getString("total_quantity").equals("null")) {
+                            obj.currentSalesQuantity = products.getJSONObject(i).getString("total_quantity");
+                        }else{
+                            obj.currentSalesQuantity="0";
+                        }
+                        if(!products.getJSONObject(i).getString("total_sales").equals("null")) {
+                            obj.currentSalesTotal = products.getJSONObject(i).getString("total_sales");
+                        }else{
+                            obj.currentSalesTotal="0";
+                        }
+
+                        String createdAt = products.getJSONObject(i).getString("created_at");
+                        ZonedDateTime dateTime = Instant.parse(createdAt).atZone(ZoneId.of("Africa/Nairobi"));
+                        String formatted = dateTime.format(DateTimeFormatter.ofPattern("dd-MMM-yyyy \nHH:mm"));
+                        obj.date = formatted;
+                        //obj.image = products.getJSONObject(i).getString("image");
+                        //obj.imageDrw = drw_arr.getDrawable(obj.image);
+                        items.add(obj);
+                    }
+
+                    if (items.isEmpty()) {
+                        recyclerView.setVisibility(View.GONE);
+                        emptyView.setVisibility(View.VISIBLE);
+                    }
+                    else {
+                        recyclerView.setVisibility(View.VISIBLE);
+                        emptyView.setVisibility(View.GONE);
+                    }
+
+
+                    //set data and list adapter
+                    mAdapter = new AdapterListProducts(items);
+                    recyclerView.setAdapter(mAdapter);
+
+                    // on item list clicked
+                    mAdapter.setOnItemClickListener(new AdapterListProducts.OnItemClickListener() {
+                        @Override
+                        public void onItemClick(View view, Product obj, int position) {
+
+                            Product product = items.get(position);
+
+                            PreventDoubleClickOnLists.
+                                    showActivityWithoutDoubleClick(
+                                            "product",ProductsListActivity.this,
+                                            product, IndividualProductActivity.class);
+
+
+                        }
+                    });
+
+
+
+                }else {
+                    Intent intent = new Intent(ProductsListActivity.this, ErrorLoadingActivity.class);
+                    //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                    intent.putExtra("callingActivity", "Products");
+                    FirebaseCrashlytics.getInstance().recordException(new Exception("ProductsList Error: "+result));
+
+
+                    //startActivity(intent, ActivityOptions.makeSceneTransitionAnimation(ProductsListActivity.this).toBundle());
+                    startActivity(intent);
+                    finish();
+
+                    //Error
+                    //Toast.makeText(ProductsListActivity.this,result,Toast.LENGTH_SHORT).show();
+
+                }
+            } catch (JSONException e) {
+                throw new RuntimeException(e);
+            }
+
+        }else{
+            Intent intent = new Intent(ProductsListActivity.this, ErrorLoadingActivity.class);
+            //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.putExtra("callingActivity","Products");
+            FirebaseCrashlytics.getInstance().recordException(new Exception("ProductsList Error: "+result));
+            startActivity(intent, ActivityOptions.makeSceneTransitionAnimation(ProductsListActivity.this).toBundle());
+            finish();
+            //startActivity(intent);
+        }
+
+    }
+
 
     //searchview
     private void populateAdapter(String query) {
@@ -226,6 +499,142 @@ public class ProductsListActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+
+    @Override
+    public void onTaskComplete(String result) {
+//        if (result != null) {
+//            // Handle the JSON result, e.g., update the UI
+//            Log.d("MainActivity", "Result: " + result);
+//        } else {
+//            Log.e("MainActivity", "Failed to fetch data");
+//        }
+
+
+            if(pd != null && pd.isShowing() && !isFinishing()){
+                pd.dismiss();
+            }
+
+            System.out.println("Result: " + result);
+
+            if (result != null && result.contains("products")){
+
+                try {
+                    JSONObject jsonObject = new JSONObject(result);
+                    //txtJson.setText(jsonObject.toString());
+
+                    if (jsonObject.has("products") &&
+                            jsonObject.get("products") instanceof JSONArray) {
+
+
+                        items = new ArrayList<>();
+
+                        products = jsonObject.getJSONArray("products");
+                        System.out.println("Products length: "+products.length());
+
+                        for (int i = 0; i < products.length(); i++) {
+                            Product obj = new Product();
+                            //obj.image = drw_arr.getResourceId(i, -1);
+                            obj.name = products.getJSONObject(i).getString("name");
+                            obj.sku = products.getJSONObject(i).getString("sku");
+                            obj.price =  products.getJSONObject(i).getString("price");
+                            obj.id = products.getJSONObject(i).getString("id");
+                            obj.description = products.getJSONObject(i).getString("description");
+                            obj.image = products.getJSONObject(i).getString("image");
+                            obj.stock = products.getJSONObject(i).getInt("stock");
+                            obj.productType = products.getJSONObject(i).getString("producttype");
+                            obj.targetType = products.getJSONObject(i).getString("targettype");
+                            obj.target = products.getJSONObject(i).getString("target");
+                            System.out.println("salestest"+
+                                    products.getJSONObject(i).getString("total_sales")+" "+
+                                    products.getJSONObject(i).getString("total_quantity")
+                            );
+                            if(!products.getJSONObject(i).getString("total_quantity").equals("null")) {
+                                obj.currentSalesQuantity = products.getJSONObject(i).getString("total_quantity");
+                            }else{
+                                obj.currentSalesQuantity="0";
+                            }
+                            if(!products.getJSONObject(i).getString("total_sales").equals("null")) {
+                                obj.currentSalesTotal = products.getJSONObject(i).getString("total_sales");
+                            }else{
+                                obj.currentSalesTotal="0";
+                            }
+
+                            String createdAt = products.getJSONObject(i).getString("created_at");
+                            ZonedDateTime dateTime = Instant.parse(createdAt).atZone(ZoneId.of("Africa/Nairobi"));
+                            String formatted = dateTime.format(DateTimeFormatter.ofPattern("dd-MMM-yyyy \nHH:mm"));
+                            obj.date = formatted;
+                            //obj.image = products.getJSONObject(i).getString("image");
+                            //obj.imageDrw = drw_arr.getDrawable(obj.image);
+                            items.add(obj);
+                        }
+
+                        if (items.isEmpty()) {
+                            recyclerView.setVisibility(View.GONE);
+                            emptyView.setVisibility(View.VISIBLE);
+                        }
+                        else {
+                            recyclerView.setVisibility(View.VISIBLE);
+                            emptyView.setVisibility(View.GONE);
+                        }
+
+
+                        //set data and list adapter
+                        mAdapter = new AdapterListProducts(items);
+                        recyclerView.setAdapter(mAdapter);
+
+                        // on item list clicked
+                        mAdapter.setOnItemClickListener(new AdapterListProducts.OnItemClickListener() {
+                            @Override
+                            public void onItemClick(View view, Product obj, int position) {
+
+                                Product product = items.get(position);
+
+                                PreventDoubleClickOnLists.
+                                        showActivityWithoutDoubleClick(
+                                                "product",ProductsListActivity.this,
+                                                product, IndividualProductActivity.class);
+
+
+                            }
+                        });
+
+
+
+                    }else {
+                        Intent intent = new Intent(ProductsListActivity.this, ErrorLoadingActivity.class);
+                        //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                        intent.putExtra("callingActivity", "Products");
+                        FirebaseCrashlytics.getInstance().recordException(new Exception("ProductsList Error: "+result));
+
+
+                        //startActivity(intent, ActivityOptions.makeSceneTransitionAnimation(ProductsListActivity.this).toBundle());
+                        startActivity(intent);
+                        finish();
+
+                        //Error
+                        //Toast.makeText(ProductsListActivity.this,result,Toast.LENGTH_SHORT).show();
+
+                    }
+                } catch (JSONException e) {
+                    throw new RuntimeException(e);
+                }
+
+            }else{
+                Intent intent = new Intent(ProductsListActivity.this, ErrorLoadingActivity.class);
+                //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                intent.putExtra("callingActivity","Products");
+                FirebaseCrashlytics.getInstance().recordException(new Exception("ProductsList Error: "+result));
+                startActivity(intent, ActivityOptions.makeSceneTransitionAnimation(ProductsListActivity.this).toBundle());
+                finish();
+                //startActivity(intent);
+            }
+
+
+
+
+
     }
 
     private class JsonTask extends AsyncTask<String, String, String> {

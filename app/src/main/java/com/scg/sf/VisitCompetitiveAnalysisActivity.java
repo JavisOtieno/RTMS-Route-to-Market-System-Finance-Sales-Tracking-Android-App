@@ -23,7 +23,9 @@ import android.widget.Toast;
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.scg.sf.adapters.AdapterListCompetitiveAnalysis;
 import com.scg.sf.models.CompetitiveAnalysis;
+import com.scg.sf.util.EncryptedPrefsUtil;
 import com.scg.sf.util.PreventDoubleClickOnLists;
+import com.scg.sf.util.Toasts;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -54,7 +56,7 @@ public class VisitCompetitiveAnalysisActivity extends AppCompatActivity {
     private JSONArray competitiveAnalysis = null;
     private AdapterListCompetitiveAnalysis mAdapter;
     private String mAuthToken;
-    private SharedPreferences mPrefs;
+//    private SharedPreferences mPrefs;
     private TextView emptyView;
 
     private String visitId;
@@ -71,8 +73,10 @@ public class VisitCompetitiveAnalysisActivity extends AppCompatActivity {
 
         initToolbar();
 
-        mPrefs = getSharedPreferences("label", 0);
-        mAuthToken = mPrefs.getString("authToken", "");
+//        mPrefs = getSharedPreferences("label", 0);
+//        mAuthToken = mPrefs.getString("authToken", "");
+
+        mAuthToken = EncryptedPrefsUtil.getString("authToken", "");
 
         recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -86,8 +90,128 @@ public class VisitCompetitiveAnalysisActivity extends AppCompatActivity {
         //callingActivity=i.getStringExtra("callingActivity");
         outletName=i.getStringExtra("outletName");
 
-        new JsonTask().execute( Constants.BASE_URL + "api/visitcompetitiveanalysis","POST",visitId);
+//        new JsonTask().execute( Constants.BASE_URL + "api/visitcompetitiveanalysis","POST",visitId);
 
+        new TokenManager(VisitCompetitiveAnalysisActivity.this,  (success, result) -> {
+            if (success) {
+                // Handle the JSON result, update UI, etc.
+                System.out.println("API Result: " + result);
+
+                handleResult(result);
+
+            } else {
+                // Handle errors (e.g., token refresh failed)
+                Toasts.toastIconError(VisitCompetitiveAnalysisActivity.this, result);
+                Intent intent = new Intent(VisitCompetitiveAnalysisActivity.this, LoginActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+            }
+        }).executeRequest(Constants.BASE_URL +"api/visitcompetitiveanalysis", "POST",
+                "visitId",visitId);
+
+    }
+
+    private void handleResult(String result){
+        if(pd != null && pd.isShowing() && !isFinishing()){
+            pd.dismiss();
+        }
+
+        try {
+            System.out.println("Result: " + result);
+            if (result != null && result.contains("competitors")){
+                JSONObject jsonObject = new JSONObject(result);
+                //txtJson.setText(jsonObject.toString());
+                List<CompetitiveAnalysis> items = new ArrayList<>();
+
+                if (jsonObject.has("competitors") &&
+                        jsonObject.get("competitors") instanceof JSONArray) {
+
+                    competitiveAnalysis = jsonObject.getJSONArray("competitors");
+                    System.out.println("Competitive Analysis Length: "+competitiveAnalysis.length());
+
+                    for (int i = 0; i < competitiveAnalysis.length(); i++) {
+                        CompetitiveAnalysis obj = new CompetitiveAnalysis();
+                        //obj.image = drw_arr.getResourceId(i, -1);
+                        obj.brandVisibility = competitiveAnalysis.getJSONObject(i).getString("brand_visibility");
+                        obj.pricing = competitiveAnalysis.getJSONObject(i).getString("pricing");
+                        String createdAt = competitiveAnalysis.getJSONObject(i).getString("created_at");
+                        ZonedDateTime dateTime = Instant.parse(createdAt).atZone(ZoneId.of("Africa/Nairobi"));
+                        String formatted = dateTime.format(DateTimeFormatter.ofPattern("dd-MMM-yyyy \nHH:mm "));
+                        obj.created_at = formatted;
+                        if(!competitiveAnalysis.getJSONObject(i).isNull("outlet")){
+                            obj.created_outlet = competitiveAnalysis.getJSONObject(i)
+                                    .getJSONObject("outlet").getString("name");
+                        }else{
+                            obj.created_outlet="Outlet Not Found";
+                        }
+                        //obj.created_outlet = competitiveAnalysis.getJSONObject(i).getJSONObject("outlet").getString("name");
+                        obj.id = competitiveAnalysis.getJSONObject(i).getString("id");
+                        //obj.imageDrw = drw_arr.getDrawable(obj.image);
+                        items.add(obj);
+                    }
+
+                    if (items.isEmpty()) {
+                        recyclerView.setVisibility(View.GONE);
+                        emptyView.setVisibility(View.VISIBLE);
+                    }
+                    else {
+                        recyclerView.setVisibility(View.VISIBLE);
+                        emptyView.setVisibility(View.GONE);
+                    }
+
+                    //set data and list adapter
+                    mAdapter = new AdapterListCompetitiveAnalysis(items);
+                    recyclerView.setAdapter(mAdapter);
+
+                    // on item list clicked
+                    mAdapter.setOnItemClickListener(new AdapterListCompetitiveAnalysis.OnItemClickListener() {
+                        @Override
+                        public void onItemClick(View view, CompetitiveAnalysis obj, int position) {
+
+                            //Snackbar.make(parent_view, "Item " + obj.name + " clicked", Snackbar.LENGTH_SHORT).show();
+//                                Intent intent = new Intent(VisitCompetitiveAnalysisActivity.this, IndividualCompetitiveAnalysisActivity.class);
+                            //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                            //intent.putExtra("visitId", visitId);
+                            //intent.putExtra("outletId", outletId);
+//                                intent.putExtra("competitiveAnalysis", items.get(position));
+//                                startActivity(intent);
+                            CompetitiveAnalysis competitiveAnalysis = items.get(position);
+
+                            PreventDoubleClickOnLists.
+                                    showActivityWithoutDoubleClick(
+                                            "competitiveAnalysis",VisitCompetitiveAnalysisActivity.this,
+                                            competitiveAnalysis, IndividualCompetitiveAnalysisActivity.class);
+
+                        }
+                    });
+
+                }else {
+
+                    Intent intent = new Intent(VisitCompetitiveAnalysisActivity.this, ErrorLoadingActivity.class);
+                    //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                    intent.putExtra("callingActivity", "VisitCompetitiveAnalysis");
+                    FirebaseCrashlytics.getInstance().recordException(new Exception("VisitCompetitiveAnalysis Error: "+result));
+
+                    //startActivity(intent, ActivityOptions.makeSceneTransitionAnimation(ProductsListActivity.this).toBundle());
+                    startActivity(intent);
+                    finish();
+                }
+
+            }else{
+                Intent intent = new Intent(VisitCompetitiveAnalysisActivity.this, ErrorLoadingActivity.class);
+                //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                intent.putExtra("callingActivity", "VisitCompetitiveAnalysis");
+                FirebaseCrashlytics.getInstance().recordException(new Exception("VisitCompetitiveAnalysis Error: "+result));
+
+
+                //startActivity(intent, ActivityOptions.makeSceneTransitionAnimation(ProductsListActivity.this).toBundle());
+                startActivity(intent);
+                finish();
+            }
+
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 
@@ -196,7 +320,7 @@ public class VisitCompetitiveAnalysisActivity extends AppCompatActivity {
         protected void onPostExecute(String result) {
             super.onPostExecute(result);
 
-                       if(pd != null && pd.isShowing() && !isFinishing()){
+            if(pd != null && pd.isShowing() && !isFinishing()){
                 pd.dismiss();
             }
 

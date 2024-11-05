@@ -37,6 +37,7 @@ public class IndividualSaleActivity extends AppCompatActivity {
     private LinearLayout mValueLayout;
     private LinearLayout completeSaleButtonLayout;
     private Button completeSaleButton;
+    private Button cancelSaleButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,6 +58,7 @@ public class IndividualSaleActivity extends AppCompatActivity {
         mValueLayout = (LinearLayout) findViewById(R.id.valueLayout);
         completeSaleButtonLayout = (LinearLayout) findViewById(R.id.completeButtonLayout);
         completeSaleButton = (Button)findViewById(R.id.completeSaleButton);
+        cancelSaleButton = (Button)findViewById(R.id.cancelSaleButton);
 
         mDateTimeText.setText(mSale.time);
 
@@ -71,6 +73,7 @@ public class IndividualSaleActivity extends AppCompatActivity {
         mValueText.setEnabled(false);
        // mProductsText.setEnabled(false);
         mOutletNameText.setEnabled(false);
+        mStatusText.setEnabled(false);
 
         if(mSale.status.equals("Pending")){
             completeSaleButtonLayout.setVisibility(View.VISIBLE);
@@ -78,6 +81,14 @@ public class IndividualSaleActivity extends AppCompatActivity {
                 @Override
                 public void onClick(View view) {
                     Intent intent = new Intent(IndividualSaleActivity.this, CompleteSaleActivity.class);
+                    intent.putExtra("saleId", mSale.id);
+                    startActivity(intent);
+                }
+            });
+            cancelSaleButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Intent intent = new Intent(IndividualSaleActivity.this, CancelSaleActivity.class);
                     intent.putExtra("saleId", mSale.id);
                     startActivity(intent);
                 }

@@ -34,6 +34,7 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
+import com.scg.sf.util.EncryptedPrefsUtil;
 import com.scg.sf.util.LocationUtils;
 import com.scg.sf.util.Toasts;
 
@@ -85,8 +86,11 @@ public class ClockoutActivity extends AppCompatActivity {
         setContentView(R.layout.activity_clockout);
 
         mPrefs = getSharedPreferences("label", 0);
-        mUserId = mPrefs.getString("userId", "0");
-        mAuthToken = mPrefs.getString("authToken", "");
+//        mUserId = mPrefs.getString("userId", "0");
+//        mAuthToken = mPrefs.getString("authToken", "");
+
+        mUserId = EncryptedPrefsUtil.getString("userId","0");
+        mAuthToken = EncryptedPrefsUtil.getString("authToken", "");
 
         backButton = (Button) findViewById(R.id.backButton);
         confirmClockoutButton = (Button) findViewById(R.id.confirmClockoutButton);
@@ -152,8 +156,31 @@ public class ClockoutActivity extends AppCompatActivity {
                         String lon = mLastLocation.getLongitude() + "";
                         long unixTime = System.currentTimeMillis() / 1000L;
                         //new JsonTask().execute(Constants.BASE_URL + "api/clockin", "POST", mUserId, unixTime + "", lat + "", lon + "");
-                        new JsonTask().execute(Constants.BASE_URL + "api/clockout", "POST",
-                                mUserId, unixTime + "", lat + "", lon + "", clockinId + "");
+//                        new JsonTask().execute(Constants.BASE_URL + "api/clockout", "POST",
+//                                mUserId, unixTime + "", lat + "", lon + "", clockinId + "");
+
+                        new TokenManager(ClockoutActivity.this,  (success, result) -> {
+                            if (success) {
+                                // Handle the JSON result, update UI, etc.
+                                System.out.println("API Result: " + result);
+
+                                handleResult(result);
+
+                            } else {
+                                // Handle errors (e.g., token refresh failed)
+                                Toasts.toastIconError(ClockoutActivity.this, result);
+                                Intent intent = new Intent(ClockoutActivity.this, LoginActivity.class);
+                                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                                startActivity(intent);
+
+                            }
+                        }).executeRequest(Constants.BASE_URL +"api/clockout"
+                                         ,"POST",
+                                "userId",mUserId,"time",unixTime+"","lat",lat+"",
+                                "long",lon+"","clockinId",clockinId+"");
+
+
+
                     } else {
                         Toasts.toastIconError(ClockoutActivity.this,
                                 "Detecting Location...");
@@ -275,6 +302,60 @@ public class ClockoutActivity extends AppCompatActivity {
 
     }
     // PICKED FROM OLD LOCATION CODE BUT MIGHT BE VALID
+
+    private void handleResult(String result){
+
+        isTaskRunning = false;
+
+        try {
+
+            System.out.println("Result: " + result);
+            if (result != null) {
+                JSONObject jsonObject = new JSONObject(result);
+                //txtJson.setText(jsonObject.toString());
+
+                //Checkout Failed means server returns nothing
+                //Error checking out means server responds with something other than success
+
+                if(result.contains("errors")){
+
+                    String message = jsonObject.getString("message");
+                    Toasts.toastIconError(ClockoutActivity.this, message);
+                    //Toast.makeText(getBaseContext(), message, Toast.LENGTH_SHORT).show();
+                }
+                if (jsonObject.has("message") &&
+                        jsonObject.get("message") instanceof String &&
+                        jsonObject.get("message").equals("Clockout successful")
+                ) {
+
+                    Intent intent = new Intent(ClockoutActivity.this, MainActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
+
+                }else{
+                    Toasts.toastIconError(ClockoutActivity.this,
+                            "Error Clocking Out. Please Try Again");
+                    FirebaseCrashlytics.getInstance().recordException(new Exception("Clockout Error: "+result));
+
+                }
+
+
+//                        Intent intent = new Intent(ClockoutActivity.this, MainActivity.class);
+//                        //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+//                        startActivity(intent);
+
+            }else{
+                Toasts.toastIconError(ClockoutActivity.this,
+                        "Clockout Failed. Please Try Again");
+                FirebaseCrashlytics.getInstance().recordException(new Exception("Clockout Error: "+result));
+
+            }
+
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
 
 
 

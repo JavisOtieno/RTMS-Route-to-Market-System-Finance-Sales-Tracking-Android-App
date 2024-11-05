@@ -37,6 +37,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
+import com.scg.sf.util.EncryptedPrefsUtil;
 import com.scg.sf.util.Toasts;
 
 import org.json.JSONException;
@@ -70,7 +71,7 @@ public class SetLocationActivity extends AppCompatActivity implements OnMapReady
     private String mOutletName;
     private String mVisitId;
     private ProgressDialog pd;
-    private SharedPreferences mPrefs;
+//    private SharedPreferences mPrefs;
     private String mAuthToken;
 
     @Override
@@ -86,8 +87,10 @@ public class SetLocationActivity extends AppCompatActivity implements OnMapReady
 //        });
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-        mPrefs = getSharedPreferences("label", 0);
-        mAuthToken = mPrefs.getString("authToken", "");
+//        mPrefs = getSharedPreferences("label", 0);
+//        mAuthToken = mPrefs.getString("authToken", "");
+
+        mAuthToken = EncryptedPrefsUtil.getString("authToken", "");
 
         initToolbar();
 //        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
@@ -153,9 +156,28 @@ public class SetLocationActivity extends AppCompatActivity implements OnMapReady
 //                                "Location"+lat+" "+lon);
 
 
-                        new JsonTask().execute(Constants.BASE_URL + "api/setlocation/" +
-                                        mOutletId
-                                , "PUT", lat + "", lon + "");
+//                        new JsonTask().execute(Constants.BASE_URL + "api/setlocation/" +
+//                                        mOutletId
+//                                , "PUT", lat + "", lon + "");
+
+                        new TokenManager(SetLocationActivity.this,  (success, result) -> {
+                            if (success) {
+                                // Handle the JSON result, update UI, etc.
+                                System.out.println("API Result: " + result);
+
+                                handleResult(result);
+
+                            } else {
+                                // Handle errors (e.g., token refresh failed)
+                                Toasts.toastIconError(SetLocationActivity.this, result);
+                                Intent intent = new Intent(SetLocationActivity.this, LoginActivity.class);
+                                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                                startActivity(intent);
+
+                            }
+                        }).executeRequest(Constants.BASE_URL +"api/setlocation/" +
+                                        mOutletId, "PUT",
+                                "lat",lat,"long",lon);
 
 
 
@@ -169,6 +191,70 @@ public class SetLocationActivity extends AppCompatActivity implements OnMapReady
             }
         });
 
+
+    }
+    private void handleResult(String result){
+
+        isTaskRunning = false;
+
+        try {
+
+            System.out.println("Result: " + result);
+            if (result != null) {
+                JSONObject jsonObject = new JSONObject(result);
+
+                //Checkout Failed means server returns nothing
+                //Error checking out means server responds with something other than success
+
+                if(result.contains("errors")){
+                    String message = jsonObject.getString("message");
+                    Toasts.toastIconError(SetLocationActivity.this,message);
+                    //Toast.makeText(getBaseContext(), message, Toast.LENGTH_SHORT).show();
+                }
+                else if (result.contains("success") ){
+
+
+                    //txtJson.setText(jsonObject.toString());
+                    //String visitId = jsonObject.getString("visitId");
+                    //String outletId = jsonObject.getString("outletId");
+                    //long unixTimestamp = Instant.now().getEpochSecond();
+                    Toasts.toastIconSuccess(SetLocationActivity.this,
+                            jsonObject.getString("message"));
+
+
+
+                    Intent intent = new Intent(SetLocationActivity.this, SelectActionActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                    //Toast.makeText(SelectExistingCustomerActivity.this,"visitId"+visitId+" - outletId"+outletId+" - outletName"+mOutletName,Toast.LENGTH_SHORT).show();
+                    intent.putExtra("visitId", mVisitId);
+                    intent.putExtra("outletName",mOutletName);
+                    intent.putExtra("outletId", mOutletId);
+                    //intent.putExtra("lat","");
+                    //intent.putExtra("long","");
+                    startActivity(intent);
+
+
+                }else{
+                    Toasts.toastIconError(SetLocationActivity.this,
+                            "Error Setting Location. Please Try Again");
+                    FirebaseCrashlytics.getInstance().recordException(new Exception("Set Location Error: "+result));
+
+                }
+
+
+
+            }else
+            {
+                Toasts.toastIconError(SetLocationActivity.this,
+                        "Set Location Failed. Please Try Again");
+                FirebaseCrashlytics.getInstance().recordException(new Exception("Set Location Error: "+result));
+
+            }
+
+
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
+        }
 
     }
 
