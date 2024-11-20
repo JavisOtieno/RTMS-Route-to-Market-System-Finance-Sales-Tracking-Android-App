@@ -9,10 +9,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="PLACEHOLDER" />
-                  <option name="mobileSdkAppId" value="" />
-                  <option name="projectId" value="" />
-                  <option name="projectNumber" value="" />
+                  <option name="appId" value="com.scg.rtmssf" />
+                  <option name="mobileSdkAppId" value="1:174323149441:android:d8cd2cf7b927443f65fb80" />
+                  <option name="projectId" value="rtms-59e6b" />
+                  <option name="projectNumber" value="174323149441" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

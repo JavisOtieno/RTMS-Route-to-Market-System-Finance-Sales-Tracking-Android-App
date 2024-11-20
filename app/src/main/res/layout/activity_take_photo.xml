@@ -55,7 +55,7 @@
         <ImageView android:id="@+id/Imageprev"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/cpic"
+            android:layout_below="@+id/skipPhotoButton"
             android:layout_marginTop="0dp"
             android:paddingTop="20dp"
             android:adjustViewBounds="true"

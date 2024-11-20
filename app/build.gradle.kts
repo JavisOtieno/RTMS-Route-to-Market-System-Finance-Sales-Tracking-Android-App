@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "com.scg.sf"
+    namespace = "com.scg.rtmssf"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.scg.sf"
+        applicationId = "com.scg.rtmssf"
         minSdk = 27
         targetSdk = 34
         versionCode = 1
@@ -22,12 +22,14 @@ android {
         getByName("release") {
             isMinifyEnabled = true
             proguardFiles(
+
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
 
             )
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
@@ -64,6 +66,29 @@ dependencies {
     implementation("androidx.security:security-crypto:1.1.0-alpha03")
     implementation("com.google.android.play:integrity:1.0.2")
     implementation("com.scottyab:rootbeer-lib:0.0.7")
+//    implementation("com.google.android.gms:play-services-integrity:18.0.0")
+//    implementation("com.google.android.play:integrity:1.0.0")
+    implementation("com.google.android.play:integrity:1.4.0")
+
+//    implementation("com.google.firebase:firebase-bom:32.2.3")
+//    implementation ("com.google.firebase:firebase-appcheck")
+//    implementation ("com.google.firebase:firebase-appcheck-playintegrity")
+
+    // Import the BoM for the Firebase platform
+    implementation(platform("com.google.firebase:firebase-bom:33.5.1"))
+    // Add the dependencies for the App Check libraries
+    // When using the BoM, you don't specify versions in Firebase library dependencies
+    implementation("com.google.firebase:firebase-appcheck-playintegrity")
+
+
+
+
+    // Import the BoM for the Firebase platform
+//    implementation(platform("com.google.firebase:firebase-bom:33.5.1"))
+    // Add the dependencies for the App Check libraries
+    // When using the BoM, you don't specify versions in Firebase library dependencies
+//    implementation("com.google.firebase:firebase-appcheck-playintegrity")
+
 
 
 }

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
+    xmlns:tools="http://schemas.android.com/tools" >
 
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
@@ -28,7 +28,8 @@
         android:supportsRtl="true"
         android:theme="@style/BaseTheme"
         android:usesCleartextTraffic="false"
-        tools:targetApi="31">
+        tools:targetApi="31" >
+
         <activity
             android:name=".SetLocationActivity"
             android:exported="false" />
@@ -89,7 +90,7 @@
             android:name=".VisitCompetitiveAnalysisActivity"
             android:exported="false" />
         <activity
-            android:name=".VisitPOSAuditsActivity"
+            android:name=".UNUSEDVisitPOSAuditsActivity"
             android:exported="false" />
         <activity
             android:name=".ClockinActivity"
@@ -104,7 +105,7 @@
             android:name=".IndividualCompetitiveAnalysisActivity"
             android:exported="false" />
         <activity
-            android:name=".IndividualPOSAuditActivity"
+            android:name=".UNUSEDIndividualPOSAuditActivity"
             android:exported="false" />
         <activity
             android:name=".IndividualVisitActivity"
@@ -148,7 +149,7 @@
             android:name=".SettingsActivity"
             android:exported="false" />
         <activity
-            android:name=".POSAuditsListActivity"
+            android:name=".UNUSEDPOSAuditsListActivity"
             android:exported="false" />
         <activity
             android:name=".CompetitiveAnalysisListActivity"
@@ -181,7 +182,7 @@
             android:name=".UNUSEDMakeSaleActivity"
             android:exported="false" />
         <activity
-            android:name=".SalesActivity"
+            android:name=".UNUSEDSalesActivity"
             android:exported="false" />
         <activity
             android:name=".ClockoutActivity"
@@ -205,7 +206,7 @@
         <!-- android:exported="false" /> -->
         <activity
             android:name=".MainActivity"
-            android:exported="true">
+            android:exported="true" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
