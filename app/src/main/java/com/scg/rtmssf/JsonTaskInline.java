@@ -1,5 +1,6 @@
 package com.scg.rtmssf;
 
+import android.content.Context;
 import android.os.AsyncTask;
 
 import com.scg.rtmssf.util.EncryptedPrefsUtil;
@@ -14,6 +15,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 public class JsonTaskInline extends AsyncTask<Object, Void, String> {
+    private Context context;
 
     public interface JsonTaskListener {
         void onTaskComplete(String result);
@@ -22,6 +24,10 @@ public class JsonTaskInline extends AsyncTask<Object, Void, String> {
     private JsonTaskListener listener;
 
     public JsonTaskInline(JsonTaskListener listener) {
+        this.listener = listener;
+    }
+    public JsonTaskInline(Context context, JsonTaskListener listener) {
+        this.context = context;
         this.listener = listener;
     }
 

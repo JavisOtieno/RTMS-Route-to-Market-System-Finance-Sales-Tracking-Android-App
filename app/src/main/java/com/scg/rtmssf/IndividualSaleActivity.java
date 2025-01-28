@@ -66,7 +66,8 @@ public class IndividualSaleActivity extends AppCompatActivity {
         mOutletNameText.setText(mSale.outletName);
         mValueText.setText(mSale.price);
         mPiecesText.setText(mSale.pieces);
-        mStatusText.setText(mSale.status);
+        mStatusText.setText(mSale.status.substring(0, 1).toUpperCase()
+                + mSale.status.substring(1));
 
         mPiecesText.setEnabled(false);
         mDateTimeText.setEnabled(false);

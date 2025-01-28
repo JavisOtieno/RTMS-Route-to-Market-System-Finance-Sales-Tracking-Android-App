@@ -101,11 +101,11 @@ public class IndividualProductActivity extends AppCompatActivity {
         }else if(mProduct.targetType.equals("quantity")) {
             mTargetText.setText(
                     NumberFormat.getNumberInstance(Locale.US).format(
-                            parseInt(mProduct.target)));
+                            parseInt(mProduct.target))+" units");
 
             mCurrentText.setText(NumberFormat.getNumberInstance(Locale.US).format(parseInt(
                     mProduct.currentSalesQuantity
-            )));
+            ))+" units");
             mTargetLabel.setText("Target Quantity");
 
         }

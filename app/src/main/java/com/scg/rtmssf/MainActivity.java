@@ -362,7 +362,7 @@ public class MainActivity extends AppCompatActivity {
         mUserId = EncryptedPrefsUtil.getString("userId", "0");
         mEmail = EncryptedPrefsUtil.getString("email", "");
         mPassword = EncryptedPrefsUtil.getString("password", "");
-        mTokenExpiry = EncryptedPrefsUtil.getString("tokenExpiry", "");
+        mTokenExpiry = EncryptedPrefsUtil.getString("tokenExpiry", "0");
 
         // Retrieve the encrypted value
         // Retrieve the encrypted value
@@ -1411,7 +1411,7 @@ public class MainActivity extends AppCompatActivity {
         mAuthToken = EncryptedPrefsUtil.getString("authToken",
                 "");
         mTokenExpiry = EncryptedPrefsUtil.getString("tokenExpiry",
-                "");
+                "0");
 
         if (isNetworkConnected() != true) {
             Intent intent = new Intent(MainActivity.this, NoInternetActivity.class);
@@ -1425,9 +1425,12 @@ public class MainActivity extends AppCompatActivity {
             System.out.println("refreshState: fetchdata -"+
                     (Long.valueOf(mTokenExpiry)-Long.valueOf(currentTimeMillis)));
 
+            pd = new ProgressDialog(MainActivity.this);
 
-
-
+            pd.setMessage("Please wait");
+            pd.setCancelable(false);
+            System.out.println("Progressdialog Pd showing");
+            pd.show();
 
             if(Long.valueOf(currentTimeMillis)>Long.valueOf(mTokenExpiry)){
                 System.out.println("refreshState: Inside if");
@@ -1441,7 +1444,6 @@ public class MainActivity extends AppCompatActivity {
                             public void onRefreshComplete() {
 
                                 // Now that the refresh is complete, fetch data
-
                                 System.out.println("refreshState: NewToken "+mAuthToken);
                                 callJson();
 //                                new JsonTask().execute(Constants.BASE_URL + "api/dashboard", "GET");
@@ -1469,6 +1471,12 @@ public class MainActivity extends AppCompatActivity {
             public void onTaskComplete(String result){
 //                Toasts.toastIconSuccess(MainActivity.this,
 //                        "Something");
+                if(pd != null && pd.isShowing() ){
+                    System.out.println("Progressdialog Pd dismissed");
+                    pd.dismiss();
+                }
+
+
                 System.out.println("Result: "+result);
                 try {
 
@@ -1728,6 +1736,10 @@ public class MainActivity extends AppCompatActivity {
                                 //Integer price = Integer.valueOf(sales.getJSONObject(i).getString("price"));
                                 Integer value = Integer.valueOf(sales.getJSONObject(i).getString("value"));
                                 obj.price = "KSh. "+NumberFormat.getNumberInstance(Locale.US).format(value) ;
+                                if(value==0){
+                                    value = Integer.valueOf(sales.getJSONObject(i).getString("pieces"));
+                                    obj.price = NumberFormat.getNumberInstance(Locale.US).format(value)+" units";
+                                }
                                 //obj.imageDrw = drw_arr.getDrawable(obj.image);
                                 items.add(obj);
                             }
@@ -1785,11 +1797,11 @@ public class MainActivity extends AppCompatActivity {
                                             pendingTarget = 0;
                                         }
                                         obj.target = NumberFormat.getNumberInstance(Locale.US).format(
-                                                pendingTarget);
+                                                pendingTarget)+" units";
 
                                     }else{
                                         obj.target = NumberFormat.getNumberInstance(Locale.US).format(
-                                                Integer.valueOf(product.getString("target")));
+                                                Integer.valueOf(product.getString("target")))+" units";
 
                                     }
 
@@ -1922,6 +1934,15 @@ public class MainActivity extends AppCompatActivity {
 //                                        "password", mPassword
 
         );
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+
+        if ((pd != null) && pd.isShowing())
+            pd.dismiss();
+        pd = null;
     }
 
 

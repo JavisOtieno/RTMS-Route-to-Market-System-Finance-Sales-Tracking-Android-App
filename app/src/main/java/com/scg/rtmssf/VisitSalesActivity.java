@@ -251,6 +251,10 @@ public class VisitSalesActivity extends AppCompatActivity {
                         Integer value = Integer.valueOf(sales.getJSONObject(i).getString("value"));
                         obj.price = "KSh. " + NumberFormat.getNumberInstance(Locale.US).format(value);
                         //obj.imageDrw = drw_arr.getDrawable(obj.image);
+                        if(value==0){
+                            value = Integer.valueOf(sales.getJSONObject(i).getString("pieces"));
+                            obj.price = NumberFormat.getNumberInstance(Locale.US).format(value)+" units";
+                        }
                         items.add(obj);
                     }
 
@@ -346,310 +350,314 @@ public class VisitSalesActivity extends AppCompatActivity {
 
     }
 
-    private class JsonTask extends AsyncTask<String, String, String> {
-
-        protected void onPreExecute() {
-            super.onPreExecute();
-
-            pd = new ProgressDialog(VisitSalesActivity.this);
-
-            pd.setMessage("Please wait");
-            pd.setCancelable(false);
-            pd.show();
-
-        }
-
-        protected String doInBackground(String... params) {
-
-
-            HttpURLConnection connection = null;
-            BufferedReader reader = null;
-
-            try {
-
-                URL url = new URL(params[0]);
-                String requestMethod = params[1];
-
-                connection = (HttpURLConnection) url.openConnection();
-                connection.setRequestMethod(requestMethod);
-                connection.setRequestProperty("Accept","application/json");
-                connection.setRequestProperty("Authorization", "Bearer " + mAuthToken);
-
-                Uri.Builder builder = new Uri.Builder()
-                            .appendQueryParameter("visitId", params[2]);
-
-                String query = builder.build().getEncodedQuery();
-
-                OutputStream os = connection.getOutputStream();
-                BufferedWriter writer = new BufferedWriter(
-                        new OutputStreamWriter(os, "UTF-8"));
-                writer.write(query);
-                writer.flush();
-                writer.close();
-                os.close();
-
-                System.out.println("Params " + params[2]);
-
-                connection.connect();
-
-                InputStream stream;
-
-                if (connection.getResponseCode() == 200) {
-                    stream = connection.getInputStream();
-
-                } else {
-                    /* error from server */
-                    //_is = httpConn.getErrorStream();
-                    stream = connection.getErrorStream();
-
-                }
-
-                reader = new BufferedReader(new InputStreamReader(stream));
-
-                StringBuffer buffer = new StringBuffer();
-                String line = "";
-
-                while ((line = reader.readLine()) != null) {
-
-                    buffer.append(line + "\n");
-                    Log.d("Response: ", "> " + line);   //here u ll get whole response...... :-)
-
-                }
-
-                return buffer.toString();
-
-
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-                Log.e(TAG,"Malf Message");
-            } catch (IOException e) {
-                Log.e("Message here: ",e.getMessage());
-                e.printStackTrace();
-            } finally {
-                if (connection != null) {
-                    connection.disconnect();
-                }
-                try {
-                    if (reader != null) {
-                        reader.close();
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                // Dismiss the dialog on the UI thread
-                runOnUiThread(() -> {
-                    if (pd != null && pd.isShowing() && !isFinishing()) {
-                        pd.dismiss();
-                    }
-                });
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(String result) {
-            super.onPostExecute(result);
-
-            if(pd != null && pd.isShowing() && !isFinishing()){
-                pd.dismiss();
-            }
-
-            try {
-
-                System.out.println("Result: "+result);
-                if (result != null && result.contains("sales")) {
-                        JSONObject jsonObject = new JSONObject(result);
-                        //txtJson.setText(jsonObject.toString());
-                        List<Sale> items = new ArrayList<>();
-
-                    if (jsonObject.has("sales") &&
-                            jsonObject.get("sales") instanceof JSONArray) {
-
-                        sales = jsonObject.getJSONArray("sales");
-                        System.out.println("Sales length: " + sales.length());
-
-                        for (int i = 0; i < sales.length(); i++) {
-                            Sale obj = new Sale();
-                            //obj.image = drw_arr.getResourceId(i, -1);
-
-                            JSONArray saleItems = sales.getJSONObject(i).getJSONArray("saleitems");
-
-                            String allProductsSalesitemString = "";
-
-                            String firstsaleItemProductName = "";
-
-                            if(!saleItems.getJSONObject(0).isNull("product")){
-                                firstsaleItemProductName =
-                                        saleItems.getJSONObject(0).getJSONObject("product")
-                                                .getString("name");
-                            }else{
-                                firstsaleItemProductName = "Product Not Found";
-                            }
-
-                            String firstsaleItemPieces =
-                                    saleItems.getJSONObject(0).getString("pieces");
-                            String singleProductsSalesitemString = firstsaleItemProductName + " - " + firstsaleItemPieces;
-                            if (saleItems.length() > 1) {
-                                singleProductsSalesitemString += "...";
-                            }
-
-
+//    private class JsonTask extends AsyncTask<String, String, String> {
+//
+//        protected void onPreExecute() {
+//            super.onPreExecute();
+//
+//            pd = new ProgressDialog(VisitSalesActivity.this);
+//
+//            pd.setMessage("Please wait");
+//            pd.setCancelable(false);
+//            pd.show();
+//
+//        }
+//
+//        protected String doInBackground(String... params) {
+//
+//
+//            HttpURLConnection connection = null;
+//            BufferedReader reader = null;
+//
+//            try {
+//
+//                URL url = new URL(params[0]);
+//                String requestMethod = params[1];
+//
+//                connection = (HttpURLConnection) url.openConnection();
+//                connection.setRequestMethod(requestMethod);
+//                connection.setRequestProperty("Accept","application/json");
+//                connection.setRequestProperty("Authorization", "Bearer " + mAuthToken);
+//
+//                Uri.Builder builder = new Uri.Builder()
+//                            .appendQueryParameter("visitId", params[2]);
+//
+//                String query = builder.build().getEncodedQuery();
+//
+//                OutputStream os = connection.getOutputStream();
+//                BufferedWriter writer = new BufferedWriter(
+//                        new OutputStreamWriter(os, "UTF-8"));
+//                writer.write(query);
+//                writer.flush();
+//                writer.close();
+//                os.close();
+//
+//                System.out.println("Params " + params[2]);
+//
+//                connection.connect();
+//
+//                InputStream stream;
+//
+//                if (connection.getResponseCode() == 200) {
+//                    stream = connection.getInputStream();
+//
+//                } else {
+//                    /* error from server */
+//                    //_is = httpConn.getErrorStream();
+//                    stream = connection.getErrorStream();
+//
+//                }
+//
+//                reader = new BufferedReader(new InputStreamReader(stream));
+//
+//                StringBuffer buffer = new StringBuffer();
+//                String line = "";
+//
+//                while ((line = reader.readLine()) != null) {
+//
+//                    buffer.append(line + "\n");
+//                    Log.d("Response: ", "> " + line);   //here u ll get whole response...... :-)
+//
+//                }
+//
+//                return buffer.toString();
+//
+//
+//            } catch (MalformedURLException e) {
+//                e.printStackTrace();
+//                Log.e(TAG,"Malf Message");
+//            } catch (IOException e) {
+//                Log.e("Message here: ",e.getMessage());
+//                e.printStackTrace();
+//            } finally {
+//                if (connection != null) {
+//                    connection.disconnect();
+//                }
+//                try {
+//                    if (reader != null) {
+//                        reader.close();
+//                    }
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//                // Dismiss the dialog on the UI thread
+//                runOnUiThread(() -> {
+//                    if (pd != null && pd.isShowing() && !isFinishing()) {
+//                        pd.dismiss();
+//                    }
+//                });
+//            }
+//            return null;
+//        }
+//
+//        @Override
+//        protected void onPostExecute(String result) {
+//            super.onPostExecute(result);
+//
+//            if(pd != null && pd.isShowing() && !isFinishing()){
+//                pd.dismiss();
+//            }
+//
+//            try {
+//
+//                System.out.println("Result: "+result);
+//                if (result != null && result.contains("sales")) {
+//                        JSONObject jsonObject = new JSONObject(result);
+//                        //txtJson.setText(jsonObject.toString());
+//                        List<Sale> items = new ArrayList<>();
+//
+//                    if (jsonObject.has("sales") &&
+//                            jsonObject.get("sales") instanceof JSONArray) {
+//
+//                        sales = jsonObject.getJSONArray("sales");
+//                        System.out.println("Sales length: " + sales.length());
+//
+//                        for (int i = 0; i < sales.length(); i++) {
+//                            Sale obj = new Sale();
+//                            //obj.image = drw_arr.getResourceId(i, -1);
+//
+//                            JSONArray saleItems = sales.getJSONObject(i).getJSONArray("saleitems");
+//
+//                            String allProductsSalesitemString = "";
+//
+//                            String firstsaleItemProductName = "";
+//
+//                            if(!saleItems.getJSONObject(0).isNull("product")){
+//                                firstsaleItemProductName =
+//                                        saleItems.getJSONObject(0).getJSONObject("product")
+//                                                .getString("name");
+//                            }else{
+//                                firstsaleItemProductName = "Product Not Found";
+//                            }
+//
+//                            String firstsaleItemPieces =
+//                                    saleItems.getJSONObject(0).getString("pieces");
+//                            String singleProductsSalesitemString = firstsaleItemProductName + " - " + firstsaleItemPieces;
+//                            if (saleItems.length() > 1) {
+//                                singleProductsSalesitemString += "...";
+//                            }
+//
+//
+////                            for (int j = 0; j < saleItems.length(); j++) {
+////                                String saleItemProductName = saleItems.getJSONObject(j).getJSONObject("product").getString("name");
+////                                String saleItemPieces = saleItems.getJSONObject(j).getString("pieces");
+////                                allProductsSalesitemString = allProductsSalesitemString + saleItemProductName + " - " + saleItemPieces + " ";
+////
+////                                System.out.println("SaleItem: " + allProductsSalesitemString);
+////
+////                            }
+//
+//                            saleItemsList = new ArrayList<>();
+//
 //                            for (int j = 0; j < saleItems.length(); j++) {
-//                                String saleItemProductName = saleItems.getJSONObject(j).getJSONObject("product").getString("name");
+//                                String saleItemProductName="";
+//                                if(!saleItems.getJSONObject(j).isNull("product")){
+//                                    //obj.name = posAudits.getJSONObject(j).getJSONObject("outlet").getString("name");
+//                                    saleItemProductName = saleItems.getJSONObject(j).
+//                                            getJSONObject("product").getString("name");
+//                                }else{
+//                                    saleItemProductName="Product Not Found";
+//                                }
+//
+//                                // String saleItemProductName = saleItems.getJSONObject(j).getJSONObject("product").getString("name");
 //                                String saleItemPieces = saleItems.getJSONObject(j).getString("pieces");
 //                                allProductsSalesitemString = allProductsSalesitemString + saleItemProductName + " - " + saleItemPieces + " ";
 //
 //                                System.out.println("SaleItem: " + allProductsSalesitemString);
 //
+//                                SaleItem saleItem = new SaleItem();
+//
+//                                if(!saleItems.getJSONObject(j).isNull("product")){
+//                                    saleItem.productName = saleItems.getJSONObject(j).
+//                                            getJSONObject("product").getString("name");
+//                                }
+//                                else{
+//                                    saleItem.productName = saleItems.getJSONObject(j).
+//                                            getJSONObject("product").getString("name");
+//                                }
+//                                saleItem.pieces = saleItems.getJSONObject(j).getString("pieces");
+//                                saleItem.price = saleItems.getJSONObject(j).getString("price");
+//                                saleItem.value = saleItems.getJSONObject(j).getString("value");
+//                                saleItemsList.add(saleItem);
+//
 //                            }
-
-                            saleItemsList = new ArrayList<>();
-
-                            for (int j = 0; j < saleItems.length(); j++) {
-                                String saleItemProductName="";
-                                if(!saleItems.getJSONObject(j).isNull("product")){
-                                    //obj.name = posAudits.getJSONObject(j).getJSONObject("outlet").getString("name");
-                                    saleItemProductName = saleItems.getJSONObject(j).
-                                            getJSONObject("product").getString("name");
-                                }else{
-                                    saleItemProductName="Product Not Found";
-                                }
-
-                                // String saleItemProductName = saleItems.getJSONObject(j).getJSONObject("product").getString("name");
-                                String saleItemPieces = saleItems.getJSONObject(j).getString("pieces");
-                                allProductsSalesitemString = allProductsSalesitemString + saleItemProductName + " - " + saleItemPieces + " ";
-
-                                System.out.println("SaleItem: " + allProductsSalesitemString);
-
-                                SaleItem saleItem = new SaleItem();
-
-                                if(!saleItems.getJSONObject(j).isNull("product")){
-                                    saleItem.productName = saleItems.getJSONObject(j).
-                                            getJSONObject("product").getString("name");
-                                }
-                                else{
-                                    saleItem.productName = saleItems.getJSONObject(j).
-                                            getJSONObject("product").getString("name");
-                                }
-                                saleItem.pieces = saleItems.getJSONObject(j).getString("pieces");
-                                saleItem.price = saleItems.getJSONObject(j).getString("price");
-                                saleItem.value = saleItems.getJSONObject(j).getString("value");
-                                saleItemsList.add(saleItem);
-
-                            }
-
-                            System.out.println("SaleItems: " + saleItems.length());
-                            obj.name = singleProductsSalesitemString;
-                            obj.allproductsname = allProductsSalesitemString;
-                            obj.saleItems = saleItemsList;
-
-                            //obj.name = sales.getJSONObject(i).getJSONObject("product").getString("name");
-                            String createdAt = sales.getJSONObject(i).getString("created_at");
-                            ZonedDateTime dateTime = Instant.parse(createdAt).atZone(ZoneId.of("Africa/Nairobi"));
-                            String formatted = dateTime.format(DateTimeFormatter.ofPattern("dd/MM/yyyy \nHH:mm "));
-                            obj.time = formatted;
-
-                            String status = sales.getJSONObject(i).getString("status");
-                            obj.status=status.substring(0, 1).toUpperCase() + status.substring(1);
-
-
-
-                            Integer pieces = Integer.valueOf(sales.getJSONObject(i).getString("pieces"));
-                            String outletName="";
-                            if(!sales.getJSONObject(i).isNull("outlet")){
-                                //obj.name = posAudits.getJSONObject(j).getJSONObject("outlet").getString("name");
-                                outletName = sales.getJSONObject(i).getJSONObject("outlet").getString("name");
-                            }else{
-                                outletName="Outlet Not Found";
-                            }
-                            //String sellerName = sales.getJSONObject(i).getJSONObject("user").getString("name");
-                            //String outletName = sales.getJSONObject(i).getJSONObject("outlet").getString("name");
-                            String allProductsName = allProductsSalesitemString;
-                            obj.pieces = pieces + "";
-                            //obj.sellerName = sellerName;
-                            obj.outletName = outletName;
-                            obj.allproductsname = allProductsName;
-                            //Integer price = Integer.valueOf(sales.getJSONObject(i).getString("price"));
-                            Integer value = Integer.valueOf(sales.getJSONObject(i).getString("value"));
-                            obj.price = "KSh. " + NumberFormat.getNumberInstance(Locale.US).format(value);
-                            //obj.imageDrw = drw_arr.getDrawable(obj.image);
-                            items.add(obj);
-                        }
-
-                        if (items.isEmpty()) {
-                            recyclerView.setVisibility(View.GONE);
-                            emptyView.setVisibility(View.VISIBLE);
-                        } else {
-                            recyclerView.setVisibility(View.VISIBLE);
-                            emptyView.setVisibility(View.GONE);
-                        }
-
-                        //set data and list adapter
-                        mAdapter = new AdapterListSales(items);
-                        recyclerView.setAdapter(mAdapter);
-
-                        // on item list clicked
-                        mAdapter.setOnItemClickListener(new AdapterListSales.OnItemClickListener() {
-                            @Override
-                            public void onItemClick(View view, Sale obj, int position) {
-                                //Snackbar.make(parent_view, "Item " + obj.name + " clicked", Snackbar.LENGTH_SHORT).show();
-//                                Intent intent = new Intent(VisitSalesActivity.this, IndividualSaleActivity.class);
-                                //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
-                                //intent.putExtra("visitId", visitId);
-                                //intent.putExtra("outletId", outletId);
-//                                intent.putExtra("sale", items.get(position));
-//                                startActivity(intent);
-                                Sale sale=items.get(position);
-
-                                PreventDoubleClickOnLists.
-                                        showActivityWithoutDoubleClick(
-                                                "sale",VisitSalesActivity.this,
-                                                sale, IndividualSaleActivity.class);
-                            }
-                        });
-
-
-
-//                    outletsNumber.setText(outletsTotal);
-//                    posAuditsNumber.setText(posAuditsTotal);
-//                    salesNumber.setText(salesTotal);
-//                    feedbackNumber.setText(feedbackTotal);
-//                    targetSales.setText("KSh " + NumberFormat.getNumberInstance(Locale.US).format(parseInt(dailySalesTotal)));
-//                    currentSales.setText("KSh " + NumberFormat.getNumberInstance(Locale.US).format(parseInt(currentSalesTarget)));
-
-
-                    }else{
-                        FirebaseCrashlytics.getInstance().recordException(new Exception("VisitSales Error: "+result));
-                        Intent intent = new Intent(VisitSalesActivity.this, ErrorLoadingActivity.class);
-                        //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
-                        intent.putExtra("callingActivity", "VisitSales");
-
-                        //startActivity(intent, ActivityOptions.makeSceneTransitionAnimation(ProductsListActivity.this).toBundle());
-                        startActivity(intent);
-                        finish();
-                    }
-                }else{
-                    FirebaseCrashlytics.getInstance().recordException(new Exception("VisitSales Error: "+result));
-                    Intent intent = new Intent(VisitSalesActivity.this, ErrorLoadingActivity.class);
-                    //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
-                    intent.putExtra("callingActivity", "VisitSales");
-
-                    //startActivity(intent, ActivityOptions.makeSceneTransitionAnimation(ProductsListActivity.this).toBundle());
-                    startActivity(intent);
-                    finish();
-                }
-
-            } catch (JSONException e) {
-                throw new RuntimeException(e);
-            }
-
-        }
-
-
-
-
-
-    }
+//
+//                            System.out.println("SaleItems: " + saleItems.length());
+//                            obj.name = singleProductsSalesitemString;
+//                            obj.allproductsname = allProductsSalesitemString;
+//                            obj.saleItems = saleItemsList;
+//
+//                            //obj.name = sales.getJSONObject(i).getJSONObject("product").getString("name");
+//                            String createdAt = sales.getJSONObject(i).getString("created_at");
+//                            ZonedDateTime dateTime = Instant.parse(createdAt).atZone(ZoneId.of("Africa/Nairobi"));
+//                            String formatted = dateTime.format(DateTimeFormatter.ofPattern("dd/MM/yyyy \nHH:mm "));
+//                            obj.time = formatted;
+//
+//                            String status = sales.getJSONObject(i).getString("status");
+//                            obj.status=status.substring(0, 1).toUpperCase() + status.substring(1);
+//
+//
+//
+//                            Integer pieces = Integer.valueOf(sales.getJSONObject(i).getString("pieces"));
+//                            String outletName="";
+//                            if(!sales.getJSONObject(i).isNull("outlet")){
+//                                //obj.name = posAudits.getJSONObject(j).getJSONObject("outlet").getString("name");
+//                                outletName = sales.getJSONObject(i).getJSONObject("outlet").getString("name");
+//                            }else{
+//                                outletName="Outlet Not Found";
+//                            }
+//                            //String sellerName = sales.getJSONObject(i).getJSONObject("user").getString("name");
+//                            //String outletName = sales.getJSONObject(i).getJSONObject("outlet").getString("name");
+//                            String allProductsName = allProductsSalesitemString;
+//                            obj.pieces = pieces + "";
+//                            //obj.sellerName = sellerName;
+//                            obj.outletName = outletName;
+//                            obj.allproductsname = allProductsName;
+//                            //Integer price = Integer.valueOf(sales.getJSONObject(i).getString("price"));
+//                            Integer value = Integer.valueOf(sales.getJSONObject(i).getString("value"));
+//                            obj.price = "KSh. " + NumberFormat.getNumberInstance(Locale.US).format(value);
+//                            //obj.imageDrw = drw_arr.getDrawable(obj.image);
+//                            if(value==0){
+//                                value = Integer.valueOf(sales.getJSONObject(i).getString("pieces"));
+//                                obj.price = NumberFormat.getNumberInstance(Locale.US).format(value)+" units";
+//                            }
+//                            items.add(obj);
+//                        }
+//
+//                        if (items.isEmpty()) {
+//                            recyclerView.setVisibility(View.GONE);
+//                            emptyView.setVisibility(View.VISIBLE);
+//                        } else {
+//                            recyclerView.setVisibility(View.VISIBLE);
+//                            emptyView.setVisibility(View.GONE);
+//                        }
+//
+//                        //set data and list adapter
+//                        mAdapter = new AdapterListSales(items);
+//                        recyclerView.setAdapter(mAdapter);
+//
+//                        // on item list clicked
+//                        mAdapter.setOnItemClickListener(new AdapterListSales.OnItemClickListener() {
+//                            @Override
+//                            public void onItemClick(View view, Sale obj, int position) {
+//                                //Snackbar.make(parent_view, "Item " + obj.name + " clicked", Snackbar.LENGTH_SHORT).show();
+////                                Intent intent = new Intent(VisitSalesActivity.this, IndividualSaleActivity.class);
+//                                //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+//                                //intent.putExtra("visitId", visitId);
+//                                //intent.putExtra("outletId", outletId);
+////                                intent.putExtra("sale", items.get(position));
+////                                startActivity(intent);
+//                                Sale sale=items.get(position);
+//
+//                                PreventDoubleClickOnLists.
+//                                        showActivityWithoutDoubleClick(
+//                                                "sale",VisitSalesActivity.this,
+//                                                sale, IndividualSaleActivity.class);
+//                            }
+//                        });
+//
+//
+//
+////                    outletsNumber.setText(outletsTotal);
+////                    posAuditsNumber.setText(posAuditsTotal);
+////                    salesNumber.setText(salesTotal);
+////                    feedbackNumber.setText(feedbackTotal);
+////                    targetSales.setText("KSh " + NumberFormat.getNumberInstance(Locale.US).format(parseInt(dailySalesTotal)));
+////                    currentSales.setText("KSh " + NumberFormat.getNumberInstance(Locale.US).format(parseInt(currentSalesTarget)));
+//
+//
+//                    }else{
+//                        FirebaseCrashlytics.getInstance().recordException(new Exception("VisitSales Error: "+result));
+//                        Intent intent = new Intent(VisitSalesActivity.this, ErrorLoadingActivity.class);
+//                        //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+//                        intent.putExtra("callingActivity", "VisitSales");
+//
+//                        //startActivity(intent, ActivityOptions.makeSceneTransitionAnimation(ProductsListActivity.this).toBundle());
+//                        startActivity(intent);
+//                        finish();
+//                    }
+//                }else{
+//                    FirebaseCrashlytics.getInstance().recordException(new Exception("VisitSales Error: "+result));
+//                    Intent intent = new Intent(VisitSalesActivity.this, ErrorLoadingActivity.class);
+//                    //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+//                    intent.putExtra("callingActivity", "VisitSales");
+//
+//                    //startActivity(intent, ActivityOptions.makeSceneTransitionAnimation(ProductsListActivity.this).toBundle());
+//                    startActivity(intent);
+//                    finish();
+//                }
+//
+//            } catch (JSONException e) {
+//                throw new RuntimeException(e);
+//            }
+//
+//        }
+//
+//
+//
+//
+//
+//    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

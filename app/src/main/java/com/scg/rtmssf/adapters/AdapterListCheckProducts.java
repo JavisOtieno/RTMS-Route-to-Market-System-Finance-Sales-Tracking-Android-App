@@ -86,7 +86,16 @@ public class AdapterListCheckProducts extends RecyclerView.Adapter<RecyclerView.
 
             Product p = items.get(position);
             view.name.setText(p.name);
-            view.date.setText("KSh. "+ NumberFormat.getNumberInstance(Locale.US).format(parseInt(p.price)));
+
+            if(p.targetType.equals("amount")){
+                view.date.setText("Target : KSh. "+
+                        NumberFormat.getNumberInstance(Locale.US).format(parseInt(p.target)));
+            }
+            else if(p.targetType.equals("quantity")){
+                view.date.setText("Target : "+
+                        NumberFormat.getNumberInstance(Locale.US).format(parseInt(p.target))
+                +" units");
+            }
             if(p.checked){
                 view.checkProduct.setChecked(true);
             }else{

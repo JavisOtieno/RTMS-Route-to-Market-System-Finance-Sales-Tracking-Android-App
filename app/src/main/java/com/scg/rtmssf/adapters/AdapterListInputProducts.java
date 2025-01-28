@@ -148,7 +148,7 @@ public class AdapterListInputProducts extends RecyclerView.Adapter<RecyclerView.
 
                 // view.date.setText(p.price);
             if(p.productType.equals("service")){
-                view.price.setText("N/A");
+                view.price.setText("");
 
             }else{
                 view.price.setText(
@@ -160,10 +160,20 @@ public class AdapterListInputProducts extends RecyclerView.Adapter<RecyclerView.
 
             if (callingActivity.equals("makeSale")) {
                 if(p.productType.equals("service")) {
+                    String units = "";
+                    String ksh = "";
+                    if(p.targetType.equals("amount")){
+                        ksh = "KSh ";
+                    }else if(p.targetType.equals("quantity")){
+                        units = " units";
+                    }
+                    if(p.targetType.equals("amount") || p.targetType.equals("quantity")){
+                    }
                     view.productStock.setText("Target "+
                             p.targetType.substring(0, 1).toUpperCase() +
-                            p.targetType.substring(1)+" : "+
-                            NumberFormat.getNumberInstance(Locale.US).format(Integer.parseInt(p.target))
+                            p.targetType.substring(1)+" : "+ksh+
+                            NumberFormat.getNumberInstance(Locale.US).format(Integer.parseInt(p.target))+
+                            units
                     );
                 }else {
                     view.productStock.setText("Stock : " + p.stock);

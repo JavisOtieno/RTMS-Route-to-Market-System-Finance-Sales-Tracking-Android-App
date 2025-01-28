@@ -88,11 +88,9 @@ public class AdapterListProducts extends RecyclerView.Adapter<RecyclerView.ViewH
             }
             else if(p.targetType.equals("quantity")){
                 view.productPriceTextView.setText(
-                        "Target Qty: "+NumberFormat.getNumberInstance(Locale.US).format(parseInt(p.target)));
+                        "Target Qty: "+NumberFormat.getNumberInstance(Locale.US).format(parseInt(p.target))+" units");
                 view.skuQtyAmount.setText(
-                        "Current Month: "+NumberFormat.getNumberInstance(Locale.US).format(parseInt(p.currentSalesQuantity)));
-
-
+                        "Current Month: "+NumberFormat.getNumberInstance(Locale.US).format(parseInt(p.currentSalesQuantity))+" units");
             }
             else{
                 view.productPriceTextView.setText("KSh " + NumberFormat.getNumberInstance(Locale.US).format(parseInt(p.price)));

@@ -401,9 +401,9 @@ public class AddSalePOSAuditActivity extends AppCompatActivity implements OnEdit
     @Override
     public void onEditTextChanged(Long updatedValue, Long previousValue) {
 
-
-        currentTotal = currentTotal+updatedValue-previousValue;
-        totalValueTextView.setText("KSh. "+NumberFormat.getNumberInstance(Locale.US).format(currentTotal));
+//
+//        currentTotal = currentTotal+updatedValue-previousValue;
+//        totalValueTextView.setText("KSh. "+NumberFormat.getNumberInstance(Locale.US).format(currentTotal));
 
 
 

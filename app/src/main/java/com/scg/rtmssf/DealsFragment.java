@@ -250,6 +250,7 @@ public class DealsFragment extends Fragment  {
             }
             mAdapter = new AdapterListSales(newSalesList);
             recyclerView.setAdapter(mAdapter);
+            recyclerView.setAdapter(mAdapter);
 //            recyclerView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 //                @Override
 //                public void onItemClick(AdapterView<?> parent, View v,
@@ -477,6 +478,10 @@ public class DealsFragment extends Fragment  {
                         //Integer price = Integer.valueOf(sales.getJSONObject(i).getString("price"));
                         Integer value = Integer.valueOf(sales.getJSONObject(i).getString("value"));
                         obj.price = "KSh. " + NumberFormat.getNumberInstance(Locale.US).format(value);
+                        if(value==0){
+                            value = Integer.valueOf(sales.getJSONObject(i).getString("pieces"));
+                            obj.price = NumberFormat.getNumberInstance(Locale.US).format(value)+" units";
+                        }
                         //obj.imageDrw = drw_arr.getDrawable(obj.image);
                         items.add(obj);
                     }
