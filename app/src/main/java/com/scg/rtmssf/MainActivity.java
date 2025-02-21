@@ -703,6 +703,16 @@ public class MainActivity extends AppCompatActivity {
                     //Intent intent2 = new Intent(MainActivity.this, LocationTestActivity.class);
                     startActivity(intent);
                 }
+                else if(item.getTitle().equals("Calendar")){
+                    Intent intent = new Intent(MainActivity.this, CalendarActivity.class);
+                    //Intent intent2 = new Intent(MainActivity.this, LocationTestActivity.class);
+                    startActivity(intent);
+                }
+                else if(item.getTitle().equals("Follow ups")){
+                    Intent intent = new Intent(MainActivity.this, FollowupsActivity.class);
+                    //Intent intent2 = new Intent(MainActivity.this, LocationTestActivity.class);
+                    startActivity(intent);
+                }
                 else if(item.getTitle().equals("Feedback")){
                     Intent intent = new Intent(MainActivity.this, FeedbackListActivity.class);
                     startActivity(intent);

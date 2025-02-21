@@ -25,6 +25,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -65,6 +66,7 @@ public class NewCustomerActivity extends AppCompatActivity {
     private String longitude;
     private ProgressDialog pd;
     private SharedPreferences mPrefs;
+    private String followupWithoutCheckin;
     private String mUserId;
     private String mAuthToken;
 
@@ -196,6 +198,7 @@ public class NewCustomerActivity extends AppCompatActivity {
 //                            mUserId, outletName, contactPersonName, phone,
 //                            lat + "", lon + "", unixTime + "", clockinId);
 
+                    String[] params = {"test","test2"};
 
 
                     new TokenManager(NewCustomerActivity.this,  (success, result) -> {
@@ -217,6 +220,7 @@ public class NewCustomerActivity extends AppCompatActivity {
                             "long", lon + "","outletName",outletName,
                             "phone", phone+"","contactPersonName",
                             contactPersonName,"clockinId", clockinId);
+
 
 
 
@@ -256,187 +260,201 @@ public class NewCustomerActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         //Tools.setSystemBarColor(this);
     }
-    private class JsonTask extends AsyncTask<String, String, String> {
-
-        protected void onPreExecute() {
-            super.onPreExecute();
-
-            pd = new ProgressDialog(NewCustomerActivity.this);
-
-            pd.setMessage("Please wait");
-            pd.setCancelable(false);
-            pd.show();
-
-        }
-
-        protected String doInBackground(String... params) {
-
-
-            HttpURLConnection connection = null;
-            BufferedReader reader = null;
-
-            try {
-
-                URL url = new URL(params[0]);
-                String requestMethod = params[1];
-
-                connection = (HttpURLConnection) url.openConnection();
-                connection.setRequestMethod(requestMethod);
-                connection.setRequestProperty("Accept","application/json");
-                connection.setRequestProperty("Authorization", "Bearer " + mAuthToken);
-                connection.setRequestProperty("Content-Type", "application/json");
-                if (requestMethod.equals("POST")) {
-                    JSONObject jsonParam = new JSONObject();
-                    jsonParam.put("userId", params[2]);
-                    jsonParam.put("outletName", params[3]);
-                    jsonParam.put("contactPersonName", params[4]);
-                    jsonParam.put("phone", params[5]);
-                    jsonParam.put("lat", params[6]);
-                    jsonParam.put("long", params[7]);
-                    jsonParam.put("time", params[8]);
-                    jsonParam.put("clockinId", params[9]);
-//                    Uri.Builder builder = new Uri.Builder()
-//                            .appendQueryParameter("userId", params[2])
-//                            .appendQueryParameter("outletName", params[3])
-//                            .appendQueryParameter("contactPersonName", params[4])
-//                            .appendQueryParameter("phone", params[5])
-//                            .appendQueryParameter("lat", params[6])
-//                            .appendQueryParameter("long", params[7])
-//                            .appendQueryParameter("time", params[8])
-//                            .appendQueryParameter("clockinId", params[9]);
-
-//                    String query = builder.build().getEncodedQuery();
-
-                    OutputStream os = connection.getOutputStream();
-                    BufferedWriter writer = new BufferedWriter(
-                            new OutputStreamWriter(os, "UTF-8"));
-//                    writer.write(query);
-                    writer.write(jsonParam.toString());
-                    writer.flush();
-                    writer.close();
-                    os.close();
-
-                    System.out.println("Params " + params[2] + " " + params[3] + " " + params[4] + " " + params[5]);
-                }
-                connection.connect();
-
-                InputStream stream;
-
-                if (connection.getResponseCode() == 200) {
-                    stream = connection.getInputStream();
-
-                } else {
-                    /* error from server */
-                    //_is = httpConn.getErrorStream();
-                    stream = connection.getErrorStream();
-
-                }
-
-                reader = new BufferedReader(new InputStreamReader(stream));
-
-                StringBuffer buffer = new StringBuffer();
-                String line = "";
-
-                while ((line = reader.readLine()) != null) {
-
-                    buffer.append(line + "\n");
-                    Log.d("Response: ", "> " + line);   //here u ll get whole response...... :-)
-
-                }
-
-                return buffer.toString();
-
-
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-                Log.e(TAG, "Malf Message");
-            } catch (IOException e) {
-                Log.e("Message here: ", e.getMessage());
-                e.printStackTrace();
-            } catch (JSONException e) {
-                throw new RuntimeException(e);
-            } finally {
-                if (connection != null) {
-                    connection.disconnect();
-                }
-                try {
-                    if (reader != null) {
-                        reader.close();
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                // Dismiss the dialog on the UI thread
-                runOnUiThread(() -> {
-                    if (pd != null && pd.isShowing() && !isFinishing()) {
-                        pd.dismiss();
-                    }
-                });
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(String result) {
-            super.onPostExecute(result);
-            isTaskRunning = false;
-
-                       if(pd != null && pd.isShowing() && !isFinishing()){
-                pd.dismiss();
-            }
-
-            System.out.println("Result: " + result);
-            try {
-
-                if (result != null) {
-
-                    JSONObject jsonObject = new JSONObject(result);
-                    //txtJson.setText(jsonObject.toString());
-                    //Submit Sale Failed means server returns nothing
-                    //Error saving means server responds with something other than success
-                    if(result.contains("errors")){
-                        String message = jsonObject.getString("message");
-                        Toasts.toastIconError(NewCustomerActivity.this, message);
-                        //Toast.makeText(getBaseContext(), message, Toast.LENGTH_SHORT).show();
-                    }
-                    else if(result.contains("success")){
-                        String outletId=jsonObject.getString("outletId");
-                        String visitId=jsonObject.getString("visitId");
-                        long unixTimestamp = Instant.now().getEpochSecond();
-
-                        Intent intent = new Intent(NewCustomerActivity.this, TakePhotoActivity.class);
-                        //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
-//                        Toast.makeText(NewOutletActivity.this,"visitid"+visitId+" outletid"+outletId,Toast.LENGTH_SHORT).show();
-                        intent.putExtra("outletId", outletId);
-                        intent.putExtra("visitId", visitId);
-                        intent.putExtra("callingActivity","Outlet");
-                        intent.putExtra("outletName",outletName);
-
-                        startActivity(intent);
-                    }else{
-                        Toasts.toastIconError(NewCustomerActivity.this,
-                                "Error Saving. Please Try Again");
-                        FirebaseCrashlytics.getInstance().recordException(new Exception("New Customer Error: "+result));
-
-                    }
-
-
-
-                }else
-                {
-                    Toasts.toastIconError(NewCustomerActivity.this,
-                            "Add Customer Failed. Please Try Again");
-                    FirebaseCrashlytics.getInstance().recordException(new Exception("New Customer Error: "+result));
-
-                }
-
-            } catch (JSONException e) {
-                throw new RuntimeException(e);
-            }
-
-
-        }
-    }
+//    private class JsonTask extends AsyncTask<String, String, String> {
+//
+//        protected void onPreExecute() {
+//            super.onPreExecute();
+//
+//            pd = new ProgressDialog(NewCustomerActivity.this);
+//
+//            pd.setMessage("Please wait");
+//            pd.setCancelable(false);
+//            pd.show();
+//
+//        }
+//
+//        protected String doInBackground(String... params) {
+//
+//
+//            HttpURLConnection connection = null;
+//            BufferedReader reader = null;
+//
+//            try {
+//
+//                URL url = new URL(params[0]);
+//                String requestMethod = params[1];
+//
+//                connection = (HttpURLConnection) url.openConnection();
+//                connection.setRequestMethod(requestMethod);
+//                connection.setRequestProperty("Accept","application/json");
+//                connection.setRequestProperty("Authorization", "Bearer " + mAuthToken);
+//                connection.setRequestProperty("Content-Type", "application/json");
+//                if (requestMethod.equals("POST")) {
+//                    JSONObject jsonParam = new JSONObject();
+//                    jsonParam.put("userId", params[2]);
+//                    jsonParam.put("outletName", params[3]);
+//                    jsonParam.put("contactPersonName", params[4]);
+//                    jsonParam.put("phone", params[5]);
+//                    jsonParam.put("lat", params[6]);
+//                    jsonParam.put("long", params[7]);
+//                    jsonParam.put("time", params[8]);
+//                    jsonParam.put("clockinId", params[9]);
+////                    Uri.Builder builder = new Uri.Builder()
+////                            .appendQueryParameter("userId", params[2])
+////                            .appendQueryParameter("outletName", params[3])
+////                            .appendQueryParameter("contactPersonName", params[4])
+////                            .appendQueryParameter("phone", params[5])
+////                            .appendQueryParameter("lat", params[6])
+////                            .appendQueryParameter("long", params[7])
+////                            .appendQueryParameter("time", params[8])
+////                            .appendQueryParameter("clockinId", params[9]);
+//
+////                    String query = builder.build().getEncodedQuery();
+//
+//                    OutputStream os = connection.getOutputStream();
+//                    BufferedWriter writer = new BufferedWriter(
+//                            new OutputStreamWriter(os, "UTF-8"));
+////                    writer.write(query);
+//                    writer.write(jsonParam.toString());
+//                    writer.flush();
+//                    writer.close();
+//                    os.close();
+//
+//                    System.out.println("Params " + params[2] + " " + params[3] + " " + params[4] + " " + params[5]);
+//                }
+//                connection.connect();
+//
+//                InputStream stream;
+//
+//                if (connection.getResponseCode() == 200) {
+//                    stream = connection.getInputStream();
+//
+//                } else {
+//                    /* error from server */
+//                    //_is = httpConn.getErrorStream();
+//                    stream = connection.getErrorStream();
+//
+//                }
+//
+//                reader = new BufferedReader(new InputStreamReader(stream));
+//
+//                StringBuffer buffer = new StringBuffer();
+//                String line = "";
+//
+//                while ((line = reader.readLine()) != null) {
+//
+//                    buffer.append(line + "\n");
+//                    Log.d("Response: ", "> " + line);   //here u ll get whole response...... :-)
+//
+//                }
+//
+//                return buffer.toString();
+//
+//
+//            } catch (MalformedURLException e) {
+//                e.printStackTrace();
+//                Log.e(TAG, "Malf Message");
+//            } catch (IOException e) {
+//                Log.e("Message here: ", e.getMessage());
+//                e.printStackTrace();
+//            } catch (JSONException e) {
+//                throw new RuntimeException(e);
+//            } finally {
+//                if (connection != null) {
+//                    connection.disconnect();
+//                }
+//                try {
+//                    if (reader != null) {
+//                        reader.close();
+//                    }
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//                // Dismiss the dialog on the UI thread
+//                runOnUiThread(() -> {
+//                    if (pd != null && pd.isShowing() && !isFinishing()) {
+//                        pd.dismiss();
+//                    }
+//                });
+//            }
+//            return null;
+//        }
+//
+//        @Override
+//        protected void onPostExecute(String result) {
+//            super.onPostExecute(result);
+//            isTaskRunning = false;
+//
+//                       if(pd != null && pd.isShowing() && !isFinishing()){
+//                pd.dismiss();
+//            }
+//
+//            System.out.println("Result: " + result);
+//            try {
+//
+//                if (result != null) {
+//
+//                    JSONObject jsonObject = new JSONObject(result);
+//                    //txtJson.setText(jsonObject.toString());
+//                    //Submit Sale Failed means server returns nothing
+//                    //Error saving means server responds with something other than success
+//                    if(result.contains("errors")){
+//                        String message = jsonObject.getString("message");
+//                        Toasts.toastIconError(NewCustomerActivity.this, message);
+//                        //Toast.makeText(getBaseContext(), message, Toast.LENGTH_SHORT).show();
+//                    }
+//                    else if(result.contains("success")){
+//                        String outletId=jsonObject.getString("outletId");
+//                        String visitId=jsonObject.getString("visitId");
+//                        long unixTimestamp = Instant.now().getEpochSecond();
+//
+//                        followupWithoutCheckin = mPrefs.getString("callingActivityFollowup","");
+//
+//
+//                        Intent intent = new Intent(NewCustomerActivity.this, TakePhotoActivity.class);
+//
+//
+//                        Toast.makeText(NewCustomerActivity.this,followupWithoutCheckin,Toast.LENGTH_SHORT).show();
+//
+//                        if(followupWithoutCheckin.equals("FollowupActivity")){
+//                            intent = new Intent(NewCustomerActivity.this,
+//                                    AddFollowupActivity.class);
+//
+//                        }
+//
+//                        //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+////                        Toast.makeText(NewOutletActivity.this,"visitid"+visitId+" outletid"+outletId,Toast.LENGTH_SHORT).show();
+//                        intent.putExtra("outletId", outletId);
+//                        intent.putExtra("visitId", visitId);
+//                        intent.putExtra("callingActivity","Outlet");
+//                        intent.putExtra("outletName",outletName);
+//
+//                        startActivity(intent);
+//
+//                    }else{
+//                        Toasts.toastIconError(NewCustomerActivity.this,
+//                                "Error Saving. Please Try Again");
+//                        FirebaseCrashlytics.getInstance().recordException(new Exception("New Customer Error: "+result));
+//
+//                    }
+//
+//
+//
+//                }else
+//                {
+//                    Toasts.toastIconError(NewCustomerActivity.this,
+//                            "Add Customer Failed. Please Try Again");
+//                    FirebaseCrashlytics.getInstance().recordException(new Exception("New Customer Error: "+result));
+//
+//                }
+//
+//            } catch (JSONException e) {
+//                throw new RuntimeException(e);
+//            }
+//
+//
+//        }
+//    }
 
     private void handleResult(String result) {
 
@@ -466,6 +484,15 @@ public class NewCustomerActivity extends AppCompatActivity {
                         long unixTimestamp = Instant.now().getEpochSecond();
 
                         Intent intent = new Intent(NewCustomerActivity.this, TakePhotoActivity.class);
+                        followupWithoutCheckin = mPrefs.getString("callingActivityFollowup","");
+
+//                        Toast.makeText(NewCustomerActivity.this,followupWithoutCheckin,Toast.LENGTH_SHORT).show();
+
+                        if(followupWithoutCheckin.equals("FollowupActivity")){
+                            intent = new Intent(NewCustomerActivity.this,
+                                    AddFollowupActivity.class);
+
+                        }
                         //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
 //                        Toast.makeText(NewOutletActivity.this,"visitid"+visitId+" outletid"+outletId,Toast.LENGTH_SHORT).show();
                         intent.putExtra("outletId", outletId);

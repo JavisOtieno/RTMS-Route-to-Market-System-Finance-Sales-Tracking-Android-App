@@ -5,6 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+
     tools:context=".SelectActionActivity">
 
     <com.google.android.material.appbar.AppBarLayout
@@ -115,6 +116,7 @@
             </androidx.cardview.widget.CardView>
 
 
+<!--            android:background="@drawable/button_border"-->
             <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/makeSaleButton"
                 style="@style/Widget.AppCompat.Button.Borderless"
@@ -123,11 +125,11 @@
                 android:layout_marginTop="10dp"
                 android:layout_marginLeft="4dp"
                 android:layout_marginRight="4dp"
-                android:background="@drawable/btn_rounded_primary"
-                android:text="ADD DEAL"
+                android:background="@drawable/button_border_red_transparent"
+                android:text="MAKE A SALE"
                 android:textAllCaps="false"
                 android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
-                android:textColor="@android:color/white" />
+                android:textColor="@color/red_500" />
 
 <!--            <androidx.appcompat.widget.AppCompatButton-->
 <!--                style="@style/Widget.AppCompat.Button.Borderless"-->
@@ -142,18 +144,8 @@
 <!--                android:textAppearance="@style/TextAppearance.AppCompat.Subhead"-->
 <!--                android:textColor="@android:color/white" />-->
 
-            <androidx.appcompat.widget.AppCompatButton
-                style="@style/Widget.AppCompat.Button.Borderless"
-                android:layout_width="match_parent"
-                android:id="@+id/competitiveAnalysisButton"
-                android:layout_height="50dp"
-                android:layout_marginLeft="4dp"
-                android:layout_marginRight="4dp"
-                android:background="@drawable/btn_rounded_primary"
-                android:text="ADD COMPETITIVE ANALYSIS"
-                android:textAllCaps="false"
-                android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
-                android:textColor="@android:color/white" />
+
+
             <androidx.appcompat.widget.AppCompatButton
                 style="@style/Widget.AppCompat.Button.Borderless"
                 android:layout_width="match_parent"
@@ -161,11 +153,35 @@
                 android:layout_height="50dp"
                 android:layout_marginLeft="4dp"
                 android:layout_marginRight="4dp"
-                android:background="@drawable/btn_rounded_primary"
-                android:text="ADD FEEDBACK"
+                android:layout_marginTop="5dp"
+                android:background="@drawable/button_border_red_transparent"                android:text="ADD FEEDBACK"
                 android:textAllCaps="false"
                 android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
-                android:textColor="@android:color/white" />
+                android:textColor="@color/red_500" />
+            <androidx.appcompat.widget.AppCompatButton
+                style="@style/Widget.AppCompat.Button.Borderless"
+                android:layout_width="match_parent"
+                android:id="@+id/followupButton"
+                android:layout_marginTop="5dp"
+                android:layout_height="50dp"
+                android:layout_marginLeft="4dp"
+                android:layout_marginRight="4dp"
+                android:background="@drawable/button_border_red_transparent"                android:text="ADD FOLLOW UP"
+                android:textAllCaps="false"
+                android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
+                android:textColor="@color/red_500" />
+            <androidx.appcompat.widget.AppCompatButton
+                style="@style/Widget.AppCompat.Button.Borderless"
+                android:layout_width="match_parent"
+                android:id="@+id/competitiveAnalysisButton"
+                android:layout_marginTop="5dp"
+                android:layout_height="50dp"
+                android:layout_marginLeft="4dp"
+                android:layout_marginRight="4dp"
+                android:background="@drawable/button_border_red_transparent"                android:text="ADD COMPETITIVE ANALYSIS"
+                android:textAllCaps="false"
+                android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
+                android:textColor="@color/red_500" />
             <androidx.appcompat.widget.AppCompatButton
                 style="@style/Widget.AppCompat.Button.Borderless"
                 android:layout_width="match_parent"
@@ -173,8 +189,10 @@
                 android:layout_height="50dp"
                 android:layout_marginLeft="4dp"
                 android:layout_marginRight="4dp"
+                android:layout_marginTop="5dp"
                 android:background="@drawable/btn_rounded_primary"
                 android:text="VIEW DEALS"
+                android:visibility="gone"
                 android:textAllCaps="false"
                 android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
                 android:textColor="@android:color/white" />
@@ -185,6 +203,7 @@
                 android:layout_height="50dp"
                 android:layout_marginLeft="4dp"
                 android:layout_marginRight="4dp"
+                android:visibility="gone"
                 android:background="@drawable/btn_rounded_primary"
                 android:text="VIEW ACTIVITIES"
                 android:textAllCaps="false"
@@ -198,8 +217,10 @@
                 android:layout_height="50dp"
                 android:layout_marginLeft="4dp"
                 android:layout_marginRight="4dp"
-                android:background="@drawable/btn_rounded_primary"
+                android:background="@drawable/button_border_red_transparent"
+                android:layout_marginTop="5dp"
                 android:text="VIEW ON GOOGLE MAPS"
+                android:visibility="gone"
                 android:textAllCaps="false"
                 android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
                 android:textColor="@android:color/white" />
@@ -211,11 +232,11 @@
                 android:layout_height="50dp"
                 android:layout_marginLeft="4dp"
                 android:layout_marginRight="4dp"
-                android:background="@drawable/btn_rounded_primary"
-                android:text="SET LOCATION AS CURRENT LOCATION"
+                android:layout_marginTop="5dp"
+                android:background="@drawable/button_border_red_transparent"                android:text="SET LOCATION AS CURRENT LOCATION"
                 android:textAllCaps="false"
                 android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
-                android:textColor="@android:color/white" />
+                android:textColor="@color/red_500" />
             <!--android:background="@drawable/btn_rect_green"-->
             <androidx.appcompat.widget.AppCompatButton
                 style="@style/Widget.AppCompat.Button.Borderless"
@@ -223,8 +244,9 @@
                 android:id="@+id/checkoutButton"
                 android:layout_height="50dp"
                 android:layout_marginLeft="4dp"
+                android:layout_marginTop="5dp"
                 android:layout_marginRight="4dp"
-                android:background="@drawable/btn_rounded_blue"
+                android:background="@drawable/button_border_blue_solid"
                 android:text="CHECK OUT"
                 android:textAllCaps="false"
                 android:textAppearance="@style/TextAppearance.AppCompat.Subhead"

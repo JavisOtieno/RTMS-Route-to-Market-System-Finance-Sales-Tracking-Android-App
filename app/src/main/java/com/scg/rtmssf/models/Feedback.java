@@ -17,9 +17,9 @@ public class Feedback implements Serializable {
     public Feedback() {
     }
 
-    public Feedback(String name, boolean section) {
-        this.feedback = name;
-        this.section = section;
-    }
+//    public Feedback(String name, boolean section) {
+//        this.feedback = name;
+//        this.section = section;
+//    }
 
 }

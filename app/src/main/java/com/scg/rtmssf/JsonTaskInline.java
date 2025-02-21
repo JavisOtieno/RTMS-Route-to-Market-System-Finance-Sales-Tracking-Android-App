@@ -1,17 +1,23 @@
 package com.scg.rtmssf;
 
+import static androidx.constraintlayout.helper.widget.MotionEffect.TAG;
+
 import android.content.Context;
 import android.os.AsyncTask;
+import android.util.Log;
 
 import com.scg.rtmssf.util.EncryptedPrefsUtil;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 
 public class JsonTaskInline extends AsyncTask<Object, Void, String> {
@@ -94,24 +100,47 @@ public class JsonTaskInline extends AsyncTask<Object, Void, String> {
             conn.connect();
             int responseCode = conn.getResponseCode();
 
+            BufferedReader reader = null;
+
             if (responseCode == HttpURLConnection.HTTP_OK) {
                 // Read the response
-                BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-                StringBuilder sb = new StringBuilder();
-                String line;
-                while ((line = in.readLine()) != null) {
-                    sb.append(line);
-                }
-                in.close();
-                response = sb.toString();
+                reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+
             } else {
-                response = "Error: " + responseCode;
+                reader = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
+
             }
 
-        } catch (Exception e) {
+            StringBuilder sb = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                sb.append(line);
+            }
+            reader.close();
+            response = sb.toString();
+
+        } catch (MalformedURLException e) {
             e.printStackTrace();
-            response = "Exception: " + e.getMessage();
+            Log.e(TAG, "Malf Message");
+        } catch (IOException e) {
+            Log.e("Message here: ", e.getMessage());
+            e.printStackTrace();
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
         }
+//        finally
+//        {
+//            if (conn != null) {
+//                conn.disconnect();
+//            }
+//            try {
+//                if (reader != null) {
+//                    reader.close();
+//                }
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//        }
 
         return response;
     }
@@ -119,6 +148,7 @@ public class JsonTaskInline extends AsyncTask<Object, Void, String> {
     @Override
     protected void onPostExecute(String result) {
         // Notify listener of the result
+        System.out.println("Initial Result: " + result);
         if (listener != null) {
             listener.onTaskComplete(result);
         }

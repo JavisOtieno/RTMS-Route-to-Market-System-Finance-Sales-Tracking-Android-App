@@ -98,6 +98,7 @@ public class SelectActionActivity extends AppCompatActivity {
     private String lon1;
     private String lastUpdatedActivity;
     private Button setAsCurrentLocation;
+    private Button followupButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -123,6 +124,7 @@ public class SelectActionActivity extends AppCompatActivity {
         viewActivitiesButton = (Button) findViewById(R.id.viewActivitiesButton);
         setAsCurrentLocation = (Button) findViewById(R.id.setAsCurrentLocationButton);
         viewOnGoogleMapsButton = (Button) findViewById(R.id.viewOnGoogleMapsButton);
+        followupButton = (Button) findViewById(R.id.followupButton);
 
         Intent i = getIntent();
         visitId=i.getStringExtra("visitId");
@@ -148,7 +150,11 @@ public class SelectActionActivity extends AppCompatActivity {
             }else if (lastUpdatedActivity.equals("feedback")){
                 Toasts.toastIconSuccess(SelectActionActivity.this,
                         "Feedback Added Successfully");
-            }else{
+            }else if (lastUpdatedActivity.equals("followup")){
+                Toasts.toastIconSuccess(SelectActionActivity.this,
+                        "Followup Added Successfully");
+            }
+            else{
 //                Toasts.toastIconSuccess(SelectActionActivity.this,
 //                        lastUpdatedActivity);
             }
@@ -184,6 +190,20 @@ public class SelectActionActivity extends AppCompatActivity {
 //        }
 
         //mylistener = new MyLocationListener();
+
+        followupButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(SelectActionActivity.this,
+                        AddFollowupActivity.class);
+                //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                intent.putExtra("visitId", visitId);
+                intent.putExtra("outletName", outletName);
+                intent.putExtra("outletId", outletId);
+                startActivity(intent);
+
+            }
+        });
 
 
 

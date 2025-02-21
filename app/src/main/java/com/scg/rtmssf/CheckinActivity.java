@@ -48,6 +48,7 @@ public class CheckinActivity extends AppCompatActivity {
     private ProgressDialog pd;
     private String mAuthToken;
     private SharedPreferences mPrefs;
+    private String followupWithoutCheckin;
     private Outlet outlet;
     private String routePlanItemId;
     private Button offplanRequestButton;
@@ -59,6 +60,7 @@ public class CheckinActivity extends AppCompatActivity {
 
 
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -67,8 +69,12 @@ public class CheckinActivity extends AppCompatActivity {
 
         mPrefs = getSharedPreferences("label", 0);
 //        mAuthToken = mPrefs.getString("authToken", "");
+        followupWithoutCheckin = mPrefs.getString("callingActivityFollowup","");
 
-//        mUserId = EncryptedPrefsUtil.getString("userId","0");
+        if(followupWithoutCheckin.equals("FollowupActivity")){
+            getSupportActionBar().setTitle("Select customer");
+        }
+
         mAuthToken = EncryptedPrefsUtil.getString("authToken", "");
         // SharedPreferences.Editor mEditor = mPrefs.edit();
         // mEditor.putString("userId", "0").commit();

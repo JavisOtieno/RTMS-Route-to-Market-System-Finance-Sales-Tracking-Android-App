@@ -56,6 +56,13 @@ public class IndividualOutletActivity extends AppCompatActivity {
         mLatText.setText(mOutlet.lat);
         mLongText.setText(mOutlet.lon);
 
+        mOutletNameText.setEnabled(false);
+        mContactPersonNameText.setEnabled(false);
+        mContactPersonPhoneText.setEnabled(false);
+//        mPhoneText.setEnabled(false);
+        mLatText.setEnabled(false);
+        mLongText.setEnabled(false);
+
         contactButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

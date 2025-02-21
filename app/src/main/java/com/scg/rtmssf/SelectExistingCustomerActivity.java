@@ -15,6 +15,7 @@ import android.app.ProgressDialog;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Criteria;
 import android.location.Location;
@@ -106,6 +107,8 @@ public class SelectExistingCustomerActivity extends AppCompatActivity {
     private List<Outlet> items;
 
     private TextView mNoOutletsTextView;
+    private SharedPreferences mPrefs;
+    private String followupWithoutCheckin;
 
 
     @Override
@@ -114,7 +117,7 @@ public class SelectExistingCustomerActivity extends AppCompatActivity {
         setContentView(R.layout.activity_select_existing_outlet);
         initToolbar();
 
-//        mPrefs = getSharedPreferences("label", 0);
+        mPrefs = getSharedPreferences("label", 0);
 //        mUserId = mPrefs.getString("userId", "0");
 //        mAuthToken = mPrefs.getString("authToken", "");
         mUserId = EncryptedPrefsUtil.getString("userId","0");
@@ -803,7 +806,17 @@ public class SelectExistingCustomerActivity extends AppCompatActivity {
 
             lastIntentTime = currentTime;
             // Handle the item click, e.g., start a new activity
-            Intent intent = new Intent(SelectExistingCustomerActivity.this, CheckinToExistingOutlet.class);
+            followupWithoutCheckin = mPrefs.getString("callingActivityFollowup","");
+
+
+                Intent intent = new Intent(SelectExistingCustomerActivity.this,
+                        CheckinToExistingOutlet.class);
+
+            if(followupWithoutCheckin.equals("FollowupActivity")){
+                intent = new Intent(SelectExistingCustomerActivity.this,
+                        AddFollowupActivity.class);
+            }
+
             mOutletName = outlet.name;
             outletId = outlet.id;
             //Toast.makeText(SelectExistingCustomerActivity.this,"outletId"+outletId+" - outletName"+mOutletName,Toast.LENGTH_SHORT).show();

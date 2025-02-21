@@ -48,6 +48,8 @@ public class IndividualRouteplanActivity extends AppCompatActivity {
 
         mRouteplanNameText = (EditText) findViewById(R.id.routeplanNameText);
         mRouteplanDateText=(EditText) findViewById(R.id.scheduledDateText);
+        mRouteplanNameText.setEnabled(false);
+        mRouteplanDateText.setEnabled(false);
 
         mRouteplanNameText.setText(mRouteplan.name);
         mRouteplanDateText.setText(mRouteplan.scheduledDate);

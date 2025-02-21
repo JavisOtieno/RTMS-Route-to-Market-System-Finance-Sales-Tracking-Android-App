@@ -70,6 +70,7 @@ dependencies {
 //    implementation("com.google.android.play:integrity:1.0.0")
     implementation("com.google.android.play:integrity:1.4.0")
 
+
 //    implementation("com.google.firebase:firebase-bom:32.2.3")
 //    implementation ("com.google.firebase:firebase-appcheck")
 //    implementation ("com.google.firebase:firebase-appcheck-playintegrity")

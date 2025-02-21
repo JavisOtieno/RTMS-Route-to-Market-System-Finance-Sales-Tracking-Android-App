@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools" >
+    xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
@@ -28,8 +28,22 @@
         android:supportsRtl="true"
         android:theme="@style/BaseTheme"
         android:usesCleartextTraffic="false"
-        tools:targetApi="31" >
-
+        tools:targetApi="31">
+        <activity
+            android:name=".CalendarActivity"
+            android:exported="false" />
+        <activity
+            android:name=".EditFollowupActivity"
+            android:exported="false" />
+        <activity
+            android:name=".AddFollowupActivity"
+            android:exported="false" />
+        <activity
+            android:name=".FollowupsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".IndividualFollowupActivity"
+            android:exported="false" />
         <activity
             android:name=".SetLocationActivity"
             android:exported="false" />
@@ -206,7 +220,7 @@
         <!-- android:exported="false" /> -->
         <activity
             android:name=".MainActivity"
-            android:exported="true" >
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

@@ -78,6 +78,14 @@ public class IndividualProductActivity extends AppCompatActivity {
             mCurrentLayout.setVisibility(View.GONE);
         }
 
+        mProductNameText.setEnabled(false);
+        mDesciptionText.setEnabled(false);
+        mPriceText.setEnabled(false);
+        mSkuText.setEnabled(false);
+        mStockText.setEnabled(false);
+        mCurrentText.setEnabled(false);
+        mTargetText.setEnabled(false);
+
         mProductNameText.setText(mProduct.name);
         mPriceText.setText(mProduct.price);
         mPriceText.setText("KSh " + NumberFormat.getNumberInstance(Locale.US).format(parseInt(mProduct.price)));
