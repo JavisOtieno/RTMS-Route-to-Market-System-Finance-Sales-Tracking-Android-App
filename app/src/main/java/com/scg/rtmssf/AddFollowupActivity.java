@@ -99,10 +99,10 @@ public class AddFollowupActivity extends AppCompatActivity {
 
                     Intent i = getIntent();
                     visitId = i.getStringExtra("visitId");
-                    visitId = null;
-//                    if(visitId.equals("")){
-//                        visitId=null;
-//                    }
+//                    visitId = null;
+                    if(visitId != null && visitId.equals("")){
+                        visitId=null;
+                    }
                     userId = mUserId;
                     outletId = i.getStringExtra("outletId");
                     outletName = i.getStringExtra("outletName");
@@ -242,6 +242,7 @@ public class AddFollowupActivity extends AppCompatActivity {
 //                        Toast.makeText(NewCustomerActivity.this,followupWithoutCheckin,Toast.LENGTH_SHORT).show();
 
                     if(followupWithoutCheckin.equals("FollowupActivity")){
+//                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                         intent = new Intent(AddFollowupActivity.this,
                                 FollowupsActivity.class);
 

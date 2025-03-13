@@ -111,10 +111,12 @@ public class FollowupsActivity extends AppCompatActivity {
         else if (item.getItemId() == R.id.action_add) {
             Intent intent = new Intent(FollowupsActivity.this, CheckinActivity.class);
             //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
-            SharedPreferences.Editor mEditor = mPrefs.edit();
-            mEditor.putString("callingActivityFollowup", "FollowupActivity").commit();
             startActivity(intent);
             //finish();
+
+            SharedPreferences.Editor mEditor = mPrefs.edit();
+            mEditor.putString("callingActivityFollowup", "FollowupActivity").commit();
+
         }
 
         return super.onOptionsItemSelected(item);
@@ -410,6 +412,7 @@ public class FollowupsActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
+//        getMenuInflater().inflate(R.menu.menu_search_add, menu);
         getMenuInflater().inflate(R.menu.menu_search_add, menu);
 
         SearchManager searchManager =

@@ -355,6 +355,10 @@ public class MainActivity extends AppCompatActivity {
 
         //check whether user has signed in
         mPrefs = getSharedPreferences("label", 0);
+
+        SharedPreferences.Editor mEditor = mPrefs.edit();
+        mEditor.putString("callingActivityFollowup", "MainActivity").commit();
+
 //        mUserId = mPrefs.getString("userId", "0");
 //        mAuthToken = mPrefs.getString("authToken", "0");
         // Initialize EncryptedSharedPrefere6nces in the util class
@@ -709,7 +713,7 @@ public class MainActivity extends AppCompatActivity {
                     startActivity(intent);
                 }
                 else if(item.getTitle().equals("Follow ups")){
-                    Intent intent = new Intent(MainActivity.this, FollowupsActivity.class);
+                    Intent intent = new Intent(MainActivity.this, FragmentedFollowupsActivity.class);
                     //Intent intent2 = new Intent(MainActivity.this, LocationTestActivity.class);
                     startActivity(intent);
                 }
@@ -1633,6 +1637,7 @@ public class MainActivity extends AppCompatActivity {
                                             intent.putExtra("outletId", outletId);
                                             intent.putExtra("outletName", outletName);
                                             SharedPreferences.Editor mEditor = mPrefs.edit();
+//                                            mEditor.putString("callingActivityFollowup", "CompleteCheckinActivity").commit();
                                             mEditor.putString("outletLat", outletLat).commit();
                                             mEditor.putString("outletLong", outletLong).commit();
                                             startActivity(intent);

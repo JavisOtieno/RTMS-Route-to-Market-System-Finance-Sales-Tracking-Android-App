@@ -484,15 +484,7 @@ public class NewCustomerActivity extends AppCompatActivity {
                         long unixTimestamp = Instant.now().getEpochSecond();
 
                         Intent intent = new Intent(NewCustomerActivity.this, TakePhotoActivity.class);
-                        followupWithoutCheckin = mPrefs.getString("callingActivityFollowup","");
 
-//                        Toast.makeText(NewCustomerActivity.this,followupWithoutCheckin,Toast.LENGTH_SHORT).show();
-
-                        if(followupWithoutCheckin.equals("FollowupActivity")){
-                            intent = new Intent(NewCustomerActivity.this,
-                                    AddFollowupActivity.class);
-
-                        }
                         //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
 //                        Toast.makeText(NewOutletActivity.this,"visitid"+visitId+" outletid"+outletId,Toast.LENGTH_SHORT).show();
                         intent.putExtra("outletId", outletId);

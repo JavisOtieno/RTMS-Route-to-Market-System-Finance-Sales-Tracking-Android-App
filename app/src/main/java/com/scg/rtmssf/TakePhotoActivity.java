@@ -7,6 +7,7 @@ import androidx.appcompat.widget.Toolbar;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -59,6 +60,7 @@ public class TakePhotoActivity extends AppCompatActivity {
     byte[] ba;
     //public static String URL = "https://av.ke/testfileupload.php";
     public static String URL;
+    private String followupWithoutCheckin;
 
 //    private SharedPreferences mPrefs;
     private String visitId;
@@ -69,15 +71,19 @@ public class TakePhotoActivity extends AppCompatActivity {
     private String posAuditId;
     private Button skipPhotoTakingButton;
     private String mActivity;
+    private SharedPreferences mPrefs;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_take_photo);
+
         //you need to get calling activity before you declare the Init Toolbar and have the title
         Intent i = getIntent();
         mCallingActivity = i.getStringExtra("callingActivity");
+
+        mPrefs = getSharedPreferences("label", 0);
 
         initToolbar();
 
@@ -110,6 +116,15 @@ public class TakePhotoActivity extends AppCompatActivity {
             public void onClick(View view) {
                 Intent intent = new Intent(TakePhotoActivity.this, SelectActionActivity.class);
                 //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                followupWithoutCheckin = mPrefs.getString("callingActivityFollowup","");
+
+//                        Toast.makeText(NewCustomerActivity.this,followupWithoutCheckin,Toast.LENGTH_SHORT).show();
+
+                if(followupWithoutCheckin.equals("FollowupActivity")){
+                    intent = new Intent(TakePhotoActivity.this,
+                            AddFollowupActivity.class);
+
+                }
 
 
                 intent.putExtra("visitId",visitId);
@@ -292,6 +307,8 @@ public class TakePhotoActivity extends AppCompatActivity {
 
                                 System.out.println("refreshState: NewToken "+mAuthToken);
                                 new JsonTask(ba2, formFields).execute(URL);
+
+
 //                                new JsonTask().execute(Constants.BASE_URL + "api/dashboard", "GET");
                             }
                         }
