@@ -1,0 +1,67 @@
+{
+  "project_info": {
+    "project_number": "174323149441",
+    "project_id": "rtms-59e6b",
+    "storage_bucket": "rtms-59e6b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:174323149441:android:7433386b3a543e5065fb80",
+        "android_client_info": {
+          "package_name": "com.scg.rtms"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDW2t4suQGeAQBpE6IzRtOLA5etm92ktIQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:174323149441:android:1361ac4301a65e1b65fb80",
+        "android_client_info": {
+          "package_name": "com.scg.rtmsdtb"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDW2t4suQGeAQBpE6IzRtOLA5etm92ktIQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:174323149441:android:e19d531768707bc965fb80",
+        "android_client_info": {
+          "package_name": "com.scg.sf"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDW2t4suQGeAQBpE6IzRtOLA5etm92ktIQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
