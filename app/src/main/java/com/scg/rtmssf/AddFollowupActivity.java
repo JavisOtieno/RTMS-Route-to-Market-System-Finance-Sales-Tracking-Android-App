@@ -242,9 +242,17 @@ public class AddFollowupActivity extends AppCompatActivity {
 //                        Toast.makeText(NewCustomerActivity.this,followupWithoutCheckin,Toast.LENGTH_SHORT).show();
 
                     if(followupWithoutCheckin.equals("FollowupActivity")){
-//                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                         intent = new Intent(AddFollowupActivity.this,
                                 FollowupsActivity.class);
+//                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+//                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+//                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+//                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                        startActivity(intent);
+// Optional: Finish E to ensure it's removed if needed (handled by CLEAR_TOP)
+//                        finish();
+//                        finishAffinity();
+//                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
                     }
                     intent.putExtra("lastUpdatedActivity","followup");
