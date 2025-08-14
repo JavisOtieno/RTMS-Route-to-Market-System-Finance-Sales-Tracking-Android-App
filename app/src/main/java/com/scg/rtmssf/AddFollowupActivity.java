@@ -100,9 +100,13 @@ public class AddFollowupActivity extends AppCompatActivity {
                     Intent i = getIntent();
                     visitId = i.getStringExtra("visitId");
 //                    visitId = null;
-                    if(visitId != null && visitId.equals("")){
-                        visitId=null;
-                    }
+//                    if(visitId != null && visitId.equals("")){
+//                        visitId=null;
+//                    }
+//                    if ("0".equals(visitId)) {
+//                        visitId = null;
+//                    }
+
                     userId = mUserId;
                     outletId = i.getStringExtra("outletId");
                     outletName = i.getStringExtra("outletName");
@@ -127,7 +131,7 @@ public class AddFollowupActivity extends AppCompatActivity {
 //                            startActivity(intent);
                         }
                     }).executeRequest(Constants.BASE_URL +"api/addfollowup", "POST",
-                            "userId",mUserId,"outletId",outletId,"visitId",null,"description",
+                            "userId",mUserId,"outletId",outletId,"visitId",visitId,"description",
                             description,"date",dateToBeSaved,"time",time,"status",status,"type",type);
                 }
 

@@ -3,13 +3,16 @@ package com.scg.rtmssf;
 import static androidx.constraintlayout.helper.widget.MotionEffect.TAG;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 
 import android.Manifest;
+import android.accounts.Account;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -37,6 +40,7 @@ import com.scg.rtmssf.util.EncryptedPrefsUtil;
 import com.scg.rtmssf.util.LocationUtils;
 import com.scg.rtmssf.util.Toasts;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -51,8 +55,12 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
-public class NewCustomerActivity extends AppCompatActivity {
+public class
+
+NewCustomerActivity extends AppCompatActivity {
     private Button submitButton;
     private EditText outletNameEditText;
     private EditText contactPersonEditText;
@@ -92,6 +100,16 @@ public class NewCustomerActivity extends AppCompatActivity {
     private static final int REQUEST_LOCATION_PERMISSION = 1;
     private String clockinId;
     private boolean isTaskRunning = false;
+
+    private EditText regionEditText;
+    private EditText territoryEditText;
+
+    private String endpoint;
+
+    private Integer checkedRegion=-1;
+    private String selectedRegionId="0";
+    private Integer checkedTerritory=-1;
+    private String selectedTerritoryId="0";
 
 
 
@@ -144,6 +162,29 @@ public class NewCustomerActivity extends AppCompatActivity {
         outletNameEditText = (EditText) findViewById(R.id.outletNameEditText);
         phoneEditText = (EditText) findViewById(R.id.phoneEditText);
         contactPersonEditText = (EditText) findViewById(R.id.contactPersonName);
+
+        regionEditText = (EditText) findViewById(R.id.regionEditText);
+        territoryEditText = (EditText) findViewById(R.id.territoryEditText);
+
+        endpoint = "regionsterritories";
+//        new JsonTask().execute(Constants.BASE_URL + "api/"+endpoint, "GET");
+
+        new TokenManager(NewCustomerActivity.this,  (success, result) -> {
+            if (success) {
+                // Handle the JSON result, update UI, etc.
+                System.out.println("API Result: " + result);
+
+                handleResult(result);
+
+            } else {
+                // Handle errors (e.g., token refresh failed)
+                Toasts.toastIconError(NewCustomerActivity.this, result);
+//                            Intent intent = new Intent(NewCustomerActivity.this, LoginActivity.class);
+//                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+//                            startActivity(intent);
+            }
+        }).executeRequest(Constants.BASE_URL + "api/"+endpoint, "GET"
+                );
 
         //START OF LATEST LOCATION CALL UPDATE
 
@@ -478,6 +519,80 @@ public class NewCustomerActivity extends AppCompatActivity {
                         Toasts.toastIconError(NewCustomerActivity.this, message);
                         //Toast.makeText(getBaseContext(), message, Toast.LENGTH_SHORT).show();
                     }
+                    else if(result.contains("territories") && endpoint.equals("regionsterritories")){
+                        try {
+
+
+                            JSONObject jsonObjectMain = new JSONObject(result);;
+
+                            // Create a JSONObject from the response string
+                            JSONObject jsonObjectChannelTypes = new JSONObject(result);
+                            List<Account> items = new ArrayList<>();
+                            List<String> regionNames = new ArrayList<>();
+                            List<String> regionIds = new ArrayList<>();
+                            List<String> territoryNames = new ArrayList<>();
+                            List<String> territoryIds = new ArrayList<>();
+
+                            JSONArray regions = jsonObjectMain.getJSONArray("regions");
+//                            JSONArray channelTypes = jsonObjectChannelTypes.getJSONArray("channeltypes");
+//                    System.out.println("Accounts length: "+accounts.length());
+                            // Add "None" at the top
+                            regionNames.add(0, "None");
+                            regionIds.add(0, "0");
+
+                            for (int i = 0; i < regions.length(); i++) {
+                                regionNames.add(regions.getJSONObject(i).getString("name"));
+                                regionIds.add(regions.getJSONObject(i).getString("id"));
+
+                            }
+
+
+
+                            String[] regionNamesArray = regionNames.toArray(new String[0]);
+                            String[] regionIdsArray = regionIds.toArray(new String[0]);
+
+                            regionEditText.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View view) {
+                                    showRegionDialog(view, regionNamesArray, regionIdsArray);
+                                }
+                            });
+
+
+                            JSONArray territories = jsonObjectMain.getJSONArray("territories");
+//                            JSONArray channelTypes = jsonObjectChannelTypes.getJSONArray("channeltypes");
+//                    System.out.println("Accounts length: "+accounts.length());
+
+                            // Add "None" at the top
+                            territoryNames.add(0, "None");
+                            territoryIds.add(0, "0");
+
+                            for (int i = 0; i < territories.length(); i++) {
+                                territoryNames.add(territories.getJSONObject(i).getString("name"));
+                                territoryIds.add(territories.getJSONObject(i).getString("id"));
+
+                            }
+
+
+
+                            String[] territoryNamesArray = territoryNames.toArray(new String[0]);
+                            String[] territoryIdsArray = territoryIds.toArray(new String[0]);
+
+                            territoryEditText.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View view) {
+                                    showTerritoryDialog(view, territoryNamesArray, territoryIdsArray);
+                                }
+                            });
+
+                        }catch (Exception e){
+                            FirebaseCrashlytics.getInstance().recordException(new Exception("New Outlet Error: "+result));
+                            Toasts.toastIconError(NewCustomerActivity.this,"Error Loading");
+                            Log.e("API Response", "JSON Parsing error: " + e.getMessage());
+
+                        }
+                    }
+
                     else if(result.contains("success")){
                         String outletId=jsonObject.getString("outletId");
                         String visitId=jsonObject.getString("visitId");
@@ -628,6 +743,38 @@ public class NewCustomerActivity extends AppCompatActivity {
 //            }
 //        }
 //    }
+
+    private void showRegionDialog(final View v,String[] regionOptions, String[] regionIds) {
+        final String[] array = regionOptions;
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Route");
+        builder.setSingleChoiceItems(array, checkedRegion, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                ((EditText) v).setText(array[i]);
+                dialogInterface.dismiss();
+                checkedRegion = i;
+                selectedRegionId = regionIds[i];
+            }
+        });
+        builder.show();
+    }
+
+    private void showTerritoryDialog(final View v,String[] territoryOptions, String[] territoryIds) {
+        final String[] array = territoryOptions;
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Route");
+        builder.setSingleChoiceItems(array, checkedTerritory, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                ((EditText) v).setText(array[i]);
+                dialogInterface.dismiss();
+                checkedTerritory = i;
+                selectedTerritoryId = territoryIds[i];
+            }
+        });
+        builder.show();
+    }
 
     @Override
     public void onResume() {

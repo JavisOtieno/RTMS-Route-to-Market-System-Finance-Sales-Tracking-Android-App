@@ -90,7 +90,7 @@ public class FragmentedFollowupsActivity extends AppCompatActivity {
             return true;
         }
         else if (item.getItemId() == R.id.action_add) {
-            Intent intent = new Intent(FragmentedFollowupsActivity.this, CheckinActivity.class);
+            Intent intent = new Intent(FragmentedFollowupsActivity.this, SelectExistingCustomerActivity.class);
             //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(intent);
             //finish();
