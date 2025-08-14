@@ -99,6 +99,7 @@ public class AddFollowupActivity extends AppCompatActivity {
 
                     Intent i = getIntent();
                     visitId = i.getStringExtra("visitId");
+                    //test
 //                    visitId = null;
 //                    if(visitId != null && visitId.equals("")){
 //                        visitId=null;
