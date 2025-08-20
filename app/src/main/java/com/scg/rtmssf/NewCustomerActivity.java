@@ -260,7 +260,9 @@ NewCustomerActivity extends AppCompatActivity {
                             "userId",mUserId,"time", unixTime + "", "lat",lat + "",
                             "long", lon + "","outletName",outletName,
                             "phone", phone+"","contactPersonName",
-                            contactPersonName,"clockinId", clockinId);
+                            contactPersonName,"clockinId", clockinId,
+                            "regionId",selectedRegionId,"territoryId",selectedTerritoryId
+                    );
 
 
 

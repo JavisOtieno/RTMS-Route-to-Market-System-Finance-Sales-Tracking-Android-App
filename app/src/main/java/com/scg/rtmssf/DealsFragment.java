@@ -480,7 +480,7 @@ public class DealsFragment extends Fragment  {
                         obj.price = "KSh. " + NumberFormat.getNumberInstance(Locale.US).format(value);
                         if(value==0){
                             value = Integer.valueOf(sales.getJSONObject(i).getString("pieces"));
-                            obj.price = NumberFormat.getNumberInstance(Locale.US).format(value)+" units";
+                            obj.price = NumberFormat.getNumberInstance(Locale.US).format(value) + (value == 1 ? " unit" : " units");
                         }
                         //obj.imageDrw = drw_arr.getDrawable(obj.image);
                         items.add(obj);

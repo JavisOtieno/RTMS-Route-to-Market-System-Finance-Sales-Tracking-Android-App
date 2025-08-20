@@ -34,7 +34,7 @@
                 android:background="@color/red_400"
                 android:padding="5dp"
                 android:tint="@android:color/white"
-                android:src="@drawable/ic_comment" />
+                android:src="@drawable/ic_assignment" />
         </androidx.cardview.widget.CardView>
 
 

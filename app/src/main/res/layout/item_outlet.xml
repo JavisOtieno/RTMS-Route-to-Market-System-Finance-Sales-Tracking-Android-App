@@ -32,7 +32,7 @@
                 android:layout_height="50dp"
                 android:padding="5dp"
                 android:background="@color/red_400"
-                android:src="@drawable/ic_location" />
+                android:src="@drawable/ic_peoples" />
         </androidx.cardview.widget.CardView>
 
         <View
