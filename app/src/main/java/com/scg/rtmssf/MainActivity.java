@@ -1909,7 +1909,7 @@ public class MainActivity extends AppCompatActivity {
                             //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
                             //startActivity(intent);
                             swipeRefreshLayout.setVisibility(View.GONE);
-                            FirebaseCrashlytics.getInstance().recordException(new Exception("Dashboard Error: "+result));
+                            FirebaseCrashlytics.getInstance().recordException(new Exception("Dashboard Error - sales not json: "+result));
                             errorLoadingRelativeLayout.setVisibility(View.VISIBLE);
 //                    Toasts.toastIconError(MainActivity.this,
 //                            "Does not Contain Sales");
@@ -1917,7 +1917,7 @@ public class MainActivity extends AppCompatActivity {
                         }
 
                     }
-                    else if(result.contains("Unauthenticated")){
+                    else if(result != null && result.contains("Unauthenticated")){
 
                         EncryptedPrefsUtil.saveString("userId", "0");
                         EncryptedPrefsUtil.saveString("authToken", "");
@@ -1931,7 +1931,7 @@ public class MainActivity extends AppCompatActivity {
                     else{
 
                         swipeRefreshLayout.setVisibility(View.GONE);
-                        FirebaseCrashlytics.getInstance().recordException(new Exception("Dashboard Error: "+result));
+                        FirebaseCrashlytics.getInstance().recordException(new Exception("Dashboard Error - no sales -no unauthenticated: "+result));
                         errorLoadingRelativeLayout.setVisibility(View.VISIBLE);
 //                    Toasts.toastIconError(MainActivity.this,"Is Null");
 

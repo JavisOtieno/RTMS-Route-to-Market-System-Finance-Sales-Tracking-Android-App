@@ -272,6 +272,7 @@ public class CheckoutActivity extends AppCompatActivity {
                             handleResult(result);
 
                         } else {
+                            isTaskRunning = false;
                             // Handle errors (e.g., token refresh failed)
                             Toasts.toastIconError(CheckoutActivity.this, result);
 //                            Intent intent = new Intent(CheckoutActivity.this, LoginActivity.class);
@@ -317,7 +318,7 @@ public class CheckoutActivity extends AppCompatActivity {
         try {
 
             System.out.println("Result: " + result);
-            if (result != null) {
+            if (result != null ) {
                 JSONObject jsonObject = new JSONObject(result);
 
                 //Checkout Failed means server returns nothing

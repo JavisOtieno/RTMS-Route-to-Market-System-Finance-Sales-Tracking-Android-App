@@ -22,8 +22,13 @@ public class Constants {
 //    public static final String BASE_URL = "http://rtmstest.javytech.com/";
 //    public static final String STORAGE_URL = "http://rtmstest.javytech.com/storage/";
 //
-    public static final String BASE_URL = "https://rtmsaccessbank.scgafrica.com/";
-    public static final String STORAGE_URL = "https://rtmsaccessbank.scgafrica.com/storage/";
+//    public static final String BASE_URL = "https://rtmsaccessbank.scgafrica.com/";
+//    public static final String STORAGE_URL = "https://rtmsaccessbank.scgafrica.com/storage/";
+
+//    public static final String BASE_URL = "https://rtmssf.scgafrica.com/";
+//    public static final String STORAGE_URL = "https://rtmssf.scgafrica.com/storage/";
+    public static final String BASE_URL = "https://rtmsfinancedemo.av.ke/";
+    public static final String STORAGE_URL = "https://rtmsfinancedemo.av.ke/storage/";
 
 //    public static final String BASE_URL = "https://rtmsjubilee.scgafrica.com/";
 //    public static final String STORAGE_URL = "https://rtmsjubilee.scgafrica.com/storage/";

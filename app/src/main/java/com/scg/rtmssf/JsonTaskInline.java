@@ -41,11 +41,13 @@ public class JsonTaskInline extends AsyncTask<Object, Void, String> {
     protected String doInBackground(Object... params) {
         String url =  (String) params[0];
         String method = (String) params[1];
-        String response = "";
+        String response = null;
+        HttpURLConnection conn = null;
+        BufferedReader reader = null;
 
         try {
             URL apiUrl = new URL(url);
-            HttpURLConnection conn = (HttpURLConnection) apiUrl.openConnection();
+            conn = (HttpURLConnection) apiUrl.openConnection();
 
             // Set the request method (GET/POST/PUT)
             conn.setRequestMethod(method);
@@ -100,7 +102,7 @@ public class JsonTaskInline extends AsyncTask<Object, Void, String> {
             conn.connect();
             int responseCode = conn.getResponseCode();
 
-            BufferedReader reader = null;
+//            BufferedReader reader = null;
 
             if (responseCode == HttpURLConnection.HTTP_OK) {
                 // Read the response
@@ -127,20 +129,21 @@ public class JsonTaskInline extends AsyncTask<Object, Void, String> {
             e.printStackTrace();
         } catch (JSONException e) {
             throw new RuntimeException(e);
+//            Log.e(TAG, "JSON Error: " + e.getMessage());
+//            e.printStackTrace();
         }
-//        finally
-//        {
-//            if (conn != null) {
-//                conn.disconnect();
-//            }
-//            try {
-//                if (reader != null) {
-//                    reader.close();
-//                }
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//        }
+        finally {
+            if (conn != null) {
+                conn.disconnect();
+            }
+            try {
+                if (reader != null) {
+                    reader.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
 
         return response;
     }

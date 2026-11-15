@@ -161,6 +161,7 @@ public class SetLocationActivity extends AppCompatActivity implements OnMapReady
                                 handleResult(result);
 
                             } else {
+                                isTaskRunning = false;
                                 // Handle errors (e.g., token refresh failed)
                                 Toasts.toastIconError(SetLocationActivity.this, result);
 //                                Intent intent = new Intent(SetLocationActivity.this, LoginActivity.class);

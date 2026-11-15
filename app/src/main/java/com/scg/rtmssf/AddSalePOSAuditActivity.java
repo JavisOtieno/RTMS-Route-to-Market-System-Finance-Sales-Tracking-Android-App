@@ -286,6 +286,7 @@ public class AddSalePOSAuditActivity extends AppCompatActivity implements OnEdit
                             handleResult(result);
 
                         } else {
+                            isTaskRunning = false;
                             // Handle errors (e.g., token refresh failed)
                             Toasts.toastIconError(AddSalePOSAuditActivity.this, result);
 //                            Intent intent = new Intent(AddSalePOSAuditActivity.this, LoginActivity.class);
@@ -315,7 +316,7 @@ public class AddSalePOSAuditActivity extends AppCompatActivity implements OnEdit
         System.out.println("Result: " + result);
         try {
 
-            if (result != null) {
+            if (result != null && !result.trim().isEmpty()) {
 
                 JSONObject jsonObject = new JSONObject(result);
                 //txtJson.setText(jsonObject.toString());

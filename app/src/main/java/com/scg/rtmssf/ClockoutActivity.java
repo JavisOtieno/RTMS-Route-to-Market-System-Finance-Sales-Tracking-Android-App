@@ -167,6 +167,7 @@ public class ClockoutActivity extends AppCompatActivity {
                                 handleResult(result);
 
                             } else {
+                                isTaskRunning = false;
                                 // Handle errors (e.g., token refresh failed)
                                 Toasts.toastIconError(ClockoutActivity.this, result);
 //                                Intent intent = new Intent(ClockoutActivity.this, LoginActivity.class);

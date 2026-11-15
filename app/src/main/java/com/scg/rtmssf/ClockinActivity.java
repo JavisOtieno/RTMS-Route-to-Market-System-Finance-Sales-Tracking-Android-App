@@ -167,6 +167,7 @@ public class ClockinActivity extends AppCompatActivity {
                                 handleResult(result);
 
                             } else {
+                                isTaskRunning = false;
                                 // Handle errors (e.g., token refresh failed)
                                 Toasts.toastIconError(ClockinActivity.this, result);
 //                                Intent intent = new Intent(ClockinActivity.this, LoginActivity.class);

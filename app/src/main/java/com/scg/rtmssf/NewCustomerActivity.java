@@ -250,6 +250,7 @@ NewCustomerActivity extends AppCompatActivity {
                             handleResult(result);
 
                         } else {
+                            isTaskRunning = false;
                             // Handle errors (e.g., token refresh failed)
                             Toasts.toastIconError(NewCustomerActivity.this, result);
 //                            Intent intent = new Intent(NewCustomerActivity.this, LoginActivity.class);
@@ -611,9 +612,18 @@ NewCustomerActivity extends AppCompatActivity {
 
                         startActivity(intent);
                     }else{
-                        Toasts.toastIconError(NewCustomerActivity.this,
-                                "Error Saving. Please Try Again");
-                        FirebaseCrashlytics.getInstance().recordException(new Exception("New Customer Error: "+result));
+
+                        if(endpoint.equals("regionsterritories")){
+                            Toasts.toastIconError(NewCustomerActivity.this,
+                                    "Error Loading. Please Try Again");
+                            FirebaseCrashlytics.getInstance().recordException(new
+                                    Exception("New Customer Regions Territories Error: "+result));
+                        }else {
+
+                            Toasts.toastIconError(NewCustomerActivity.this,
+                                    "Error Saving. Please Try Again");
+                            FirebaseCrashlytics.getInstance().recordException(new Exception("New Customer Error: " + result));
+                        }
 
                     }
 

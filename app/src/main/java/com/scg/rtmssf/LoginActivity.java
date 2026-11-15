@@ -235,7 +235,9 @@ public class LoginActivity extends AppCompatActivity {
                         if (status.equals("success")) {
                             //Toast.makeText(getBaseContext(), message, Toast.LENGTH_SHORT).show();
                             Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+//                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+
 
                             SharedPreferences.Editor mEditor = mPrefs.edit();
 //                            mEditor.putString("userId", jsonObject.getString("userId")).commit();

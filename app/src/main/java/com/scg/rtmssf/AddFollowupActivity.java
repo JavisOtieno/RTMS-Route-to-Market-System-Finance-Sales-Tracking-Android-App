@@ -125,6 +125,7 @@ public class AddFollowupActivity extends AppCompatActivity {
                             handleResult(result);
 
                         } else {
+                            isTaskRunning = false;
                             // Handle errors (e.g., token refresh failed)
                             Toasts.toastIconError(AddFollowupActivity.this, result);
 //                            Intent intent = new Intent(AddFollowupActivity.this, LoginActivity.class);
@@ -230,7 +231,7 @@ public class AddFollowupActivity extends AppCompatActivity {
 
             //Submit Failed means server returns nothing
             //Error saving means server responds with something other than success
-            if (result != null) {
+            if (result != null ) {
                 JSONObject jsonObject = new JSONObject(result);
                 if(result.contains("errors")){
                     String message = jsonObject.getString("message");

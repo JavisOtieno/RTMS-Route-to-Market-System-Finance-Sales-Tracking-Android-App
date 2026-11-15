@@ -95,6 +95,7 @@ public class AddFeedbackActivity extends AppCompatActivity {
                             handleResult(result);
 
                         } else {
+                            isTaskRunning = false;
                             // Handle errors (e.g., token refresh failed)
                             Toasts.toastIconError(AddFeedbackActivity.this, result);
 //                            Intent intent = new Intent(AddFeedbackActivity.this, LoginActivity.class);

@@ -96,6 +96,7 @@ public class AddCompetitiveAnalysisActivity extends AppCompatActivity {
                             handleResult(result);
 
                         } else {
+                            isTaskRunning = false;
                             // Handle errors (e.g., token refresh failed)
                             Toasts.toastIconError(AddCompetitiveAnalysisActivity.this, result);
 //                            Intent intent = new Intent(AddCompetitiveAnalysisActivity.this, LoginActivity.class);

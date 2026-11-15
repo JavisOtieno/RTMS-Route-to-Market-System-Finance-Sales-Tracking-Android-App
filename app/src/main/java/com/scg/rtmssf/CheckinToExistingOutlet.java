@@ -323,6 +323,7 @@ public class CheckinToExistingOutlet extends AppCompatActivity {
                             handleResult(result);
 
                         } else {
+                            isTaskRunning = false;
                             // Handle errors (e.g., token refresh failed)
                             Toasts.toastIconError(CheckinToExistingOutlet.this, result);
 //                            Intent intent = new Intent(CheckinToExistingOutlet.this, LoginActivity.class);
